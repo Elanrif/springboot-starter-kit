@@ -1,5 +1,8 @@
 package com.elanrif.springbootstarterkit.dto.product;
 
+
+import com.elanrif.springbootstarterkit.dto.category.CategoryDto;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -11,7 +14,7 @@ public record ProductDto(
         BigDecimal price,
         Integer stock,
         Boolean isActive,
-        Long categoryId,
+        CategoryDto category,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {

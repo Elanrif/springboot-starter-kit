@@ -55,7 +55,7 @@ public class Product extends AuditableEntity {
      * We use @JsonIgnore to prevent infinite recursion during JSON serialization,
      */
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
     private Category category;
 }

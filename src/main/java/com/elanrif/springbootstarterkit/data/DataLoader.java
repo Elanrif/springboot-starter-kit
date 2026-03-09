@@ -70,7 +70,7 @@ public class DataLoader implements ApplicationRunner {
             log.info("Populating users...");
             var usersToSave = java.util.List.of(
                 User.builder()
-                    .email("admin@example.com")
+                    .email("admin@gmail.com")
                     .firstName("Admin")
                     .lastName("User")
                     .password(passwordEncoder.encode("admin123456"))
@@ -80,7 +80,7 @@ public class DataLoader implements ApplicationRunner {
                     .isActive(true)
                     .build(),
                 User.builder()
-                    .email("user@example.com")
+                    .email("user@gmail.com")
                     .firstName("John")
                     .lastName("Doe")
                     .password(passwordEncoder.encode("user123456"))
@@ -100,7 +100,7 @@ public class DataLoader implements ApplicationRunner {
                     .isActive(true)
                     .build(),
                 User.builder()
-                    .email("test@example.com")
+                    .email("test@gmail.com")
                     .firstName("Test")
                     .lastName("Account")
                     .password(passwordEncoder.encode("test123456"))

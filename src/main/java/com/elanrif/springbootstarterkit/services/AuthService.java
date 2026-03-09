@@ -2,7 +2,6 @@ package com.elanrif.springbootstarterkit.services;
 
 import com.elanrif.springbootstarterkit.dto.auth.ChangePasswordDto;
 import com.elanrif.springbootstarterkit.dto.auth.LoginDto;
-import com.elanrif.springbootstarterkit.dto.auth.LoginResponseDto;
 import com.elanrif.springbootstarterkit.dto.auth.RegisterDto;
 import com.elanrif.springbootstarterkit.dto.user.UserDto;
 import com.elanrif.springbootstarterkit.entity.User;
@@ -26,7 +25,7 @@ public class AuthService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
-    public LoginResponseDto login(LoginDto dto) {
+    public UserDto login(LoginDto dto) {
         User user = userRepository.findByEmail(dto.email())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + dto.email()));
 
@@ -38,13 +37,13 @@ public class AuthService {
             throw new BadRequestException("User account is inactive");
         }
 
-        // Génération des tokens (implémentation simple)
-        String token = generateToken(user);
-        String refreshToken = generateRefreshToken(user);
+        /**
+         *  Génération des tokens (implémentation simple)
+         *  String token = generateToken(user);
+         *  String refreshToken = generateRefreshToken(user);
+         */
 
-        UserDto userDto = userMapper.toDto(user);
-
-        return new LoginResponseDto(token, refreshToken, userDto);
+        return userMapper.toDto(user);
     }
 
     public UserDto register(@Valid RegisterDto dto) {
