@@ -2,7 +2,6 @@ package com.elanrif.springbootstarterkit.controller;
 
 import com.elanrif.springbootstarterkit.dto.auth.ChangePasswordDto;
 import com.elanrif.springbootstarterkit.dto.auth.LoginDto;
-import com.elanrif.springbootstarterkit.dto.auth.LoginResponseDto;
 import com.elanrif.springbootstarterkit.dto.auth.RegisterDto;
 import com.elanrif.springbootstarterkit.dto.user.UserDto;
 import com.elanrif.springbootstarterkit.services.AuthService;
@@ -19,7 +18,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public LoginResponseDto login(@Valid @RequestBody LoginDto dto) {
+    public UserDto login(@Valid @RequestBody LoginDto dto) {
         return authService.login(dto);
     }
 
