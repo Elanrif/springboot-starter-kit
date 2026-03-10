@@ -1,8 +1,8 @@
 package com.elanrif.springbootstarterkit.services;
 
-import com.elanrif.springbootstarterkit.dto.auth.ChangePasswordDto;
 import com.elanrif.springbootstarterkit.dto.auth.LoginDto;
 import com.elanrif.springbootstarterkit.dto.auth.RegisterDto;
+import com.elanrif.springbootstarterkit.dto.auth.ResetPasswordDto;
 import com.elanrif.springbootstarterkit.dto.user.UserDto;
 import com.elanrif.springbootstarterkit.entity.User;
 import com.elanrif.springbootstarterkit.entity.UserRole;
@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -36,12 +35,6 @@ public class AuthService {
         if (!user.getIsActive()) {
             throw new BadRequestException("User account is inactive");
         }
-
-        /**
-         *  Génération des tokens (implémentation simple)
-         *  String token = generateToken(user);
-         *  String refreshToken = generateRefreshToken(user);
-         */
 
         return userMapper.toDto(user);
     }
@@ -66,28 +59,19 @@ public class AuthService {
         return userMapper.toDto(savedUser);
     }
 
-    public UserDto changePassword(Long userId, ChangePasswordDto dto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
+    public UserDto resetPassword(ResetPasswordDto dto) {
+        User user = userRepository.findByEmail(dto.email())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + dto.email()));
 
-        if (!passwordEncoder.matches(dto.oldPassword(), user.getPassword())) {
-            throw new BadRequestException("Invalid current password");
+        var tokenValid = ResetTokenValidator.isValidToken(dto.code(), dto.resetToken());
+        if (!tokenValid) {
+            throw new IllegalArgumentException("Token invalid or expired.");
         }
 
         user.setPassword(passwordEncoder.encode(dto.newPassword()));
         User updatedUser = userRepository.save(user);
 
         return userMapper.toDto(updatedUser);
-    }
-
-    private String generateToken(User user) {
-        // Implémentation simple - À remplacer par JWT ou autre mécanisme
-        return "token_" + user.getId() + "_" + UUID.randomUUID();
-    }
-
-    private String generateRefreshToken(User user) {
-        // Implémentation simple - À remplacer par JWT ou autre mécanisme
-        return "refresh_" + user.getId() + "_" + UUID.randomUUID();
     }
 }
 

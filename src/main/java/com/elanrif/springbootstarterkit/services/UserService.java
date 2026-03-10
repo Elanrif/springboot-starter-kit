@@ -1,17 +1,18 @@
 package com.elanrif.springbootstarterkit.services;
 
+import com.elanrif.springbootstarterkit.dto.auth.ResetPasswordDto;
 import com.elanrif.springbootstarterkit.dto.user.UserDto;
 import com.elanrif.springbootstarterkit.dto.user.UserUpdateDto;
 import com.elanrif.springbootstarterkit.entity.User;
+import com.elanrif.springbootstarterkit.exception.BadRequestException;
 import com.elanrif.springbootstarterkit.exception.ResourceNotFoundException;
 import com.elanrif.springbootstarterkit.mapper.UserMapper;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +20,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     public UserDto getMe(Long id) {
         User user = userRepository.findById(id)
@@ -45,12 +47,6 @@ public class UserService {
         return userMapper.toDto(user);
     }
 
-    public Map<String, Long> getStats() {
-        Map<String, Long> stats = new HashMap<>();
-        stats.put("total", userRepository.count());
-        stats.put("active", userRepository.countByIsActiveTrue());
-        stats.put("inactive", userRepository.countByIsActiveFalse());
-        return stats;
-    }
+
 }
 
