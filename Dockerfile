@@ -5,8 +5,7 @@ WORKDIR /build
 
 # Copy Maven files
 COPY pom.xml .
-COPY mvnw .
-COPY mvnw.cmd .
+COPY mvnw* .
 COPY .mvn .mvn
 
 # Copy source code
