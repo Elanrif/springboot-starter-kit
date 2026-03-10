@@ -1,8 +1,8 @@
 package com.elanrif.springbootstarterkit.controller;
 
-import com.elanrif.springbootstarterkit.dto.auth.ChangePasswordDto;
 import com.elanrif.springbootstarterkit.dto.auth.LoginDto;
 import com.elanrif.springbootstarterkit.dto.auth.RegisterDto;
+import com.elanrif.springbootstarterkit.dto.auth.ResetPasswordDto;
 import com.elanrif.springbootstarterkit.dto.user.UserDto;
 import com.elanrif.springbootstarterkit.services.AuthService;
 import jakarta.validation.Valid;
@@ -28,11 +28,8 @@ public class AuthController {
         return authService.register(dto);
     }
 
-    @PatchMapping("/change-password/{id}")
-    public UserDto changePassword(
-            @PathVariable Long id,
-            @Valid @RequestBody ChangePasswordDto dto) {
-        return authService.changePassword(id, dto);
+    @PatchMapping("/reset-password")
+    public UserDto changePassword(@Valid @RequestBody ResetPasswordDto dto) {
+        return authService.resetPassword(dto);
     }
 }
-
