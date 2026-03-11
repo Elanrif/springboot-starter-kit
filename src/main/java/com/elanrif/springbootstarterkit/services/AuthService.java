@@ -23,6 +23,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final ResetTokenValidator resetTokenValidator;
 
     public UserDto login(LoginDto dto) {
         User user = userRepository.findByEmail(dto.email())
@@ -63,7 +64,7 @@ public class AuthService {
         User user = userRepository.findByEmail(dto.email())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + dto.email()));
 
-        var tokenValid = ResetTokenValidator.isValidToken(dto.code(), dto.resetToken());
+        var tokenValid = resetTokenValidator.isValidToken(dto.code(), dto.resetToken());
         if (!tokenValid) {
             throw new IllegalArgumentException("Token invalid or expired.");
         }

@@ -17,6 +17,12 @@ spring:
         format_sql: false
     open-in-view: false
 
+# Reset Token
+nodemailer:
+  reset-token:
+    hmac: ${RESET_TOKEN_HMAC}
+    secret: ${RESET_TOKEN_SECRET_KEY}
+
 # Swagger Configuration
 springdoc:
   api-docs:
