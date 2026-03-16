@@ -17,8 +17,8 @@ public class AuthController {
     private final AuthService authService;
 
     @PatchMapping("/edit-profile")
-    public UserDto updateMe(@PathVariable Long id, @Valid @RequestBody ProfileDto dto) {
-        return authService.update(id, dto);
+    public UserDto updateMe(@Valid @RequestBody ProfileDto dto) {
+        return authService.update(dto);
     }
 
     @PatchMapping("/change-password-profile")

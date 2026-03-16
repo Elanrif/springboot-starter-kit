@@ -59,7 +59,7 @@ public class AuthService {
         return userMapper.toDto(savedUser);
     }
 
-    public UserDto update(Long id, ProfileDto dto) {
+    public UserDto update(ProfileDto dto) {
         User user = userRepository.findByEmail(dto.email())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found for subject"));
         user.setFirstName(dto.firstName());
