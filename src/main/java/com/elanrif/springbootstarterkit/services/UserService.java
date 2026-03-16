@@ -1,6 +1,7 @@
 package com.elanrif.springbootstarterkit.services;
 
 import com.elanrif.springbootstarterkit.dto.auth.ResetPasswordDto;
+import com.elanrif.springbootstarterkit.dto.user.UserCreateDto;
 import com.elanrif.springbootstarterkit.dto.user.UserDto;
 import com.elanrif.springbootstarterkit.dto.user.UserUpdateDto;
 import com.elanrif.springbootstarterkit.entity.User;
@@ -22,13 +23,24 @@ public class UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
-    public UserDto getMe(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found for subject"));
-        return userMapper.toDto(user);
+    public UserDto createUser(UserCreateDto dto) {
+        User user = userMapper.toEntity(dto);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        /**
+         * If the isActive field is not provided in UserCreateDto during mapping,
+         * its value will be null.
+         * Since the entity enforces the @NotNull constraint on this field, we set
+         * the default value to false.
+         * ⚠️ Or remove it to the UserCreateDto and uncomment the code below
+         */
+        /*if (user.getIsActive() == null) {
+            user.setIsActive(false);
+        }*/
+        User savedUser = userRepository.save(user);
+        return userMapper.toDto(savedUser);
     }
 
-    public UserDto updateMe(Long id, UserUpdateDto dto) {
+    public UserDto update(Long id, UserUpdateDto dto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found for subject"));
         userMapper.updateFromDto(dto, user);
@@ -47,6 +59,10 @@ public class UserService {
         return userMapper.toDto(user);
     }
 
-
+    public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new ResourceNotFoundException("User not found: " + id);
+        }
+        userRepository.deleteById(id);
+    }
 }
-
