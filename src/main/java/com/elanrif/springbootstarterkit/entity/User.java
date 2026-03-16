@@ -47,5 +47,5 @@ public class User extends AuditableEntity {
 
     @NotNull
     @Column(nullable = false)
-    private Boolean isActive = true;
+    private Boolean isActive = false;
 }

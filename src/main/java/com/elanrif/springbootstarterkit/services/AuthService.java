@@ -1,9 +1,8 @@
 package com.elanrif.springbootstarterkit.services;
 
-import com.elanrif.springbootstarterkit.dto.auth.LoginDto;
-import com.elanrif.springbootstarterkit.dto.auth.RegisterDto;
-import com.elanrif.springbootstarterkit.dto.auth.ResetPasswordDto;
+import com.elanrif.springbootstarterkit.dto.auth.*;
 import com.elanrif.springbootstarterkit.dto.user.UserDto;
+import com.elanrif.springbootstarterkit.dto.user.UserUpdateDto;
 import com.elanrif.springbootstarterkit.entity.User;
 import com.elanrif.springbootstarterkit.entity.UserRole;
 import com.elanrif.springbootstarterkit.exception.BadRequestException;
@@ -60,6 +59,16 @@ public class AuthService {
         return userMapper.toDto(savedUser);
     }
 
+    public UserDto update(Long id, ProfileDto dto) {
+        User user = userRepository.findByEmail(dto.email())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found for subject"));
+        user.setFirstName(dto.firstName());
+        user.setLastName(dto.lastName());
+        user.setEmail(dto.email());
+        user.setPhoneNumber(dto.phoneNumber());
+        return userMapper.toDto(userRepository.save(user));
+    }
+
     public UserDto resetPassword(ResetPasswordDto dto) {
         User user = userRepository.findByEmail(dto.email())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + dto.email()));
@@ -72,6 +81,18 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(dto.newPassword()));
         User updatedUser = userRepository.save(user);
 
+        return userMapper.toDto(updatedUser);
+    }
+
+    public UserDto changePasswordProfile(ChangePasswordProfileDto dto) {
+        User user = userRepository.findByEmail(dto.email())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + dto.email()));
+
+        if (!passwordEncoder.matches(dto.oldPassword(), user.getPassword())) {
+            throw new BadRequestException("Old password is incorrect");
+        }
+        user.setPassword(passwordEncoder.encode(dto.newPassword()));
+        User updatedUser = userRepository.save(user);
         return userMapper.toDto(updatedUser);
     }
 }

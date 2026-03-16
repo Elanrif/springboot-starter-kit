@@ -1,6 +1,7 @@
 package com.elanrif.springbootstarterkit.dto.user;
 
 import com.elanrif.springbootstarterkit.entity.UserRole;
+import java.time.LocalDateTime;
 
 public record UserDto(
         Long id,
@@ -11,7 +12,8 @@ public record UserDto(
         String password,
         String avatarUrl,
         UserRole role,
-        Boolean isActive
+        Boolean isActive,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
 ) {
 }
-

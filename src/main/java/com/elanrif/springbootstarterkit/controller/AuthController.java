@@ -1,9 +1,8 @@
 package com.elanrif.springbootstarterkit.controller;
 
-import com.elanrif.springbootstarterkit.dto.auth.LoginDto;
-import com.elanrif.springbootstarterkit.dto.auth.RegisterDto;
-import com.elanrif.springbootstarterkit.dto.auth.ResetPasswordDto;
+import com.elanrif.springbootstarterkit.dto.auth.*;
 import com.elanrif.springbootstarterkit.dto.user.UserDto;
+import com.elanrif.springbootstarterkit.dto.user.UserUpdateDto;
 import com.elanrif.springbootstarterkit.services.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +15,16 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+
+    @PatchMapping("/edit-profile")
+    public UserDto updateMe(@PathVariable Long id, @Valid @RequestBody ProfileDto dto) {
+        return authService.update(id, dto);
+    }
+
+    @PatchMapping("/change-password-profile")
+    public UserDto changePasswordProfile(@Valid @RequestBody ChangePasswordProfileDto dto) {
+        return authService.changePasswordProfile(dto);
+    }
 
     @PostMapping("/login")
     public UserDto login(@Valid @RequestBody LoginDto dto) {
