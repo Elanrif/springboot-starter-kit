@@ -2,7 +2,6 @@ package com.elanrif.springbootstarterkit.services;
 
 import com.elanrif.springbootstarterkit.dto.auth.*;
 import com.elanrif.springbootstarterkit.dto.user.UserDto;
-import com.elanrif.springbootstarterkit.dto.user.UserUpdateDto;
 import com.elanrif.springbootstarterkit.entity.User;
 import com.elanrif.springbootstarterkit.entity.UserRole;
 import com.elanrif.springbootstarterkit.exception.BadRequestException;
@@ -11,10 +10,13 @@ import com.elanrif.springbootstarterkit.mapper.UserMapper;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -23,28 +25,44 @@ public class AuthService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final ResetTokenValidator resetTokenValidator;
+    private final KeycloakService keycloakService;
 
-    public UserDto login(LoginDto dto) {
+    /**
+     * Login user via Keycloak ROPC and return tokens with user info
+     */
+    public AuthResponse login(LoginDto dto) {
+        // First verify user exists in local DB
         User user = userRepository.findByEmail(dto.email())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + dto.email()));
-
-        if (!passwordEncoder.matches(dto.password(), user.getPassword())) {
-            throw new BadRequestException("Invalid email or password");
-        }
 
         if (!user.getIsActive()) {
             throw new BadRequestException("User account is inactive");
         }
 
-        return userMapper.toDto(user);
+        // Authenticate via Keycloak ROPC
+        KeycloakAuthResponse authResponse = keycloakService.login(dto.email(), dto.password());
+
+        return new AuthResponse(
+                authResponse.accessToken(),
+                authResponse.refreshToken(),
+                authResponse.expiresIn(),
+                authResponse.refreshExpiresIn(),
+                authResponse.tokenType(),
+                userMapper.toDto(user)
+        );
     }
 
-    public UserDto register(@Valid RegisterDto dto) {
-        // Vérifier si l'utilisateur existe déjà
+    /**
+     * Register user in local DB first, then in Keycloak
+     */
+    @Transactional
+    public AuthResponse register(@Valid RegisterDto dto) {
+        // Check if user already exists in local DB
         if (userRepository.existsByEmail(dto.email())) {
             throw new BadRequestException("Email already registered: " + dto.email());
         }
 
+        // Save user to local DB first
         User user = User.builder()
                 .email(dto.email())
                 .firstName(dto.firstName())
@@ -56,7 +74,47 @@ public class AuthService {
                 .build();
 
         User savedUser = userRepository.save(user);
-        return userMapper.toDto(savedUser);
+        log.info("User saved to local DB: {}", savedUser.getEmail());
+
+        // Create user in Keycloak and auto-login
+        try {
+            KeycloakAuthResponse authResponse = keycloakService.createUser(dto);
+            log.info("User created in Keycloak: {}", dto.email());
+
+            return new AuthResponse(
+                    authResponse.accessToken(),
+                    authResponse.refreshToken(),
+                    authResponse.expiresIn(),
+                    authResponse.refreshExpiresIn(),
+                    authResponse.tokenType(),
+                    userMapper.toDto(savedUser)
+            );
+        } catch (Exception e) {
+            log.error("Failed to create user in Keycloak, rolling back local DB: {}", e.getMessage());
+            throw new BadRequestException("Failed to complete registration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Refresh access token
+     */
+    public AuthResponse refreshToken(String refreshToken) {
+        KeycloakTokenResponse tokenResponse = keycloakService.refreshToken(refreshToken);
+
+        return new AuthResponse(
+                tokenResponse.accessToken(),
+                tokenResponse.refreshToken(),
+                tokenResponse.expiresIn(),
+                tokenResponse.refreshExpiresIn(),
+                tokenResponse.tokenType()
+        );
+    }
+
+    /**
+     * Logout user (invalidate refresh token in Keycloak)
+     */
+    public void logout(String refreshToken) {
+        keycloakService.logout(refreshToken);
     }
 
     public UserDto update(ProfileDto dto) {
@@ -69,6 +127,7 @@ public class AuthService {
         return userMapper.toDto(userRepository.save(user));
     }
 
+    @Transactional
     public UserDto resetPassword(ResetPasswordDto dto) {
         User user = userRepository.findByEmail(dto.email())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + dto.email()));
@@ -78,12 +137,21 @@ public class AuthService {
             throw new IllegalArgumentException("Token invalid or expired.");
         }
 
+        // Update password in local DB
         user.setPassword(passwordEncoder.encode(dto.newPassword()));
         User updatedUser = userRepository.save(user);
+
+        // Update password in Keycloak
+        try {
+            keycloakService.updateUserPassword(dto.email(), dto.newPassword());
+        } catch (Exception e) {
+            log.error("Failed to update password in Keycloak: {}", e.getMessage());
+        }
 
         return userMapper.toDto(updatedUser);
     }
 
+    @Transactional
     public UserDto changePasswordProfile(ChangePasswordProfileDto dto) {
         User user = userRepository.findByEmail(dto.email())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + dto.email()));
@@ -91,9 +159,18 @@ public class AuthService {
         if (!passwordEncoder.matches(dto.oldPassword(), user.getPassword())) {
             throw new BadRequestException("Old password is incorrect");
         }
+
+        // Update password in local DB
         user.setPassword(passwordEncoder.encode(dto.newPassword()));
         User updatedUser = userRepository.save(user);
+
+        // Update password in Keycloak
+        try {
+            keycloakService.updateUserPassword(dto.email(), dto.newPassword());
+        } catch (Exception e) {
+            log.error("Failed to update password in Keycloak: {}", e.getMessage());
+        }
+
         return userMapper.toDto(updatedUser);
     }
 }
-

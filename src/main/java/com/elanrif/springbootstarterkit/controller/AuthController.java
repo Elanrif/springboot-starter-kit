@@ -2,7 +2,6 @@ package com.elanrif.springbootstarterkit.controller;
 
 import com.elanrif.springbootstarterkit.dto.auth.*;
 import com.elanrif.springbootstarterkit.dto.user.UserDto;
-import com.elanrif.springbootstarterkit.dto.user.UserUpdateDto;
 import com.elanrif.springbootstarterkit.services.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +15,28 @@ public class AuthController {
 
     private final AuthService authService;
 
+    @PostMapping("/login")
+    public AuthResponse login(@Valid @RequestBody LoginDto dto) {
+        return authService.login(dto);
+    }
+
+    @PostMapping("/register")
+    @ResponseStatus(HttpStatus.CREATED)
+    public AuthResponse register(@Valid @RequestBody RegisterDto dto) {
+        return authService.register(dto);
+    }
+
+    @PostMapping("/refresh-token")
+    public AuthResponse refreshToken(@Valid @RequestBody RefreshTokenDto dto) {
+        return authService.refreshToken(dto.refreshToken());
+    }
+
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logout(@Valid @RequestBody RefreshTokenDto dto) {
+        authService.logout(dto.refreshToken());
+    }
+
     @PatchMapping("/edit-profile")
     public UserDto updateMe(@Valid @RequestBody ProfileDto dto) {
         return authService.update(dto);
@@ -24,17 +45,6 @@ public class AuthController {
     @PatchMapping("/change-password-profile")
     public UserDto changePasswordProfile(@Valid @RequestBody ChangePasswordProfileDto dto) {
         return authService.changePasswordProfile(dto);
-    }
-
-    @PostMapping("/login")
-    public UserDto login(@Valid @RequestBody LoginDto dto) {
-        return authService.login(dto);
-    }
-
-    @PostMapping("/register")
-    @ResponseStatus(HttpStatus.CREATED)
-    public UserDto register(@Valid @RequestBody RegisterDto dto) {
-        return authService.register(dto);
     }
 
     @PatchMapping("/reset-password")

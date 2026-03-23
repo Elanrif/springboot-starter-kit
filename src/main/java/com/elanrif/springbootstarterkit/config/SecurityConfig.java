@@ -29,6 +29,10 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html").permitAll()
                         .requestMatchers("/error").permitAll() // Allow access to the default Spring Boot error page
+                        // Auth endpoints - public access
+                        .requestMatchers(HttpMethod.POST, "/api/v1/keycloak/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/refresh-token", "/api/v1/auth/logout").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/auth/reset-password").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/users/**", "/api/v1/categories/**","/api/v1/products/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/**", "/api/v1/categories/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/users/**", "/api/v1/categories/**").hasRole("ADMIN")
@@ -48,4 +52,3 @@ public class SecurityConfig {
         return converter;
     }
 }
-
