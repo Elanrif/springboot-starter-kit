@@ -65,4 +65,15 @@ public class UserService {
         }
         userRepository.deleteById(id);
     }
+
+    public List<UserDto> searchUsers(String email, String firstName, String lastName, Boolean isActive) {
+        String emailParam     = email     != null ? "%" + email.toLowerCase()     + "%" : null;
+        String firstNameParam = firstName != null ? "%" + firstName.toLowerCase() + "%" : null;
+        String lastNameParam  = lastName  != null ? "%" + lastName.toLowerCase()  + "%" : null;
+
+        return userRepository.searchUsers(emailParam, firstNameParam, lastNameParam, isActive)
+                .stream()
+                .map(userMapper::toDto)
+                .toList();
+    }
 }
