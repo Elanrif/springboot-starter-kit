@@ -41,4 +41,13 @@ public class UserController {
     public void deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
     }
+
+    @GetMapping("/search")
+    public List<UserDto> searchUsers(
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String firstName,
+            @RequestParam(required = false) String lastName,
+            @RequestParam(required = false) Boolean isActive) {
+        return userService.searchUsers(email,firstName, lastName, isActive);
+    }
 }
