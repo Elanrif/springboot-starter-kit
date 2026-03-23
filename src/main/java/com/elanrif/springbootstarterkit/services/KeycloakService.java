@@ -219,19 +219,7 @@ public class KeycloakService {
                 throw new BadRequestException("Failed to create user in Keycloak");
             }
 
-            // Save user to local database
-            User user = User.builder()
-                    .email(dto.email())
-                    .firstName(dto.firstName())
-                    .lastName(dto.lastName())
-                    .phoneNumber(dto.phoneNumber())
-                    .avatarUrl(dto.avatarUrl())
-                    .role(UserRole.USER)
-                    .isActive(false)
-                    .build();
-            userRepository.save(user);
-
-            // Login and return tokens
+            // Login and return tokens (user is already saved by AuthService)
             return this.login(dto.email(), dto.password());
 
         } catch (HttpClientErrorException e) {

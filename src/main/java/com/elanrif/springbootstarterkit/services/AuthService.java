@@ -43,11 +43,11 @@ public class AuthService {
         KeycloakAuthResponse authResponse = keycloakService.login(dto.email(), dto.password());
 
         return new AuthResponse(
-                authResponse.accessToken(),
-                authResponse.refreshToken(),
-                authResponse.expiresIn(),
-                authResponse.refreshExpiresIn(),
-                authResponse.tokenType(),
+                authResponse.token().accessToken(),
+                authResponse.token().refreshToken(),
+                authResponse.token().expiresIn(),
+                authResponse.token().refreshExpiresIn(),
+                authResponse.token().tokenType(),
                 userMapper.toDto(user)
         );
     }
@@ -82,11 +82,11 @@ public class AuthService {
             log.info("User created in Keycloak: {}", dto.email());
 
             return new AuthResponse(
-                    authResponse.accessToken(),
-                    authResponse.refreshToken(),
-                    authResponse.expiresIn(),
-                    authResponse.refreshExpiresIn(),
-                    authResponse.tokenType(),
+                    authResponse.token().accessToken(),
+                    authResponse.token().refreshToken(),
+                    authResponse.token().expiresIn(),
+                    authResponse.token().refreshExpiresIn(),
+                    authResponse.token().tokenType(),
                     userMapper.toDto(savedUser)
             );
         } catch (Exception e) {
