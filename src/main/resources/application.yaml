@@ -16,6 +16,12 @@ spring:
       hibernate:
         format_sql: false
     open-in-view: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI}
+          jwk-set-uri: ${KEYCLOAK_JWK_URL}
 
 # Reset Token
 nodemailer:
@@ -34,3 +40,5 @@ logging:
   level:
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
