@@ -63,13 +63,60 @@ public class KeycloakService {
                 throw new BadRequestException("Failed to get token from Keycloak");
             }
 
+            // Find user in local DB or sync from Keycloak
             User user = userRepository.findByEmail(username)
-                    .orElseThrow(() -> new BadRequestException("User not found"));
+                    .orElseGet(() -> syncUserFromKeycloak(username));
 
             return KeycloakAuthResponse.from(tokenResponse, userMapper.toDto(user));
         } catch (HttpClientErrorException e) {
             log.error("Keycloak login error: {}", e.getResponseBodyAsString());
             throw new BadRequestException("Invalid email or password");
+        }
+    }
+
+    /**
+     * Sync user from Keycloak to local database
+     */
+    private User syncUserFromKeycloak(String email) {
+        String adminToken = getAdminAccessToken();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(adminToken);
+
+        HttpEntity<?> request = new HttpEntity<>(headers);
+        String searchUrl = keycloakProperties.getUsersUrl() + "?email=" + email + "&exact=true";
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    searchUrl,
+                    HttpMethod.GET,
+                    request,
+                    String.class
+            );
+
+            JsonNode users = objectMapper.readTree(response.getBody());
+            if (users.isArray() && !users.isEmpty()) {
+                JsonNode keycloakUser = users.get(0);
+
+                User user = User.builder()
+                        .email(keycloakUser.has("email") ? keycloakUser.get("email").asText() : email)
+                        .firstName(keycloakUser.has("firstName") ? keycloakUser.get("firstName").asText() : null)
+                        .lastName(keycloakUser.has("lastName") ? keycloakUser.get("lastName").asText() : null)
+                        .role(UserRole.USER)
+                        .isActive(keycloakUser.has("enabled") && keycloakUser.get("enabled").asBoolean())
+                        .build();
+
+                log.info("Synced user from Keycloak to local DB: {}", email);
+                return userRepository.save(user);
+            }
+
+            throw new BadRequestException("User not found in Keycloak");
+        } catch (HttpClientErrorException e) {
+            log.error("Failed to sync user from Keycloak: {}", e.getResponseBodyAsString());
+            throw new BadRequestException("Failed to sync user from Keycloak");
+        } catch (Exception e) {
+            log.error("Error syncing user from Keycloak: {}", e.getMessage());
+            throw new BadRequestException("Failed to sync user from Keycloak");
         }
     }
 
