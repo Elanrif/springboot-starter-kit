@@ -15,28 +15,6 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @PostMapping("/login")
-    public AuthResponse login(@Valid @RequestBody LoginDto dto) {
-        return authService.login(dto);
-    }
-
-    @PostMapping("/register")
-    @ResponseStatus(HttpStatus.CREATED)
-    public AuthResponse register(@Valid @RequestBody RegisterDto dto) {
-        return authService.register(dto);
-    }
-
-    @PostMapping("/refresh-token")
-    public AuthResponse refreshToken(@Valid @RequestBody RefreshTokenDto dto) {
-        return authService.refreshToken(dto.refreshToken());
-    }
-
-    @PostMapping("/logout")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void logout(@Valid @RequestBody RefreshTokenDto dto) {
-        authService.logout(dto.refreshToken());
-    }
-
     @PatchMapping("/edit-profile")
     public UserDto updateMe(@Valid @RequestBody ProfileDto dto) {
         return authService.update(dto);

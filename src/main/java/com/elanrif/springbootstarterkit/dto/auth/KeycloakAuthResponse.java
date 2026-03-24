@@ -1,29 +1,26 @@
 package com.elanrif.springbootstarterkit.dto.auth;
 
 import com.elanrif.springbootstarterkit.dto.user.UserDto;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record KeycloakAuthResponse(
-        TokenInfo token,
+        @JsonProperty("access_token") String accessToken,
+        @JsonProperty("refresh_token") String refreshToken,
+        @JsonProperty("expires_in") Long expiresIn,
+        @JsonProperty("refresh_expires_in") Long refreshExpiresIn,
+        @JsonProperty("token_type") String tokenType,
+        String scope,
         UserDto user
 ) {
-    public record TokenInfo(
-            String accessToken,
-            String refreshToken,
-            Long expiresIn,
-            Long refreshExpiresIn,
-            String tokenType,
-            String scope
-    ) {}
-
     public static KeycloakAuthResponse from(KeycloakTokenResponse tokenResponse, UserDto user) {
-        TokenInfo token = new TokenInfo(
+        return new KeycloakAuthResponse(
                 tokenResponse.accessToken(),
                 tokenResponse.refreshToken(),
                 tokenResponse.expiresIn(),
                 tokenResponse.refreshExpiresIn(),
                 tokenResponse.tokenType(),
-                tokenResponse.scope()
+                tokenResponse.scope(),
+                user
         );
-        return new KeycloakAuthResponse(token, user);
     }
 }
