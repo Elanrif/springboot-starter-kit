@@ -9,12 +9,14 @@ import com.elanrif.springbootstarterkit.repository.CategoryRepository;
 import com.elanrif.springbootstarterkit.repository.ProductRepository;
 import com.elanrif.springbootstarterkit.util.PageResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -24,52 +26,81 @@ public class ProductService {
     private final ProductMapper productMapper;
 
     public PageResponse<ProductDto.Response> getProducts(ProductDto.Filter filter, int page, int size) {
+        log.debug("Fetching products with filter - page: {}, size: {}, search: {}, categoryId: {}",
+                page, size, filter != null ? filter.search() : null, filter != null ? filter.categoryId() : null);
         PageRequest pageRequest = PageRequest.of(page, size, toSort(filter));
         Specification<Product> specification = buildSpecification(filter);
         Page<ProductDto.Response> result = productRepository.findAll(specification, pageRequest)
                 .map(productMapper::toResponse);
+        log.debug("Found {} products (total: {})", result.getNumberOfElements(), result.getTotalElements());
         return PageResponse.from(result);
     }
 
     public ProductDto.Response getProductById(Long id) {
+        log.debug("Fetching product with id: {}", id);
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + id));
+                .orElseThrow(() -> {
+                    log.warn("Product not found with id: {}", id);
+                    return new ResourceNotFoundException("Product not found: " + id);
+                });
         return productMapper.toResponse(product);
     }
 
     public ProductDto.Response getProductBySlug(String slug) {
+        log.debug("Fetching product with slug: {}", slug);
         Product product = productRepository.findBySlug(slug)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + slug));
+                .orElseThrow(() -> {
+                    log.warn("Product not found with slug: {}", slug);
+                    return new ResourceNotFoundException("Product not found: " + slug);
+                });
         return productMapper.toResponse(product);
     }
 
     public ProductDto.Response createProduct(ProductDto.CreateRequest request) {
+        log.debug("Creating product with name: {}", request.name());
         Product product = productMapper.toEntity(request);
         if (request.categoryId() != null) {
             Category category = categoryRepository.findById(request.categoryId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + request.categoryId()));
+                    .orElseThrow(() -> {
+                        log.warn("Category not found with id: {}", request.categoryId());
+                        return new ResourceNotFoundException("Category not found: " + request.categoryId());
+                    });
             product.setCategory(category);
         }
-        return productMapper.toResponse(productRepository.save(product));
+        ProductDto.Response response = productMapper.toResponse(productRepository.save(product));
+        log.info("Product created successfully with id: {}", response.id());
+        return response;
     }
 
     public ProductDto.Response updateProduct(Long id, ProductDto.UpdateRequest request) {
+        log.debug("Updating product with id: {}", id);
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + id));
+                .orElseThrow(() -> {
+                    log.warn("Update failed - product not found with id: {}", id);
+                    return new ResourceNotFoundException("Product not found: " + id);
+                });
         productMapper.updateFromRequest(request, product);
         if (request.categoryId() != null) {
             Category category = categoryRepository.findById(request.categoryId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + request.categoryId()));
+                    .orElseThrow(() -> {
+                        log.warn("Category not found with id: {}", request.categoryId());
+                        return new ResourceNotFoundException("Category not found: " + request.categoryId());
+                    });
             product.setCategory(category);
         }
-        return productMapper.toResponse(productRepository.save(product));
+        ProductDto.Response response = productMapper.toResponse(productRepository.save(product));
+        log.info("Product updated successfully with id: {}", id);
+        return response;
     }
 
     public void deleteProduct(Long id) {
+        log.debug("Deleting product with id: {}", id);
         if (!productRepository.existsById(id)) {
+            log.warn("Delete failed - product not found with id: {}", id);
             throw new ResourceNotFoundException("Product not found: " + id);
         }
         productRepository.deleteById(id);
+        log.info("Product deleted successfully with id: {}", id);
     }
 
 

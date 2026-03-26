@@ -1,9 +1,12 @@
 package com.elanrif.springbootstarterkit.dto;
 
+import com.elanrif.springbootstarterkit.entity.UserRole;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
+import java.time.LocalDateTime;
 
 public final class AuthDto {
     private AuthDto() {}
@@ -22,10 +25,6 @@ public final class AuthDto {
             @NotBlank @Size(min = 8, max = 255) String password,
             @Size(max = 50) String phoneNumber,
             @Size(max = 255) String avatarUrl
-    ) {}
-
-    public record RefreshTokenRequest(
-            @NotBlank String refreshToken
     ) {}
 
     public record ProfileUpdateRequest(
@@ -51,34 +50,16 @@ public final class AuthDto {
 
     // === RESPONSES ===
 
-    public record TokenResponse(
-            @JsonProperty("access_token") String accessToken,
-            @JsonProperty("refresh_token") String refreshToken,
-            @JsonProperty("expires_in") Long expiresIn,
-            @JsonProperty("refresh_expires_in") Long refreshExpiresIn,
-            @JsonProperty("token_type") String tokenType,
-            @JsonProperty("scope") String scope
+    public record Response(
+            Long id,
+            String email,
+            String firstName,
+            String lastName,
+            String phoneNumber,
+            String avatarUrl,
+            UserRole role,
+            Boolean isActive,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt
     ) {}
-
-    public record AuthResponse(
-            @JsonProperty("access_token") String accessToken,
-            @JsonProperty("refresh_token") String refreshToken,
-            @JsonProperty("expires_in") Long expiresIn,
-            @JsonProperty("refresh_expires_in") Long refreshExpiresIn,
-            @JsonProperty("token_type") String tokenType,
-            String scope,
-            UserDto.Response user
-    ) {
-        public static AuthResponse from(TokenResponse tokenResponse, UserDto.Response user) {
-            return new AuthResponse(
-                    tokenResponse.accessToken(),
-                    tokenResponse.refreshToken(),
-                    tokenResponse.expiresIn(),
-                    tokenResponse.refreshExpiresIn(),
-                    tokenResponse.tokenType(),
-                    tokenResponse.scope(),
-                    user
-            );
-        }
-    }
 }
