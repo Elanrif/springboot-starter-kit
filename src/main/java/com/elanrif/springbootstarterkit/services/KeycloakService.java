@@ -36,7 +36,7 @@ public class KeycloakService {
     /**
      * Login user via ROPC (Resource Owner Password Credentials) grant type
      */
-    public AuthDto.AuthResponse login(String username, String password) {
+    public AuthDto.Response login(String username, String password) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
@@ -65,7 +65,7 @@ public class KeycloakService {
             User user = userRepository.findByEmail(username)
                     .orElseGet(() -> syncUserFromKeycloak(username));
 
-            return AuthDto.AuthResponse.from(tokenResponse, userMapper.toResponse(user));
+            return AuthDto.Response.from(tokenResponse, userMapper.toResponse(user));
         } catch (HttpClientErrorException e) {
             log.error("Keycloak login error: {}", e.getResponseBodyAsString());
             throw new BadRequestException("Invalid email or password");
@@ -182,7 +182,7 @@ public class KeycloakService {
     /**
      * Create user in Keycloak and login
      */
-    public AuthDto.AuthResponse createUser(AuthDto.RegisterRequest request) {
+    public AuthDto.Response createUser(AuthDto.RegisterRequest request) {
         String adminToken = getAdminAccessToken();
 
         HttpHeaders headers = new HttpHeaders();

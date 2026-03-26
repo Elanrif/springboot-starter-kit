@@ -16,12 +16,12 @@ public class KeycloakController {
     private final KeycloakService keycloakService;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthDto.AuthResponse> login(@Valid @RequestBody AuthDto.LoginRequest request) {
+    public ResponseEntity<AuthDto.Response> login(@Valid @RequestBody AuthDto.LoginRequest request) {
         return ResponseEntity.ok(keycloakService.login(request.email(), request.password()));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthDto.AuthResponse> register(@Valid @RequestBody AuthDto.RegisterRequest request) {
+    public ResponseEntity<AuthDto.Response> register(@Valid @RequestBody AuthDto.RegisterRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(keycloakService.createUser(request));
     }
 

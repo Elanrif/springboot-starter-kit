@@ -60,7 +60,7 @@ public final class AuthDto {
             @JsonProperty("scope") String scope
     ) {}
 
-    public record AuthResponse(
+    public record Response(
             @JsonProperty("access_token") String accessToken,
             @JsonProperty("refresh_token") String refreshToken,
             @JsonProperty("expires_in") Long expiresIn,
@@ -69,8 +69,8 @@ public final class AuthDto {
             String scope,
             UserDto.Response user
     ) {
-        public static AuthResponse from(TokenResponse tokenResponse, UserDto.Response user) {
-            return new AuthResponse(
+        public static Response from(TokenResponse tokenResponse, UserDto.Response user) {
+            return new Response(
                     tokenResponse.accessToken(),
                     tokenResponse.refreshToken(),
                     tokenResponse.expiresIn(),
