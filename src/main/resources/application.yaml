@@ -1,6 +1,6 @@
 
 server:
-  port: ${SERVER_PORT:8081} # Default to 8081 to avoid conflict with Keycloak on 8080
+  port: 8081
 spring:
   application:
     name: springboot-starter-kit
@@ -26,8 +26,8 @@ spring:
 # Reset Token
 nodemailer:
   reset-token:
-    hmac: ${RESET_TOKEN_HMAC}
-    secret: ${RESET_TOKEN_SECRET_KEY}
+    hmac: ${NODE_MAILER_HMAC}
+    secret: ${NODE_MAILER_SECRET_KEY}
 
 # Swagger Configuration
 springdoc:
