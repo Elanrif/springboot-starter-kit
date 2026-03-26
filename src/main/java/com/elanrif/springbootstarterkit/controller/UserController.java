@@ -1,11 +1,11 @@
 package com.elanrif.springbootstarterkit.controller;
 
-import com.elanrif.springbootstarterkit.dto.user.UserCreateDto;
-import com.elanrif.springbootstarterkit.dto.user.UserDto;
-import com.elanrif.springbootstarterkit.dto.user.UserUpdateDto;
+import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,36 +18,37 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public UserDto createUser(@Valid @RequestBody UserCreateDto dto) {
-        return userService.createUser(dto);
+    public ResponseEntity<UserDto.Response> createUser(@Valid @RequestBody UserDto.CreateRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(request));
     }
 
     @PatchMapping("/{id}")
-    public UserDto updateMe(@PathVariable Long id, @Valid @RequestBody UserUpdateDto dto) {
-        return userService.update(id, dto);
+    public ResponseEntity<UserDto.Response> updateMe(@PathVariable Long id, @Valid @RequestBody UserDto.UpdateRequest request) {
+        return ResponseEntity.ok(userService.update(id, request));
     }
 
     @GetMapping
-    public List<UserDto> list() {
-        return userService.getAll();
+    public ResponseEntity<List<UserDto.Response>> list() {
+        return ResponseEntity.ok(userService.getAll());
     }
 
     @GetMapping("/{id}")
-    public UserDto getById(@PathVariable Long id) {
-        return userService.getById(id);
+    public ResponseEntity<UserDto.Response> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getById(id));
     }
 
     @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/search")
-    public List<UserDto> searchUsers(
+    public ResponseEntity<List<UserDto.Response>> searchUsers(
             @RequestParam(required = false) String email,
             @RequestParam(required = false) String firstName,
             @RequestParam(required = false) String lastName,
             @RequestParam(required = false) Boolean isActive) {
-        return userService.searchUsers(email,firstName, lastName, isActive);
+        return ResponseEntity.ok(userService.searchUsers(email, firstName, lastName, isActive));
     }
 }

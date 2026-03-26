@@ -1,12 +1,11 @@
 package com.elanrif.springbootstarterkit.controller;
 
-import com.elanrif.springbootstarterkit.dto.category.CategoryCreateDto;
-import com.elanrif.springbootstarterkit.dto.category.CategoryDto;
-import com.elanrif.springbootstarterkit.dto.category.CategoryProductDto;
+import com.elanrif.springbootstarterkit.dto.CategoryDto;
 import com.elanrif.springbootstarterkit.services.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,48 +17,34 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-    /**
-     * List all categories with their products (by default).
-     */
     @GetMapping
-    public List<CategoryDto> list() {
-        return categoryService.getAll();
+    public ResponseEntity<List<CategoryDto.Response>> list() {
+        return ResponseEntity.ok(categoryService.getAll());
     }
 
-    /**
-     * Get a category by id. By default, products are included (withProducts=true).
-     * Set withProducts=false to exclude products from the response.
-     *
-     * Example: /api/v1/categories/1?withProducts=false
-     */
     @GetMapping("/{id}")
-    public CategoryDto getById(
-            @PathVariable Long id
-    ) {
-        return categoryService.getById(id);
+    public ResponseEntity<CategoryDto.Response> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(categoryService.getById(id));
     }
 
     @GetMapping("/{id}/products")
-    public CategoryProductDto getByIdWithProducts(
-            @PathVariable Long id
-    ) {
-        return categoryService.getByIdWithProducts(id);
+    public ResponseEntity<CategoryDto.DetailResponse> getByIdWithProducts(@PathVariable Long id) {
+        return ResponseEntity.ok(categoryService.getByIdWithProducts(id));
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public CategoryDto create(@Valid @RequestBody CategoryCreateDto dto) {
-        return categoryService.create(dto);
+    public ResponseEntity<CategoryDto.Response> create(@Valid @RequestBody CategoryDto.CreateRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.create(request));
     }
 
     @PatchMapping("/{id}")
-    public CategoryDto update(@PathVariable Long id, @Valid @RequestBody CategoryCreateDto dto) {
-        return categoryService.update(id, dto);
+    public ResponseEntity<CategoryDto.Response> update(@PathVariable Long id, @Valid @RequestBody CategoryDto.UpdateRequest request) {
+        return ResponseEntity.ok(categoryService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         categoryService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

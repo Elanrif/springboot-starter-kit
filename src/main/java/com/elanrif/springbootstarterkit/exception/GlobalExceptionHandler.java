@@ -1,54 +1,61 @@
 package com.elanrif.springbootstarterkit.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.Instant;
-import java.util.Map;
+import java.util.List;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleNotFound(ResourceNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of(
-                        "timestamp", Instant.now(),
-                        "status", HttpStatus.NOT_FOUND.value(),
-                        "error", "Not Found",
-                        "message", ex.getMessage()
-                ));
+    public ProblemDetail handleNotFound(ResourceNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND, ex.getMessage()
+        );
+        problem.setTitle("Resource not found");
+        problem.setProperty("errorCode", ErrorCode.RESOURCE_NOT_FOUND.name());
+        return problem;
     }
 
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<Map<String, Object>> handleBadRequest(BadRequestException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of(
-                        "timestamp", Instant.now(),
-                        "status", HttpStatus.BAD_REQUEST.value(),
-                        "error", "Bad Request",
-                        "message", ex.getMessage()
-                ));
+    public ProblemDetail handleBadRequest(BadRequestException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST, ex.getMessage()
+        );
+        problem.setTitle("Bad request");
+        problem.setProperty("errorCode", ErrorCode.BAD_REQUEST.name());
+        return problem;
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of(
-                        "timestamp", Instant.now(),
-                        "status", HttpStatus.BAD_REQUEST.value(),
-                        "error", "Validation Error",
-                        "message", "Validation failed",
-                        "details", ex.getBindingResult().getFieldErrors().stream()
-                                .map(error -> Map.of(
-                                        "field", error.getField(),
-                                        "message", error.getDefaultMessage()
-                                ))
-                                .toList()
-                ));
+    public ProblemDetail handleValidation(MethodArgumentNotValidException ex) {
+        List<String> errors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(e -> e.getField() + " : " + e.getDefaultMessage())
+                .toList();
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST, "Validation failed"
+        );
+        problem.setTitle("Validation error");
+        problem.setProperty("errorCode", ErrorCode.VALIDATION_ERROR.name());
+        problem.setProperty("errors", errors);
+        return problem;
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ProblemDetail handleGenericException(Exception ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred"
+        );
+        problem.setTitle("Internal server error");
+        problem.setProperty("errorCode", ErrorCode.INTERNAL_ERROR.name());
+        return problem;
     }
 }
 
