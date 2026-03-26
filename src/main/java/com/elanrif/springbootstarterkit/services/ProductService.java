@@ -1,9 +1,6 @@
 package com.elanrif.springbootstarterkit.services;
 
-import com.elanrif.springbootstarterkit.dto.product.ProductCreateDto;
-import com.elanrif.springbootstarterkit.dto.product.ProductDto;
-import com.elanrif.springbootstarterkit.dto.product.ProductFilterDto;
-import com.elanrif.springbootstarterkit.dto.product.ProductUpdateDto;
+import com.elanrif.springbootstarterkit.dto.ProductDto;
 import com.elanrif.springbootstarterkit.entity.Category;
 import com.elanrif.springbootstarterkit.entity.Product;
 import com.elanrif.springbootstarterkit.exception.ResourceNotFoundException;
@@ -26,46 +23,46 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
 
-    public PageResponse<ProductDto> getProducts(ProductFilterDto filter, int page, int size) {
+    public PageResponse<ProductDto.Response> getProducts(ProductDto.Filter filter, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size, toSort(filter));
         Specification<Product> specification = buildSpecification(filter);
-        Page<ProductDto> result = productRepository.findAll(specification, pageRequest)
-                .map(productMapper::toDto);
+        Page<ProductDto.Response> result = productRepository.findAll(specification, pageRequest)
+                .map(productMapper::toResponse);
         return PageResponse.from(result);
     }
 
-    public ProductDto getProductById(Long id) {
+    public ProductDto.Response getProductById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + id));
-        return productMapper.toDto(product);
+        return productMapper.toResponse(product);
     }
 
-    public ProductDto getProductBySlug(String slug) {
+    public ProductDto.Response getProductBySlug(String slug) {
         Product product = productRepository.findBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + slug));
-        return productMapper.toDto(product);
+        return productMapper.toResponse(product);
     }
 
-    public ProductDto createProduct(ProductCreateDto dto) {
-        Product product = productMapper.toEntity(dto);
-        if (dto.categoryId() != null) {
-            Category category = categoryRepository.findById(dto.categoryId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + dto.categoryId()));
+    public ProductDto.Response createProduct(ProductDto.CreateRequest request) {
+        Product product = productMapper.toEntity(request);
+        if (request.categoryId() != null) {
+            Category category = categoryRepository.findById(request.categoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + request.categoryId()));
             product.setCategory(category);
         }
-        return productMapper.toDto(productRepository.save(product));
+        return productMapper.toResponse(productRepository.save(product));
     }
 
-    public ProductDto updateProduct(Long id, ProductUpdateDto dto) {
+    public ProductDto.Response updateProduct(Long id, ProductDto.UpdateRequest request) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + id));
-        productMapper.updateFromDto(dto, product);
-        if (dto.categoryId() != null) {
-            Category category = categoryRepository.findById(dto.categoryId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + dto.categoryId()));
+        productMapper.updateFromRequest(request, product);
+        if (request.categoryId() != null) {
+            Category category = categoryRepository.findById(request.categoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + request.categoryId()));
             product.setCategory(category);
         }
-        return productMapper.toDto(productRepository.save(product));
+        return productMapper.toResponse(productRepository.save(product));
     }
 
     public void deleteProduct(Long id) {
@@ -76,7 +73,7 @@ public class ProductService {
     }
 
 
-    private Sort toSort(ProductFilterDto filter) {
+    private Sort toSort(ProductDto.Filter filter) {
         if (filter == null || filter.sortBy() == null || filter.sortBy().isBlank()) {
             return Sort.by(Sort.Direction.DESC, "createdAt");
         }
@@ -86,7 +83,7 @@ public class ProductService {
         return Sort.by(direction, property);
     }
 
-    private Specification<Product> buildSpecification(ProductFilterDto filter) {
+    private Specification<Product> buildSpecification(ProductDto.Filter filter) {
         if (filter == null) {
             return Specification.where((Specification<Product>) null);
         }
@@ -118,4 +115,3 @@ public class ProductService {
         return (root, query, cb) -> active == null ? null : cb.equal(root.get("isActive"), active);
     }
 }
-

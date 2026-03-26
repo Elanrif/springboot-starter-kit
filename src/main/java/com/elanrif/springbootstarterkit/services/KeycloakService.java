@@ -1,9 +1,7 @@
 package com.elanrif.springbootstarterkit.services;
 
 import com.elanrif.springbootstarterkit.config.KeycloakProperties;
-import com.elanrif.springbootstarterkit.dto.auth.KeycloakAuthResponse;
-import com.elanrif.springbootstarterkit.dto.auth.KeycloakTokenResponse;
-import com.elanrif.springbootstarterkit.dto.auth.RegisterDto;
+import com.elanrif.springbootstarterkit.dto.AuthDto;
 import com.elanrif.springbootstarterkit.entity.User;
 import com.elanrif.springbootstarterkit.entity.UserRole;
 import com.elanrif.springbootstarterkit.exception.BadRequestException;
@@ -38,7 +36,7 @@ public class KeycloakService {
     /**
      * Login user via ROPC (Resource Owner Password Credentials) grant type
      */
-    public KeycloakAuthResponse login(String username, String password) {
+    public AuthDto.AuthResponse login(String username, String password) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
@@ -52,13 +50,13 @@ public class KeycloakService {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
         try {
-            ResponseEntity<KeycloakTokenResponse> response = restTemplate.postForEntity(
+            ResponseEntity<AuthDto.TokenResponse> response = restTemplate.postForEntity(
                     keycloakProperties.getTokenUrl(),
                     request,
-                    KeycloakTokenResponse.class
+                    AuthDto.TokenResponse.class
             );
 
-            KeycloakTokenResponse tokenResponse = response.getBody();
+            AuthDto.TokenResponse tokenResponse = response.getBody();
             if (tokenResponse == null) {
                 throw new BadRequestException("Failed to get token from Keycloak");
             }
@@ -67,7 +65,7 @@ public class KeycloakService {
             User user = userRepository.findByEmail(username)
                     .orElseGet(() -> syncUserFromKeycloak(username));
 
-            return KeycloakAuthResponse.from(tokenResponse, userMapper.toDto(user));
+            return AuthDto.AuthResponse.from(tokenResponse, userMapper.toResponse(user));
         } catch (HttpClientErrorException e) {
             log.error("Keycloak login error: {}", e.getResponseBodyAsString());
             throw new BadRequestException("Invalid email or password");
@@ -123,7 +121,7 @@ public class KeycloakService {
     /**
      * Refresh access token using refresh token
      */
-    public KeycloakTokenResponse refreshToken(String refreshToken) {
+    public AuthDto.TokenResponse refreshToken(String refreshToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
@@ -136,13 +134,13 @@ public class KeycloakService {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
         try {
-            ResponseEntity<KeycloakTokenResponse> response = restTemplate.postForEntity(
+            ResponseEntity<AuthDto.TokenResponse> response = restTemplate.postForEntity(
                     keycloakProperties.getTokenUrl(),
                     request,
-                    KeycloakTokenResponse.class
+                    AuthDto.TokenResponse.class
             );
 
-            KeycloakTokenResponse tokenResponse = response.getBody();
+            AuthDto.TokenResponse tokenResponse = response.getBody();
             if (tokenResponse == null) {
                 throw new BadRequestException("Failed to refresh token from Keycloak");
             }
@@ -169,10 +167,10 @@ public class KeycloakService {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
         try {
-            ResponseEntity<KeycloakTokenResponse> response = restTemplate.postForEntity(
+            ResponseEntity<AuthDto.TokenResponse> response = restTemplate.postForEntity(
                     keycloakProperties.getAdminTokenUrl(),
                     request,
-                    KeycloakTokenResponse.class
+                    AuthDto.TokenResponse.class
             );
             return response.getBody() != null ? response.getBody().accessToken() : null;
         } catch (HttpClientErrorException e) {
@@ -184,7 +182,7 @@ public class KeycloakService {
     /**
      * Create user in Keycloak and login
      */
-    public KeycloakAuthResponse createUser(RegisterDto dto) {
+    public AuthDto.AuthResponse createUser(AuthDto.RegisterRequest request) {
         String adminToken = getAdminAccessToken();
 
         HttpHeaders headers = new HttpHeaders();
@@ -192,26 +190,26 @@ public class KeycloakService {
         headers.setBearerAuth(adminToken);
 
         Map<String, Object> userRepresentation = new HashMap<>();
-        userRepresentation.put("username", dto.email());
-        userRepresentation.put("email", dto.email());
-        userRepresentation.put("firstName", dto.firstName());
-        userRepresentation.put("lastName", dto.lastName());
+        userRepresentation.put("username", request.email());
+        userRepresentation.put("email", request.email());
+        userRepresentation.put("firstName", request.firstName());
+        userRepresentation.put("lastName", request.lastName());
         userRepresentation.put("enabled", true);
         userRepresentation.put("emailVerified", true);
 
         // Set password credentials
         Map<String, Object> credentials = new HashMap<>();
         credentials.put("type", "password");
-        credentials.put("value", dto.password());
+        credentials.put("value", request.password());
         credentials.put("temporary", false);
         userRepresentation.put("credentials", List.of(credentials));
 
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(userRepresentation, headers);
+        HttpEntity<Map<String, Object>> httpRequest = new HttpEntity<>(userRepresentation, headers);
 
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(
                     keycloakProperties.getUsersUrl(),
-                    request,
+                    httpRequest,
                     String.class
             );
 
@@ -220,7 +218,7 @@ public class KeycloakService {
             }
 
             // Login and return tokens (user is already saved by AuthService)
-            return this.login(dto.email(), dto.password());
+            return this.login(request.email(), request.password());
 
         } catch (HttpClientErrorException e) {
             log.error("Keycloak create user error: {}", e.getResponseBodyAsString());

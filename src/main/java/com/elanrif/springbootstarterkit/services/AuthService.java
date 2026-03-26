@@ -1,7 +1,7 @@
 package com.elanrif.springbootstarterkit.services;
 
-import com.elanrif.springbootstarterkit.dto.auth.*;
-import com.elanrif.springbootstarterkit.dto.user.UserDto;
+import com.elanrif.springbootstarterkit.dto.AuthDto;
+import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.entity.User;
 import com.elanrif.springbootstarterkit.exception.BadRequestException;
 import com.elanrif.springbootstarterkit.exception.ResourceNotFoundException;
@@ -25,60 +25,60 @@ public class AuthService {
     private final ResetTokenValidator resetTokenValidator;
     private final KeycloakService keycloakService;
 
-    public UserDto update(ProfileDto dto) {
-        User user = userRepository.findByEmail(dto.email())
+    public UserDto.Response update(AuthDto.ProfileUpdateRequest request) {
+        User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found for subject"));
-        user.setFirstName(dto.firstName());
-        user.setLastName(dto.lastName());
-        user.setEmail(dto.email());
-        user.setPhoneNumber(dto.phoneNumber());
-        return userMapper.toDto(userRepository.save(user));
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
+        user.setEmail(request.email());
+        user.setPhoneNumber(request.phoneNumber());
+        return userMapper.toResponse(userRepository.save(user));
     }
 
     @Transactional
-    public UserDto resetPassword(ResetPasswordDto dto) {
-        User user = userRepository.findByEmail(dto.email())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + dto.email()));
+    public UserDto.Response resetPassword(AuthDto.ResetPasswordRequest request) {
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + request.email()));
 
-        var tokenValid = resetTokenValidator.isValidToken(dto.code(), dto.resetToken());
+        var tokenValid = resetTokenValidator.isValidToken(request.code(), request.resetToken());
         if (!tokenValid) {
             throw new IllegalArgumentException("Token invalid or expired.");
         }
 
         // Update password in local DB
-        user.setPassword(passwordEncoder.encode(dto.newPassword()));
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
         User updatedUser = userRepository.save(user);
 
         // Update password in Keycloak
         try {
-            keycloakService.updateUserPassword(dto.email(), dto.newPassword());
+            keycloakService.updateUserPassword(request.email(), request.newPassword());
         } catch (Exception e) {
             log.error("Failed to update password in Keycloak: {}", e.getMessage());
         }
 
-        return userMapper.toDto(updatedUser);
+        return userMapper.toResponse(updatedUser);
     }
 
     @Transactional
-    public UserDto changePasswordProfile(ChangePasswordProfileDto dto) {
-        User user = userRepository.findByEmail(dto.email())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + dto.email()));
+    public UserDto.Response changePasswordProfile(AuthDto.ChangePasswordRequest request) {
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + request.email()));
 
-        if (!passwordEncoder.matches(dto.oldPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
             throw new BadRequestException("Old password is incorrect");
         }
 
         // Update password in local DB
-        user.setPassword(passwordEncoder.encode(dto.newPassword()));
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
         User updatedUser = userRepository.save(user);
 
         // Update password in Keycloak
         try {
-            keycloakService.updateUserPassword(dto.email(), dto.newPassword());
+            keycloakService.updateUserPassword(request.email(), request.newPassword());
         } catch (Exception e) {
             log.error("Failed to update password in Keycloak: {}", e.getMessage());
         }
 
-        return userMapper.toDto(updatedUser);
+        return userMapper.toResponse(updatedUser);
     }
 }

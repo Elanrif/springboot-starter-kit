@@ -1,14 +1,11 @@
 package com.elanrif.springbootstarterkit.controller;
 
-import com.elanrif.springbootstarterkit.dto.auth.KeycloakAuthResponse;
-import com.elanrif.springbootstarterkit.dto.auth.KeycloakTokenResponse;
-import com.elanrif.springbootstarterkit.dto.auth.LoginDto;
-import com.elanrif.springbootstarterkit.dto.auth.RefreshTokenDto;
-import com.elanrif.springbootstarterkit.dto.auth.RegisterDto;
+import com.elanrif.springbootstarterkit.dto.AuthDto;
 import com.elanrif.springbootstarterkit.services.KeycloakService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,24 +16,23 @@ public class KeycloakController {
     private final KeycloakService keycloakService;
 
     @PostMapping("/login")
-    public KeycloakAuthResponse login(@Valid @RequestBody LoginDto dto) {
-        return keycloakService.login(dto.email(), dto.password());
+    public ResponseEntity<AuthDto.AuthResponse> login(@Valid @RequestBody AuthDto.LoginRequest request) {
+        return ResponseEntity.ok(keycloakService.login(request.email(), request.password()));
     }
 
     @PostMapping("/register")
-    @ResponseStatus(HttpStatus.CREATED)
-    public KeycloakAuthResponse register(@Valid @RequestBody RegisterDto dto) {
-        return keycloakService.createUser(dto);
+    public ResponseEntity<AuthDto.AuthResponse> register(@Valid @RequestBody AuthDto.RegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(keycloakService.createUser(request));
     }
 
     @PostMapping("/refresh-token")
-    public KeycloakTokenResponse refreshToken(@Valid @RequestBody RefreshTokenDto dto) {
-        return keycloakService.refreshToken(dto.refreshToken());
+    public ResponseEntity<AuthDto.TokenResponse> refreshToken(@Valid @RequestBody AuthDto.RefreshTokenRequest request) {
+        return ResponseEntity.ok(keycloakService.refreshToken(request.refreshToken()));
     }
 
     @PostMapping("/logout")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void logout(@Valid @RequestBody RefreshTokenDto dto) {
-        keycloakService.logout(dto.refreshToken());
+    public ResponseEntity<Void> logout(@Valid @RequestBody AuthDto.RefreshTokenRequest request) {
+        keycloakService.logout(request.refreshToken());
+        return ResponseEntity.noContent().build();
     }
 }

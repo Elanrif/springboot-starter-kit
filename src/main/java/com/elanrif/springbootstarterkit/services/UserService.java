@@ -1,11 +1,7 @@
 package com.elanrif.springbootstarterkit.services;
 
-import com.elanrif.springbootstarterkit.dto.auth.ResetPasswordDto;
-import com.elanrif.springbootstarterkit.dto.user.UserCreateDto;
-import com.elanrif.springbootstarterkit.dto.user.UserDto;
-import com.elanrif.springbootstarterkit.dto.user.UserUpdateDto;
+import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.entity.User;
-import com.elanrif.springbootstarterkit.exception.BadRequestException;
 import com.elanrif.springbootstarterkit.exception.ResourceNotFoundException;
 import com.elanrif.springbootstarterkit.mapper.UserMapper;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
@@ -23,40 +19,30 @@ public class UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
-    public UserDto createUser(UserCreateDto dto) {
-        User user = userMapper.toEntity(dto);
+    public UserDto.Response createUser(UserDto.CreateRequest request) {
+        User user = userMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        /**
-         * If the isActive field is not provided in UserCreateDto during mapping,
-         * its value will be null.
-         * Since the entity enforces the @NotNull constraint on this field, we set
-         * the default value to false.
-         * ⚠️ Or remove it to the UserCreateDto and uncomment the code below
-         */
-        /*if (user.getIsActive() == null) {
-            user.setIsActive(false);
-        }*/
         User savedUser = userRepository.save(user);
-        return userMapper.toDto(savedUser);
+        return userMapper.toResponse(savedUser);
     }
 
-    public UserDto update(Long id, UserUpdateDto dto) {
+    public UserDto.Response update(Long id, UserDto.UpdateRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found for subject"));
-        userMapper.updateFromDto(dto, user);
-        return userMapper.toDto(userRepository.save(user));
+        userMapper.updateFromRequest(request, user);
+        return userMapper.toResponse(userRepository.save(user));
     }
 
-    public List<UserDto> getAll() {
+    public List<UserDto.Response> getAll() {
         return userRepository.findAll().stream()
-                .map(userMapper::toDto)
+                .map(userMapper::toResponse)
                 .toList();
     }
 
-    public UserDto getById(Long id) {
+    public UserDto.Response getById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
-        return userMapper.toDto(user);
+        return userMapper.toResponse(user);
     }
 
     public void deleteUser(Long id) {
@@ -66,14 +52,14 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    public List<UserDto> searchUsers(String email, String firstName, String lastName, Boolean isActive) {
+    public List<UserDto.Response> searchUsers(String email, String firstName, String lastName, Boolean isActive) {
         String emailParam     = email     != null ? "%" + email.toLowerCase()     + "%" : null;
         String firstNameParam = firstName != null ? "%" + firstName.toLowerCase() + "%" : null;
         String lastNameParam  = lastName  != null ? "%" + lastName.toLowerCase()  + "%" : null;
 
         return userRepository.searchUsers(emailParam, firstNameParam, lastNameParam, isActive)
                 .stream()
-                .map(userMapper::toDto)
+                .map(userMapper::toResponse)
                 .toList();
     }
 }

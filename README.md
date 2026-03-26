@@ -33,3 +33,63 @@ The following dependencies are installed in this project:
 | ⚠️ [MapStruct](https://mapstruct.org/documentation/stable/reference/html/#introduction) | Developer Tools | Code generator that simplifies mappings between Java bean types. |
 
 ![spring_initializr.png](spring_initializr.png)
+
+## Error Handling - RFC 7807 (Problem Details)
+
+This project uses the **RFC 7807** standard for error responses, natively supported by Spring Boot 3+.
+
+### Error Response Format
+
+All API errors return a standardized JSON format:
+
+```json
+{
+  "type": "about:blank",
+  "title": "Resource not found",
+  "status": 404,
+  "detail": "User not found: 99",
+  "instance": "/api/users/99",
+  "errorCode": "RESOURCE_NOT_FOUND"
+}
+```
+
+### Error Codes
+
+| Error Code | HTTP Status | Description |
+|------------|-------------|-------------|
+| `RESOURCE_NOT_FOUND` | 404 | Resource not found |
+| `BAD_REQUEST` | 400 | Invalid request |
+| `VALIDATION_ERROR` | 400 | Validation failed |
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
+
+### Validation Error Example
+
+```json
+{
+  "type": "about:blank",
+  "title": "Validation error",
+  "status": 400,
+  "detail": "Validation failed",
+  "instance": "/api/users",
+  "errorCode": "VALIDATION_ERROR",
+  "errors": [
+    "email : Invalid email format",
+    "name : must not be blank"
+  ]
+}
+```
+
+### Usage in Services
+
+```java
+// Throw ResourceNotFoundException
+throw new ResourceNotFoundException("User not found: " + id);
+
+// Throw BadRequestException
+throw new BadRequestException("Invalid password");
+```
+
+### References
+
+- [RFC 7807 - Problem Details for HTTP APIs](https://datatracker.ietf.org/doc/html/rfc7807)
+- [Spring Boot ProblemDetail](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/http/ProblemDetail.html)
