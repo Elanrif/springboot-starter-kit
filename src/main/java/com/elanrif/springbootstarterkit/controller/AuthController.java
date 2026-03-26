@@ -1,12 +1,12 @@
 package com.elanrif.springbootstarterkit.controller;
 
-import com.elanrif.springbootstarterkit.dto.auth.*;
-import com.elanrif.springbootstarterkit.dto.user.UserDto;
-import com.elanrif.springbootstarterkit.dto.user.UserUpdateDto;
+import com.elanrif.springbootstarterkit.dto.AuthDto;
+import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.services.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,28 +17,27 @@ public class AuthController {
     private final AuthService authService;
 
     @PatchMapping("/edit-profile")
-    public UserDto updateMe(@Valid @RequestBody ProfileDto dto) {
-        return authService.update(dto);
+    public ResponseEntity<UserDto.Response> updateMe(@Valid @RequestBody AuthDto.ProfileUpdateRequest request) {
+        return ResponseEntity.ok(authService.update(request));
     }
 
     @PatchMapping("/change-password-profile")
-    public UserDto changePasswordProfile(@Valid @RequestBody ChangePasswordProfileDto dto) {
-        return authService.changePasswordProfile(dto);
+    public ResponseEntity<UserDto.Response> changePasswordProfile(@Valid @RequestBody AuthDto.ChangePasswordRequest request) {
+        return ResponseEntity.ok(authService.changePasswordProfile(request));
     }
 
     @PostMapping("/login")
-    public UserDto login(@Valid @RequestBody LoginDto dto) {
-        return authService.login(dto);
+    public ResponseEntity<AuthDto.Response> login(@Valid @RequestBody AuthDto.LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
     }
 
     @PostMapping("/register")
-    @ResponseStatus(HttpStatus.CREATED)
-    public UserDto register(@Valid @RequestBody RegisterDto dto) {
-        return authService.register(dto);
+    public ResponseEntity<AuthDto.Response> register(@Valid @RequestBody AuthDto.RegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
     }
 
     @PatchMapping("/reset-password")
-    public UserDto changePassword(@Valid @RequestBody ResetPasswordDto dto) {
-        return authService.resetPassword(dto);
+    public ResponseEntity<UserDto.Response> changePassword(@Valid @RequestBody AuthDto.ResetPasswordRequest request) {
+        return ResponseEntity.ok(authService.resetPassword(request));
     }
 }
