@@ -1,7 +1,6 @@
 package com.elanrif.springbootstarterkit.mapper;
 
-import com.elanrif.springbootstarterkit.dto.category.CategoryCreateDto;
-import com.elanrif.springbootstarterkit.dto.category.CategoryDto;
+import com.elanrif.springbootstarterkit.dto.CategoryDto;
 import com.elanrif.springbootstarterkit.entity.Category;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
@@ -11,10 +10,12 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 @Mapper(componentModel = "spring")
 public interface CategoryMapper {
 
-    CategoryDto toDto(Category category);
+    CategoryDto.Response toResponse(Category category);
 
-    Category toEntity(CategoryCreateDto dto);
+    CategoryDto.DetailResponse toDetailResponse(Category category);
+
+    Category toEntity(CategoryDto.CreateRequest request);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateFromDto(CategoryCreateDto dto, @MappingTarget Category entity);
+    void updateFromRequest(CategoryDto.UpdateRequest request, @MappingTarget Category entity);
 }
