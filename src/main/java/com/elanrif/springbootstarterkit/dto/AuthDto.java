@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.hibernate.validator.constraints.URL;
 
 import java.time.LocalDateTime;
 
@@ -24,7 +25,7 @@ public final class AuthDto {
             @NotBlank @Email @Size(max = 255) String email,
             @NotBlank @Size(min = 8, max = 255) String password,
             @Size(max = 50) String phoneNumber,
-            @Size(max = 255) String avatarUrl
+            @URL @Size(max = 255) String avatarUrl
     ) {}
 
     public record ProfileUpdateRequest(
@@ -32,7 +33,7 @@ public final class AuthDto {
             @NotBlank @Size(max = 200) String lastName,
             @NotBlank @Email @Size(max = 255) String email,
             @Size(max = 50) String phoneNumber,
-            @Size(max = 255) String avatarUrl
+            @URL @Size(max = 255) String avatarUrl
     ) {}
 
     public record ChangePasswordRequest(

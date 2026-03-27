@@ -81,6 +81,7 @@ public class AuthService {
         user.setLastName(request.lastName());
         user.setEmail(request.email());
         user.setPhoneNumber(request.phoneNumber());
+        user.setAvatarUrl(request.avatarUrl());
         UserDto.Response response = userMapper.toResponse(userRepository.save(user));
         log.info("Profile updated successfully for user: {}", request.email());
         return response;
