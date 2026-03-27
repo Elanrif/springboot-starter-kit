@@ -32,6 +32,7 @@ public class AuthService {
         user.setLastName(request.lastName());
         user.setEmail(request.email());
         user.setPhoneNumber(request.phoneNumber());
+        user.setAvatarUrl(request.avatarUrl());
         return userMapper.toResponse(userRepository.save(user));
     }
 
