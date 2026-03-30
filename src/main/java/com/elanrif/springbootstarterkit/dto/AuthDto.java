@@ -26,6 +26,7 @@ public final class AuthDto {
     ) {}
 
     public record RefreshTokenRequest(
+            @JsonProperty("refresh_token")
             @NotBlank String refreshToken
     ) {}
 

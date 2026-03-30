@@ -75,7 +75,6 @@ public class DataLoader implements ApplicationRunner {
                     .lastName("User")
                     .password(passwordEncoder.encode("admin123456"))
                     .phoneNumber("+1234567890")
-                    .avatarUrl("https://avatar.example.com/admin.jpg")
                     .role(UserRole.ADMIN)
                     .isActive(true)
                     .build(),
@@ -85,7 +84,6 @@ public class DataLoader implements ApplicationRunner {
                     .lastName("Doe")
                     .password(passwordEncoder.encode("Simple123"))
                     .phoneNumber("+0987654321")
-                    .avatarUrl("https://avatar.example.com/john.jpg")
                     .role(UserRole.USER)
                     .isActive(false)
                     .build(),
@@ -95,7 +93,6 @@ public class DataLoader implements ApplicationRunner {
                     .lastName("Smith")
                     .password(passwordEncoder.encode("Simple123"))
                     .phoneNumber("+1122334455")
-                    .avatarUrl("https://avatar.example.com/jane.jpg")
                     .role(UserRole.USER)
                     .isActive(false)
                     .build(),
