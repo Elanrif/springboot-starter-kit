@@ -1,5 +1,6 @@
 package com.elanrif.springbootstarterkit.exception;
 
+import com.elanrif.springbootstarterkit.exception.ErrorCode;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;

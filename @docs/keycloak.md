@@ -51,10 +51,13 @@ Un **Realm** est un espace isolé qui regroupe utilisateurs, clients et rôles.
 | Realm name | `kickstart-realm` |
 | Enabled    | ON                |
 
+
 4. Clique **Create**
 
 > Tu es maintenant dans le realm `kickstart-realm`. Toutes les étapes suivantes se font dans ce realm.
 
+![img.png](images/kc.create.realm.ui.png)
+![kc-create-realm.png](images/kc.create.realm.png)
 ---
 
 ## 3. Créer le Client (nextjs-app)
@@ -71,6 +74,7 @@ Sidebar → **Clients** → **Create client**
 | Client ID   | `kickstart-client` |
 | Name        | Kickstart App      |
 
+![img.png](images/kc.create.client.step-1.png)
 → **Next**
 
 ### Step 2 — Capability config
@@ -83,6 +87,8 @@ Sidebar → **Clients** → **Create client**
 | **Direct access grants** | **✓** (obligatoire pour ROPC)                   |
 | Implicit flow            | ☐                                               |
 | Service accounts roles   | ☐                                               |
+
+![kc-create-client.png](images/kc.create.client.step-2.png)
 
 → **Next**
 
@@ -98,12 +104,15 @@ Sidebar → **Clients** → **Create client**
 
 → **Save**
 
+![img.png](images/kc.create.client.step-3.png)
+
 ### Récupérer le Client Secret
 
 **Clients → kickstart-client → onglet Credentials** → copier le **Client secret**
 
 Tu en auras besoin dans les variables d'environnement (`KC_CLIENT_SECRET`).
 
+![img.png](images/kc.retrieve.credentials.png)
 ---
 
 ## 4. Créer les Realm Roles
@@ -112,11 +121,15 @@ Les rôles `USER` et `ADMIN` sont utilisés pour déterminer les droits dans l'a
 
 Sidebar → **Realm roles** → **Create role**
 
+![img.png](images/kc.create.realm.role.png)
+
 ### Créer USER
 
 | Champ     | Valeur |
 | --------- | ------ |
 | Role name | `USER` |
+
+![img.png](images/kc.create.role.user.png)
 
 → **Save**
 
@@ -126,6 +139,7 @@ Sidebar → **Realm roles** → **Create role**
 | --------- | ------- |
 | Role name | `ADMIN` |
 
+![img_1.png](images/kc.create.role.admin.png)
 → **Save**
 
 Tu dois voir dans la liste : `ADMIN`, `USER`, `default-roles-kickstart-realm`, `offline_access`, `uma_authorization`.
@@ -143,9 +157,11 @@ Chaque nouvel utilisateur créé (via sign-up) recevra automatiquement le rôle 
 5. Coche `USER`
 6. Clique **Assign**
 
+![img.png](images/kc.set.default.role.step-1.png)
+![img.png](images/kc.set.default.role.step-2.png)
 ---
 
-## 6. Ajouter des attributs custom (phoneNumber)
+# ✅ BONUS:  Ajouter des attributs custom (phoneNumber)
 
 Par défaut, Keycloak retourne dans le token : `sub`, `email`, `given_name`, `family_name`. Pour inclure des champs custom comme `phoneNumber`, il faut configurer un **Mapper**.
 

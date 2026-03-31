@@ -1,12 +1,15 @@
 package com.elanrif.springbootstarterkit.services;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
+@Slf4j
 @Component
 public class ResetTokenValidator {
 
@@ -19,6 +22,7 @@ public class ResetTokenValidator {
     private String secretKey;
 
     public boolean isValidToken(String code, String token) {
+        log.debug("Validating reset token");
         try {
             // Initiate HMAC with the secret key
             Mac hmac = Mac.getInstance(hmacAlgorithm);
