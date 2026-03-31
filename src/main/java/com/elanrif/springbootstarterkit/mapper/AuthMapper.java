@@ -2,7 +2,8 @@ package com.elanrif.springbootstarterkit.mapper;
 
 import com.elanrif.springbootstarterkit.dto.AuthDto;
 import com.elanrif.springbootstarterkit.entity.User;
-import org.mapstruct.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface AuthMapper {
