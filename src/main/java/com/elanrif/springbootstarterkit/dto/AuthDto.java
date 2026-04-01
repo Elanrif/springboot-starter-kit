@@ -1,10 +1,13 @@
 package com.elanrif.springbootstarterkit.dto;
 
+import com.elanrif.springbootstarterkit.entity.UserRole;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.hibernate.validator.constraints.URL;
+
+import java.time.LocalDateTime;
 
 public final class AuthDto {
     private AuthDto() {}
@@ -53,34 +56,16 @@ public final class AuthDto {
 
     // === RESPONSES ===
 
-    public record TokenResponse(
-            @JsonProperty("access_token") String accessToken,
-            @JsonProperty("refresh_token") String refreshToken,
-            @JsonProperty("expires_in") Long expiresIn,
-            @JsonProperty("refresh_expires_in") Long refreshExpiresIn,
-            @JsonProperty("token_type") String tokenType,
-            @JsonProperty("scope") String scope
-    ) {}
-
     public record Response(
-            @JsonProperty("access_token") String accessToken,
-            @JsonProperty("refresh_token") String refreshToken,
-            @JsonProperty("expires_in") Long expiresIn,
-            @JsonProperty("refresh_expires_in") Long refreshExpiresIn,
-            @JsonProperty("token_type") String tokenType,
-            String scope,
-            UserDto.Response user
-    ) {
-        public static Response from(TokenResponse tokenResponse, UserDto.Response user) {
-            return new Response(
-                    tokenResponse.accessToken(),
-                    tokenResponse.refreshToken(),
-                    tokenResponse.expiresIn(),
-                    tokenResponse.refreshExpiresIn(),
-                    tokenResponse.tokenType(),
-                    tokenResponse.scope(),
-                    user
-            );
-        }
-    }
+            Long id,
+            String email,
+            String firstName,
+            String lastName,
+            String phoneNumber,
+            String avatarUrl,
+            UserRole role,
+            Boolean isActive,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt
+    ) {}
 }
