@@ -13,7 +13,7 @@ public final class PostDto {
 
     public record CreateRequest(
             @NotBlank @Size(max = 200) String title,
-            @NotBlank @Size(max = 200) String imageUrl,
+            @Size(max = 200) String imageUrl,
             @Size(max = 2000) String description,
             @PositiveOrZero Long likes,
             Long authorId
