@@ -30,7 +30,6 @@ public class Post extends AuditableEntity {
     @Column(nullable = false)
     private String title;
 
-    @NotBlank
     @Size(max = 200)
     @Column(nullable = true, unique = true)
     private String imageUrl;
