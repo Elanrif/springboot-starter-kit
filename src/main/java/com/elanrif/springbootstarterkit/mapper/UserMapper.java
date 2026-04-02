@@ -7,6 +7,8 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
+    UserDto.Summary toSummary(User user);
+
     UserDto.Response toResponse(User user);
 
     @Mapping(target = "id", ignore = true)

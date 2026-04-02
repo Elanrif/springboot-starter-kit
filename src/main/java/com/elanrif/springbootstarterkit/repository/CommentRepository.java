@@ -12,10 +12,22 @@ import java.util.Optional;
 
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long>, JpaSpecificationExecutor<Comment> {
+
+    /**
+     * Pour un commentaire avec son auteur et son post
+     */
     @Query("SELECT c FROM Comment c JOIN FETCH c.author JOIN FETCH c.post WHERE c.id = :id")
     Optional<Comment> findByIdWithAuthorAndPost(@Param("id") Long id);
 
+    /**
+     * Pour les commentaires d'un post avec leurs auteurs (évite N+1)
+     */
     @Query("SELECT c FROM Comment c JOIN FETCH c.author WHERE c.post.id = :postId")
     List<Comment> findAllByPostIdWithAuthor(@Param("postId") Long postId);
 
+    /**
+     * Pour tous les commentaires avec leurs auteurs
+     */
+    @Query("SELECT c FROM Comment c JOIN FETCH c.author")
+    List<Comment> findAllWithAuthor();
 }
