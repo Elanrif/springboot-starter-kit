@@ -7,7 +7,11 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring", uses = {UserMapper.class})
 public interface CommentMapper {
 
+    @Mapping(target = "author", source = "author")
+    CommentDto.Summary toSummary(Comment comment);
+
     @Mapping(target = "postId", source = "post.id")
+    @Mapping(target = "author", source = "author")
     CommentDto.Response toResponse(Comment comment);
 
     @Mapping(target = "id", ignore = true)
@@ -20,4 +24,3 @@ public interface CommentMapper {
     @Mapping(target = "post", ignore = true)
     void updateFromRequest(CommentDto.UpdateRequest request, @MappingTarget Comment entity);
 }
-

@@ -28,7 +28,7 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PostDto.Response> getById(@PathVariable Long id) {
+    public ResponseEntity<PostDto.DetailResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(postService.getPostById(id));
     }
 
@@ -48,4 +48,3 @@ public class PostController {
         return ResponseEntity.noContent().build();
     }
 }
-
