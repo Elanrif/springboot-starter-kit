@@ -34,6 +34,20 @@ public final class UserDto {
 
     // === RESPONSES ===
 
+    /**
+     * Summary léger pour embedded dans d'autres DTOs (ex: author d'un Post/Comment)
+     */
+    public record Summary(
+            Long id,
+            String firstName,
+            String lastName,
+            String avatarUrl,
+            String email
+    ) {}
+
+    /**
+     * Response complète pour GET /users/{id}
+     */
     public record Response(
             Long id,
             String email,

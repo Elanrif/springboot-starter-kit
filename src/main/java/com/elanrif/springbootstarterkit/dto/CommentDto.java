@@ -23,11 +23,24 @@ public final class CommentDto {
 
     // === RESPONSES ===
 
+    /**
+     * Summary léger pour embedded dans PostDto.DetailResponse
+     */
+    public record Summary(
+            Long id,
+            String content,
+            UserDto.Summary author,
+            LocalDateTime createdAt
+    ) {}
+
+    /**
+     * Response standard pour GET /comments
+     */
     public record Response(
             Long id,
             String content,
             Long postId,
-            UserDto.Response author,
+            UserDto.Summary author,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {}

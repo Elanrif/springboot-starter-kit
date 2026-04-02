@@ -27,6 +27,9 @@ public class PostService {
     private final UserRepository userRepository;
     private final PostMapper postMapper;
 
+    /**
+     * Liste des posts (Response avec author Summary et commentCount)
+     */
     @Transactional(readOnly = true)
     public PageResponse<PostDto.Response> getPosts(PostDto.Filter filter, int page, int size) {
         log.debug("Fetching posts with filter - page: {}, size: {}, search: {}, authorId: {}",
@@ -39,15 +42,18 @@ public class PostService {
         return PageResponse.from(result);
     }
 
+    /**
+     * Détail d'un post avec commentaires (DetailResponse)
+     */
     @Transactional(readOnly = true)
-    public PostDto.Response getPostById(Long id) {
-        log.debug("Fetching post with id: {}", id);
-        Post post = postRepository.findByIdWithAuthor(id)
+    public PostDto.DetailResponse getPostById(Long id) {
+        log.debug("Fetching post detail with id: {}", id);
+        Post post = postRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> {
                     log.warn("Post not found with id: {}", id);
                     return new ResourceNotFoundException("Post not found: " + id);
                 });
-        return postMapper.toResponse(post);
+        return postMapper.toDetailResponse(post);
     }
 
     @Transactional
@@ -143,4 +149,3 @@ public class PostService {
                 : cb.equal(root.get("author").get("id"), authorId);
     }
 }
-
