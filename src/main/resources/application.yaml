@@ -38,8 +38,13 @@ springdoc:
 
 logging:
   level:
-    org.hibernate.SQL: debug
-    org.hibernate.orm.jdbc.bind: trace
+    # Application logs (controllers & services)
+    # Hierarchic LEVEL TRACE > DEBUG > INFO > WARN > ERROR (If you put DEBUG, you'll see : DEBUG + INFO + WARN + ERROR)
+    com.elanrif.springbootstarterkit: DEBUG
+    # Hibernate SQL logs
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    # Security logs
     org.springframework.security: DEBUG
     org.springframework.security.oauth2: DEBUG
 
