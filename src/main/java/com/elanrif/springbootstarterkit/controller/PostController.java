@@ -22,14 +22,14 @@ public class PostController {
     public ResponseEntity<PageResponse<PostDto.Response>> list(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Long authorId,
-            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sort,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "10") int size) {
         log.info("GET /api/v1/posts - Fetching posts with search: {}, authorId: {}, page: {}, size: {}",
                 search, authorId, page, size);
-        PostDto.Filter filter = new PostDto.Filter(search, authorId, sortBy);
+        PostDto.Filter filter = new PostDto.Filter(search, authorId, sort);
         PageResponse<PostDto.Response> response = postService.getPosts(filter, page, size);
-        log.info("Returned {} posts (total: {})", response.content().size(), response.totalElements());
+        log.info("Returned {} posts (total: {})", response.data().size(), response.meta().total());
         return ResponseEntity.ok(response);
     }
 

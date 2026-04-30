@@ -121,12 +121,12 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private Sort toSort(CommentDto.Filter filter) {
-        if (filter == null || filter.sortBy() == null || filter.sortBy().isBlank()) {
+        if (filter == null || filter.sort() == null || filter.sort().isBlank()) {
             return Sort.by(Sort.Direction.DESC, "createdAt");
         }
-        String sortBy = filter.sortBy();
-        Sort.Direction direction = sortBy.startsWith("-") ? Sort.Direction.DESC : Sort.Direction.ASC;
-        String property = sortBy.startsWith("-") ? sortBy.substring(1) : sortBy;
+        String sort = filter.sort();
+        Sort.Direction direction = sort.startsWith("-") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        String property = sort.startsWith("-") ? sort.substring(1) : sort;
         return Sort.by(direction, property);
     }
 
