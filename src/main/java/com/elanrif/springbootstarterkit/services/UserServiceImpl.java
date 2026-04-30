@@ -5,12 +5,14 @@ import com.elanrif.springbootstarterkit.entity.User;
 import com.elanrif.springbootstarterkit.exception.ResourceNotFoundException;
 import com.elanrif.springbootstarterkit.mapper.UserMapper;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
+import com.elanrif.springbootstarterkit.util.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Slf4j
 @Service
@@ -46,13 +48,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDto.Response> getAll() {
-        log.debug("Fetching all users");
-        List<UserDto.Response> users = userRepository.findAll().stream()
-                .map(userMapper::toResponse)
-                .toList();
-        log.debug("Found {} users", users.size());
-        return users;
+    public PageResponse<UserDto.Response> getAll(int page, int size, String sort) {
+        log.debug("Fetching all users - page: {}, size: {}", page, size);
+        PageRequest pageRequest = PageRequest.of(page, size, toSort(sort));
+        Page<UserDto.Response> result = userRepository.findAll(pageRequest)
+                .map(userMapper::toResponse);
+        log.debug("Found {} users (total: {})", result.getNumberOfElements(), result.getTotalElements());
+        return PageResponse.from(result);
     }
 
     @Override
@@ -78,18 +80,26 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDto.Response> searchUsers(String email, String firstName, String lastName, Boolean isActive) {
-        log.debug("Searching users with filters - email: {}, firstName: {}, lastName: {}, isActive: {}",
-                email, firstName, lastName, isActive);
+    public PageResponse<UserDto.Response> searchUsers(String email, String firstName, String lastName, Boolean isActive, int page, int size, String sort) {
+        log.debug("Searching users with filters - email: {}, firstName: {}, lastName: {}, isActive: {}, page: {}, size: {}",
+                email, firstName, lastName, isActive, page, size);
         String emailParam     = email     != null ? "%" + email.toLowerCase()     + "%" : null;
         String firstNameParam = firstName != null ? "%" + firstName.toLowerCase() + "%" : null;
         String lastNameParam  = lastName  != null ? "%" + lastName.toLowerCase()  + "%" : null;
 
-        List<UserDto.Response> users = userRepository.searchUsers(emailParam, firstNameParam, lastNameParam, isActive)
-                .stream()
-                .map(userMapper::toResponse)
-                .toList();
-        log.debug("Search returned {} users", users.size());
-        return users;
+        PageRequest pageRequest = PageRequest.of(page, size, toSort(sort));
+        Page<UserDto.Response> result = userRepository.searchUsers(emailParam, firstNameParam, lastNameParam, isActive, pageRequest)
+                .map(userMapper::toResponse);
+        log.debug("Search returned {} users (total: {})", result.getNumberOfElements(), result.getTotalElements());
+        return PageResponse.from(result);
+    }
+
+    private Sort toSort(String sort) {
+        if (sort == null || sort.isBlank()) {
+            return Sort.by(Sort.Direction.DESC, "createdAt");
+        }
+        Sort.Direction direction = sort.startsWith("-") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        String property = sort.startsWith("-") ? sort.substring(1) : sort;
+        return Sort.by(direction, property);
     }
 }

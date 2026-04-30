@@ -23,14 +23,14 @@ public class CommentController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Long postId,
             @RequestParam(required = false) Long authorId,
-            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sort,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "10") int size) {
         log.info("GET /api/v1/comments - Fetching comments with search: {}, postId: {}, authorId: {}, page: {}, size: {}",
                 search, postId, authorId, page, size);
-        CommentDto.Filter filter = new CommentDto.Filter(search, postId, authorId, sortBy);
+        CommentDto.Filter filter = new CommentDto.Filter(search, postId, authorId, sort);
         PageResponse<CommentDto.Response> response = commentService.getComments(filter, page, size);
-        log.info("Returned {} comments (total: {})", response.content().size(), response.totalElements());
+        log.info("Returned {} comments (total: {})", response.data().size(), response.meta().total());
         return ResponseEntity.ok(response);
     }
 

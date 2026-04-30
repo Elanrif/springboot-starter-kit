@@ -2,14 +2,13 @@ package com.elanrif.springbootstarterkit.controller;
 
 import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.services.UserService;
+import com.elanrif.springbootstarterkit.util.PageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -36,10 +35,13 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserDto.Response>> list() {
-        log.info("GET /api/v1/users - Fetching all users");
-        List<UserDto.Response> response = userService.getAll();
-        log.info("Returned {} users", response.size());
+    public ResponseEntity<PageResponse<UserDto.Response>> list(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String sort) {
+        log.info("GET /api/v1/users - Fetching users page: {}, size: {}", page, size);
+        PageResponse<UserDto.Response> response = userService.getAll(page, size, sort);
+        log.info("Returned {} users (total: {})", response.data().size(), response.meta().total());
         return ResponseEntity.ok(response);
     }
 
@@ -60,15 +62,18 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<UserDto.Response>> searchUsers(
+    public ResponseEntity<PageResponse<UserDto.Response>> searchUsers(
             @RequestParam(required = false) String email,
             @RequestParam(required = false) String firstName,
             @RequestParam(required = false) String lastName,
-            @RequestParam(required = false) Boolean isActive) {
+            @RequestParam(required = false) Boolean isActive,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String sort) {
         log.info("GET /api/v1/users/search - Searching users with email: {}, firstName: {}, lastName: {}, isActive: {}",
                 email, firstName, lastName, isActive);
-        List<UserDto.Response> response = userService.searchUsers(email, firstName, lastName, isActive);
-        log.info("Search returned {} users", response.size());
+        PageResponse<UserDto.Response> response = userService.searchUsers(email, firstName, lastName, isActive, page, size, sort);
+        log.info("Search returned {} users (total: {})", response.data().size(), response.meta().total());
         return ResponseEntity.ok(response);
     }
 }

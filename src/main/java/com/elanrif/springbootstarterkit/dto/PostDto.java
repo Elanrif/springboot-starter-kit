@@ -79,6 +79,6 @@ public final class PostDto {
     public record Filter(
             String search,
             Long authorId,
-            String sortBy
+            String sort
     ) {}
 }
