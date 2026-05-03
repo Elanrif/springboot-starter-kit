@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -50,9 +51,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public PageResponse<UserDto.Response> getAll(int page, int size, String sort) {
         log.debug("Fetching all users - page: {}, size: {}", page, size);
-        PageRequest pageRequest = PageRequest.of(page, size, toSort(sort));
-        Page<UserDto.Response> result = userRepository.findAll(pageRequest)
+
+        Pageable pageable = PageRequest.of(page, size, toSort(sort));
+
+        Page<UserDto.Response> result = userRepository.findAll(pageable)
                 .map(userMapper::toResponse);
+
         log.debug("Found {} users (total: {})", result.getNumberOfElements(), result.getTotalElements());
         return PageResponse.from(result);
     }
@@ -96,10 +100,15 @@ public class UserServiceImpl implements UserService {
 
     private Sort toSort(String sort) {
         if (sort == null || sort.isBlank()) {
-            return Sort.by(Sort.Direction.DESC, "createdAt");
+            return Sort.by("id").ascending(); // Tri par défaut
         }
-        Sort.Direction direction = sort.startsWith("-") ? Sort.Direction.DESC : Sort.Direction.ASC;
-        String property = sort.startsWith("-") ? sort.substring(1) : sort;
-        return Sort.by(direction, property);
+
+        String[] parts = sort.split(",");
+        String field = parts[0];
+        Sort.Direction direction = parts.length > 1 && parts[1].equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+
+        return Sort.by(direction, field);
     }
 }
