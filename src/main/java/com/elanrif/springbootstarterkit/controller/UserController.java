@@ -36,9 +36,10 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<PageResponse<UserDto.Response>> list(
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String sort) {
+        page = Math.max(0, page - 1);
         log.info("GET /api/v1/users - Fetching users page: {}, size: {}", page, size);
         PageResponse<UserDto.Response> response = userService.getAll(page, size, sort);
         log.info("Returned {} users (total: {})", response.data().size(), response.meta().total());

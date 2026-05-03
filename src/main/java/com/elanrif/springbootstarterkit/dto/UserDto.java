@@ -19,6 +19,7 @@ public final class UserDto {
             @NotBlank @Email @Size(max = 255) String email,
             @NotBlank @Size(min = 8, max = 255) String password,
             @Size(max = 50) String phoneNumber,
+            UserRole role,
             @URL @Size(max = 255) String avatarUrl,
             Boolean isActive
     ) {}
@@ -27,8 +28,9 @@ public final class UserDto {
             @Size(max = 100) String firstName,
             @Size(max = 100) String lastName,
             @NotBlank @Email @Size(max = 255) String email,
-            @NotBlank @Size(min = 8, max = 255) String password,
+            @Size(min = 8, max = 255) String password,
             @Size(max = 50) String phoneNumber,
+            UserRole role,
             @URL @Size(max = 255) String avatarUrl
     ) {}
 
