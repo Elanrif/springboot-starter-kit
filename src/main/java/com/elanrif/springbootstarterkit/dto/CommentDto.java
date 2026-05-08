@@ -51,6 +51,6 @@ public final class CommentDto {
             String search,
             Long postId,
             Long authorId,
-            String sortBy
+            String sort
     ) {}
 }
