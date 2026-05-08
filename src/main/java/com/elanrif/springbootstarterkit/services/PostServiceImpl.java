@@ -115,10 +115,15 @@ public class PostServiceImpl implements PostService {
         if (filter == null || filter.sort() == null || filter.sort().isBlank()) {
             return Sort.by(Sort.Direction.DESC, "createdAt");
         }
+
         String sort = filter.sort();
-        Sort.Direction direction = sort.startsWith("-") ? Sort.Direction.DESC : Sort.Direction.ASC;
-        String property = sort.startsWith("-") ? sort.substring(1) : sort;
-        return Sort.by(direction, property);
+        String[] parts = sort.split(",");
+        String field = parts[0];
+        Sort.Direction direction = parts.length > 1 && parts[1].equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+
+        return Sort.by(direction, field);
     }
 
     private Specification<Post> buildSpecification(PostDto.Filter filter) {
