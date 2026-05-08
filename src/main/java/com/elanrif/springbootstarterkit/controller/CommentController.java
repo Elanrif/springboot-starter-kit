@@ -24,8 +24,9 @@ public class CommentController {
             @RequestParam(required = false) Long postId,
             @RequestParam(required = false) Long authorId,
             @RequestParam(required = false) String sort,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
+        page = Math.max(0, page - 1);
         log.info("GET /api/v1/comments - Fetching comments with search: {}, postId: {}, authorId: {}, page: {}, size: {}",
                 search, postId, authorId, page, size);
         CommentDto.Filter filter = new CommentDto.Filter(search, postId, authorId, sort);
