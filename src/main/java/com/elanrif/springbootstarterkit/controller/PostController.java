@@ -23,8 +23,9 @@ public class PostController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Long authorId,
             @RequestParam(required = false) String sort,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
+        page = Math.max(0, page - 1);
         log.info("GET /api/v1/posts - Fetching posts with search: {}, authorId: {}, page: {}, size: {}",
                 search, authorId, page, size);
         PostDto.Filter filter = new PostDto.Filter(search, authorId, sort);
