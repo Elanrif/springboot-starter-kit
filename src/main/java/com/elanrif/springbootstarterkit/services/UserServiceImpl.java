@@ -2,9 +2,12 @@ package com.elanrif.springbootstarterkit.services;
 
 import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.entity.User;
+import com.elanrif.springbootstarterkit.entity.UserRole;
+import com.elanrif.springbootstarterkit.entity.UserStatus;
 import com.elanrif.springbootstarterkit.exception.ResourceNotFoundException;
 import com.elanrif.springbootstarterkit.mapper.UserMapper;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
+import com.elanrif.springbootstarterkit.specification.UserSpecification;
 import com.elanrif.springbootstarterkit.util.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -49,12 +53,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public PageResponse<UserDto.Response> getAll(int page, int size, String sort) {
-        log.debug("Fetching all users - page: {}, size: {}", page, size);
+    public PageResponse<UserDto.Response> getAll(int page,
+                                                 int limit,
+                                                 UserRole role,
+                                                 UserStatus status,
+                                                 String sort) {
+        log.debug("Fetching all users - page: {}, limit: {}, role: {}, status: {}", page, limit, role, status);
 
-        Pageable pageable = PageRequest.of(page, size, toSort(sort));
-
-        Page<UserDto.Response> result = userRepository.findAll(pageable)
+        Pageable pageable = PageRequest.of(page, limit, toSort(sort));
+        Specification<User> spec = UserSpecification.hasRoleStatus(role, status);
+        Page<UserDto.Response> result = userRepository.findAll(spec,pageable)
                 .map(userMapper::toResponse);
 
         log.debug("Found {} users (total: {})", result.getNumberOfElements(), result.getTotalElements());
@@ -84,15 +92,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public PageResponse<UserDto.Response> searchUsers(String email, String firstName, String lastName, Boolean isActive, int page, int size, String sort) {
-        log.debug("Searching users with filters - email: {}, firstName: {}, lastName: {}, isActive: {}, page: {}, size: {}",
-                email, firstName, lastName, isActive, page, size);
+    public PageResponse<UserDto.Response> searchUsers(String email, String firstName, String lastName, UserStatus status, int page, int size, String sort) {
+        log.debug("Searching users with filters - email: {}, firstName: {}, lastName: {}, status: {}, page: {}, size: {}",
+                email, firstName, lastName, status, page, size);
         String emailParam     = email     != null ? "%" + email.toLowerCase()     + "%" : null;
         String firstNameParam = firstName != null ? "%" + firstName.toLowerCase() + "%" : null;
         String lastNameParam  = lastName  != null ? "%" + lastName.toLowerCase()  + "%" : null;
 
         PageRequest pageRequest = PageRequest.of(page, size, toSort(sort));
-        Page<UserDto.Response> result = userRepository.searchUsers(emailParam, firstNameParam, lastNameParam, isActive, pageRequest)
+        Page<UserDto.Response> result = userRepository.searchUsers(emailParam, firstNameParam, lastNameParam, status, pageRequest)
                 .map(userMapper::toResponse);
         log.debug("Search returned {} users (total: {})", result.getNumberOfElements(), result.getTotalElements());
         return PageResponse.from(result);

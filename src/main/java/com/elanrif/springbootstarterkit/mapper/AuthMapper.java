@@ -11,7 +11,7 @@ public interface AuthMapper {
     AuthDto.Response toResponse(User user);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "isActive", constant = "true")
+    @Mapping(target = "status", ignore = true)
     @Mapping(target = "role", ignore = true)
     @Mapping(target = "password", ignore = true)
     User toEntity(AuthDto.RegisterRequest request);

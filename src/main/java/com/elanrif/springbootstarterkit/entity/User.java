@@ -50,8 +50,9 @@ public class User extends AuditableEntity {
     private UserRole role = UserRole.USER;
 
     @NotNull
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Boolean isActive = false;
+    private UserStatus status = UserStatus.ACTIVE;
 
     /*
      * `mappedBy` marks this side as the inverse side of the relationship.

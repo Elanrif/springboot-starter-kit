@@ -1,6 +1,7 @@
 package com.elanrif.springbootstarterkit.dto;
 
 import com.elanrif.springbootstarterkit.entity.UserRole;
+import com.elanrif.springbootstarterkit.entity.UserStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -64,7 +65,7 @@ public final class AuthDto {
             String phoneNumber,
             String avatarUrl,
             UserRole role,
-            Boolean isActive,
+            UserStatus status,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {}

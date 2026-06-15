@@ -21,7 +21,7 @@ public record PageResponse<T>(
                 page.getContent(),
                 new Meta(
                         page.getTotalElements(),
-                        page.getNumber(),
+                        page.getNumber() + 1, // 👈 ICI : On ajoute 1 pour commencer à 1 au lieu de 0
                         page.getSize(),
                         page.getTotalPages()
                 )

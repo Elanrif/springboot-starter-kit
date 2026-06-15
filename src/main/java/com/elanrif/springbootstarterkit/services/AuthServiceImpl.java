@@ -4,6 +4,7 @@ import com.elanrif.springbootstarterkit.dto.AuthDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.entity.User;
 import com.elanrif.springbootstarterkit.entity.UserRole;
+import com.elanrif.springbootstarterkit.entity.UserStatus;
 import com.elanrif.springbootstarterkit.exception.BadRequestException;
 import com.elanrif.springbootstarterkit.exception.ResourceNotFoundException;
 import com.elanrif.springbootstarterkit.mapper.AuthMapper;
@@ -37,7 +38,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BadRequestException("Invalid email or password");
         }
 
-        if (!user.getIsActive()) {
+        if (user.getStatus() != UserStatus.ACTIVE) {
             throw new BadRequestException("User account is inactive");
         }
 
@@ -63,7 +64,7 @@ public class AuthServiceImpl implements AuthService {
                 .phoneNumber(request.phoneNumber())
                 .avatarUrl(request.avatarUrl())
                 .role(UserRole.USER)
-                .isActive(true)
+                .status(UserStatus.INACTIVE)
                 .build();
         userRepository.save(user);
 

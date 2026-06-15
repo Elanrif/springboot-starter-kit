@@ -24,12 +24,12 @@ public class PostController {
             @RequestParam(required = false) Long authorId,
             @RequestParam(required = false) String sort,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int limit) {
         page = Math.max(0, page - 1);
-        log.info("GET /api/v1/posts - Fetching posts with search: {}, authorId: {}, page: {}, size: {}",
-                search, authorId, page, size);
+        log.info("GET /api/v1/posts - Fetching posts with search: {}, authorId: {}, page: {}, limit: {}",
+                search, authorId, page, limit);
         PostDto.Filter filter = new PostDto.Filter(search, authorId, sort);
-        PageResponse<PostDto.Response> response = postService.getPosts(filter, page, size);
+        PageResponse<PostDto.Response> response = postService.getPosts(filter, page, limit);
         log.info("Returned {} posts (total: {})", response.data().size(), response.meta().total());
         return ResponseEntity.ok(response);
     }

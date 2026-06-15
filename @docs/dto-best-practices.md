@@ -116,7 +116,7 @@ public final class UserDto {
         String phoneNumber,
         String avatarUrl,
         UserRole role,
-        Boolean isActive,
+        UserStatus status,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
     ) {}
@@ -146,7 +146,7 @@ public final class UserDto {
   "phoneNumber": "+33612345678",
   "avatarUrl": "https://...",
   "role": "USER",
-  "isActive": true,
+  "status": "INACTIVE",
   "createdAt": "2024-01-15T10:30:00",
   "updatedAt": "2024-01-15T10:30:00"
 }

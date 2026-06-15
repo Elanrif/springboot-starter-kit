@@ -12,7 +12,6 @@ public interface UserMapper {
     UserDto.Response toResponse(User user);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "isActive", expression = "java(request.isActive() != null ? request.isActive() : false)")
     User toEntity(UserDto.CreateRequest request);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

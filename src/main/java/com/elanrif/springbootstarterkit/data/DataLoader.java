@@ -1,9 +1,6 @@
 package com.elanrif.springbootstarterkit.data;
 
-import com.elanrif.springbootstarterkit.entity.Comment;
-import com.elanrif.springbootstarterkit.entity.Post;
-import com.elanrif.springbootstarterkit.entity.User;
-import com.elanrif.springbootstarterkit.entity.UserRole;
+import com.elanrif.springbootstarterkit.entity.*;
 import com.elanrif.springbootstarterkit.repository.CommentRepository;
 import com.elanrif.springbootstarterkit.repository.PostRepository;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
@@ -44,36 +41,158 @@ public class DataLoader implements ApplicationRunner {
                             .firstName("Admin")
                             .lastName("User")
                             .password(passwordEncoder.encode("admin123456"))
-                            .phoneNumber("+1234567890")
+                            .phoneNumber("+212600000001")
                             .role(UserRole.ADMIN)
-                            .isActive(true)
+                            .status(UserStatus.ACTIVE)
                             .build(),
                     User.builder()
-                            .email("jhon.doe@gmail.com")
+                            .email("visitor@gmail.com")
+                            .firstName("Visitor")
+                            .lastName("visit")
+                            .password(passwordEncoder.encode("Simple123"))
+                            .phoneNumber("+212600000002")
+                            .role(UserRole.ADMIN)
+                            .status(UserStatus.ACTIVE)
+                            .build(),
+
+                    User.builder()
+                            .email("john.doe@gmail.com")
                             .firstName("John")
                             .lastName("Doe")
                             .password(passwordEncoder.encode("Simple123"))
-                            .phoneNumber("+0987654321")
+                            .phoneNumber("+212600000002")
                             .role(UserRole.USER)
-                            .isActive(true)
+                            .status(UserStatus.INACTIVE)
                             .build(),
+
                     User.builder()
-                            .email("jane@google.com")
+                            .email("jane.smith@gmail.com")
                             .firstName("Jane")
                             .lastName("Smith")
                             .password(passwordEncoder.encode("Simple123"))
-                            .phoneNumber("+1122334455")
+                            .phoneNumber("+212600000003")
                             .role(UserRole.USER)
-                            .isActive(true)
+                            .status(UserStatus.INACTIVE)
                             .build(),
+
                     User.builder()
-                            .email("eric@gmail.com")
+                            .email("eric.dupont@gmail.com")
                             .firstName("Eric")
                             .lastName("Dupont")
                             .password(passwordEncoder.encode("Simple123"))
-                            .phoneNumber("+5566778899")
+                            .phoneNumber("+212600000004")
                             .role(UserRole.USER)
-                            .isActive(true)
+                            .status(UserStatus.ACTIVE)
+                            .build(),
+
+                    User.builder()
+                            .email("alice.johnson@gmail.com")
+                            .firstName("Alice")
+                            .lastName("Johnson")
+                            .password(passwordEncoder.encode("Simple123"))
+                            .phoneNumber("+212600000005")
+                            .role(UserRole.USER)
+                            .status(UserStatus.INACTIVE)
+                            .build(),
+
+                    User.builder()
+                            .email("michael.brown@gmail.com")
+                            .firstName("Michael")
+                            .lastName("Brown")
+                            .password(passwordEncoder.encode("Simple123"))
+                            .phoneNumber("+212600000006")
+                            .role(UserRole.USER)
+                            .status(UserStatus.INACTIVE)
+                            .build(),
+
+                    User.builder()
+                            .email("emma.wilson@gmail.com")
+                            .firstName("Emma")
+                            .lastName("Wilson")
+                            .password(passwordEncoder.encode("Simple123"))
+                            .phoneNumber("+212600000007")
+                            .role(UserRole.USER)
+                            .status(UserStatus.ACTIVE)
+                            .build(),
+
+                    User.builder()
+                            .email("david.miller@gmail.com")
+                            .firstName("David")
+                            .lastName("Miller")
+                            .password(passwordEncoder.encode("Simple123"))
+                            .phoneNumber("+212600000008")
+                            .role(UserRole.USER)
+                            .status(UserStatus.ACTIVE)
+                            .build(),
+
+                    User.builder()
+                            .email("olivia.moore@gmail.com")
+                            .firstName("Olivia")
+                            .lastName("Moore")
+                            .password(passwordEncoder.encode("Simple123"))
+                            .phoneNumber("+212600000009")
+                            .role(UserRole.USER)
+                            .status(UserStatus.INACTIVE)
+                            .build(),
+
+                    User.builder()
+                            .email("daniel.taylor@gmail.com")
+                            .firstName("Daniel")
+                            .lastName("Taylor")
+                            .password(passwordEncoder.encode("Simple123"))
+                            .phoneNumber("+212600000010")
+                            .role(UserRole.USER)
+                            .status(UserStatus.ACTIVE)
+                            .build(),
+
+                    User.builder()
+                            .email("sophia.anderson@gmail.com")
+                            .firstName("Sophia")
+                            .lastName("Anderson")
+                            .password(passwordEncoder.encode("Simple123"))
+                            .phoneNumber("+212600000011")
+                            .role(UserRole.USER)
+                            .status(UserStatus.INACTIVE)
+                            .build(),
+
+                    User.builder()
+                            .email("james.thomas@gmail.com")
+                            .firstName("James")
+                            .lastName("Thomas")
+                            .password(passwordEncoder.encode("Simple123"))
+                            .phoneNumber("+212600000012")
+                            .role(UserRole.USER)
+                            .status(UserStatus.ACTIVE)
+                            .build(),
+
+                    User.builder()
+                            .email("charlotte.jackson@gmail.com")
+                            .firstName("Charlotte")
+                            .lastName("Jackson")
+                            .password(passwordEncoder.encode("Simple123"))
+                            .phoneNumber("+212600000013")
+                            .role(UserRole.USER)
+                            .status(UserStatus.INACTIVE)
+                            .build(),
+
+                    User.builder()
+                            .email("lucas.white@gmail.com")
+                            .firstName("Lucas")
+                            .lastName("White")
+                            .password(passwordEncoder.encode("Simple123"))
+                            .phoneNumber("+212600000014")
+                            .role(UserRole.USER)
+                            .status(UserStatus.INACTIVE)
+                            .build(),
+
+                    User.builder()
+                            .email("amelia.harris@gmail.com")
+                            .firstName("Amelia")
+                            .lastName("Harris")
+                            .password(passwordEncoder.encode("Simple123"))
+                            .phoneNumber("+212600000015")
+                            .role(UserRole.USER)
+                            .status(UserStatus.INACTIVE)
                             .build()
             );
             userRepository.saveAll(usersToSave);
@@ -98,24 +217,122 @@ public class DataLoader implements ApplicationRunner {
 
         var postsToSave = List.of(
                 Post.builder()
-                        .title("Welcome to Spring Social Feedback")
-                        .imageUrl("welcome-post")
-                        .description("A first post to bootstrap the social feedback flow.")
+                        .title("Welcome to Spring Boot Starter Kit")
+                        .imageUrl("spring-boot-starter")
+                        .description("Discover the features included in this Spring Boot starter project.")
+                        .likes(15L)
+                        .author(author1)
+                        .build(),
+
+                Post.builder()
+                        .title("Building Secure REST APIs")
+                        .imageUrl("secure-rest-api")
+                        .description("Learn how to secure your REST APIs using Spring Security and JWT.")
+                        .likes(28L)
+                        .author(author2)
+                        .build(),
+
+                Post.builder()
+                        .title("Introduction to Docker")
+                        .imageUrl("docker-introduction")
+                        .description("Containerize your applications for easier deployment.")
+                        .likes(21L)
+                        .author(author1)
+                        .build(),
+
+                Post.builder()
+                        .title("Getting Started with React")
+                        .imageUrl("react-guide")
+                        .description("A beginner's guide to building modern user interfaces with React.")
+                        .likes(42L)
+                        .author(author2)
+                        .build(),
+
+                Post.builder()
+                        .title("Why Use TypeScript?")
+                        .imageUrl("typescript-benefits")
+                        .description("Understand the advantages of adding static typing to JavaScript.")
+                        .likes(19L)
+                        .author(author1)
+                        .build(),
+
+                Post.builder()
+                        .title("Deploying with Docker Compose")
+                        .imageUrl("docker-compose")
+                        .description("Run multiple services together using Docker Compose.")
+                        .likes(35L)
+                        .author(author2)
+                        .build(),
+
+                Post.builder()
+                        .title("Mastering Spring Data JPA")
+                        .imageUrl("spring-data-jpa")
+                        .description("Simplify database access with Spring Data repositories.")
+                        .likes(17L)
+                        .author(author1)
+                        .build(),
+
+                Post.builder()
+                        .title("Clean Code Principles")
+                        .imageUrl("clean-code")
+                        .description("Write maintainable and readable code by following clean code practices.")
+                        .likes(50L)
+                        .author(author2)
+                        .build(),
+
+                Post.builder()
+                        .title("Pagination Best Practices")
+                        .imageUrl("pagination")
+                        .description("Improve application performance using efficient pagination.")
+                        .likes(23L)
+                        .author(author1)
+                        .build(),
+
+                Post.builder()
+                        .title("Understanding Microservices")
+                        .imageUrl("microservices")
+                        .description("Explore the benefits and challenges of microservice architecture.")
+                        .likes(31L)
+                        .author(author2)
+                        .build(),
+
+                Post.builder()
+                        .title("Introduction to Redis")
+                        .imageUrl("redis-cache")
+                        .description("Speed up your application with Redis caching.")
                         .likes(12L)
                         .author(author1)
                         .build(),
+
                 Post.builder()
-                        .title("Roadmap and Next Features")
-                        .imageUrl("roadmap-post")
-                        .description("Share ideas and vote on what should be built next.")
-                        .likes(5L)
+                        .title("Authentication vs Authorization")
+                        .imageUrl("auth-security")
+                        .description("Learn the difference between authentication and authorization.")
+                        .likes(44L)
                         .author(author2)
                         .build(),
+
                 Post.builder()
-                        .title("Community Guidelines")
-                        .imageUrl("guidelines-post")
-                        .description("Please keep feedback constructive and respectful.")
-                        .likes(3L)
+                        .title("Writing Better SQL Queries")
+                        .imageUrl("sql-tips")
+                        .description("Optimize your SQL queries for better performance.")
+                        .likes(18L)
+                        .author(author1)
+                        .build(),
+
+                Post.builder()
+                        .title("Unit Testing with JUnit")
+                        .imageUrl("junit-testing")
+                        .description("Create reliable applications by writing unit tests.")
+                        .likes(27L)
+                        .author(author2)
+                        .build(),
+
+                Post.builder()
+                        .title("Continuous Integration Explained")
+                        .imageUrl("ci-cd")
+                        .description("Automate testing and deployment with CI/CD pipelines.")
+                        .likes(39L)
                         .author(author1)
                         .build()
         );
@@ -137,26 +354,96 @@ public class DataLoader implements ApplicationRunner {
         }
 
         log.info("Populating comments...");
-        var post1 = posts.getFirst();
-        var post2 = posts.size() > 1 ? posts.get(1) : post1;
-        var author1 = users.getFirst();
-        var author2 = users.size() > 1 ? users.get(1) : author1;
 
         var commentsToSave = List.of(
                 Comment.builder()
-                        .content("Great start, I like this direction!")
-                        .post(post1)
-                        .author(author2)
+                        .content("Excellent article, very informative!")
+                        .post(posts.get(0))
+                        .author(users.get(1))
                         .build(),
+
                 Comment.builder()
-                        .content("Could we add tags and search by topic?")
-                        .post(post1)
-                        .author(author1)
+                        .content("This tutorial helped me solve my issue.")
+                        .post(posts.get(1))
+                        .author(users.get(2))
                         .build(),
+
                 Comment.builder()
-                        .content("A voting system would help prioritize features.")
-                        .post(post2)
-                        .author(author2)
+                        .content("I would love to see a follow-up on this topic.")
+                        .post(posts.get(2))
+                        .author(users.get(1))
+                        .build(),
+
+                Comment.builder()
+                        .content("Great explanation, thanks for sharing!")
+                        .post(posts.get(3))
+                        .author(users.get(2))
+                        .build(),
+
+                Comment.builder()
+                        .content("Very useful for beginners.")
+                        .post(posts.get(4))
+                        .author(users.get(3))
+                        .build(),
+
+                Comment.builder()
+                        .content("I learned something new today.")
+                        .post(posts.get(5))
+                        .author(users.get(1))
+                        .build(),
+
+                Comment.builder()
+                        .content("Could you provide more code examples?")
+                        .post(posts.get(6))
+                        .author(users.get(2))
+                        .build(),
+
+                Comment.builder()
+                        .content("This is exactly what I was looking for.")
+                        .post(posts.get(7))
+                        .author(users.get(3))
+                        .build(),
+
+                Comment.builder()
+                        .content("Very clear and well written.")
+                        .post(posts.get(8))
+                        .author(users.get(3))
+                        .build(),
+
+                Comment.builder()
+                        .content("I successfully implemented this in my project.")
+                        .post(posts.get(9))
+                        .author(users.get(1))
+                        .build(),
+
+                Comment.builder()
+                        .content("Thanks for the detailed explanation.")
+                        .post(posts.get(10))
+                        .author(users.get(1))
+                        .build(),
+
+                Comment.builder()
+                        .content("Looking forward to more content like this.")
+                        .post(posts.get(11))
+                        .author(users.get(2))
+                        .build(),
+
+                Comment.builder()
+                        .content("Very practical advice.")
+                        .post(posts.get(12))
+                        .author(users.get(3))
+                        .build(),
+
+                Comment.builder()
+                        .content("This made a complex topic much easier to understand.")
+                        .post(posts.get(13))
+                        .author(users.get(1))
+                        .build(),
+
+                Comment.builder()
+                        .content("Amazing work, keep it up!")
+                        .post(posts.get(14))
+                        .author(users.get(2))
                         .build()
         );
 
