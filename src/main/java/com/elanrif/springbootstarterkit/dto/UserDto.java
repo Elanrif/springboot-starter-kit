@@ -1,6 +1,7 @@
 package com.elanrif.springbootstarterkit.dto;
 
 import com.elanrif.springbootstarterkit.entity.UserRole;
+import com.elanrif.springbootstarterkit.entity.UserStatus;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -21,7 +22,7 @@ public final class UserDto {
             @Size(max = 50) String phoneNumber,
             UserRole role,
             @URL @Size(max = 255) String avatarUrl,
-            Boolean isActive
+            UserStatus status
     ) {}
 
     public record UpdateRequest(
@@ -31,6 +32,7 @@ public final class UserDto {
             @Size(min = 8, max = 255) String password,
             @Size(max = 50) String phoneNumber,
             UserRole role,
+            UserStatus status,
             @URL @Size(max = 255) String avatarUrl
     ) {}
 
@@ -58,7 +60,7 @@ public final class UserDto {
             String phoneNumber,
             String avatarUrl,
             UserRole role,
-            Boolean isActive,
+            UserStatus status,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {}
