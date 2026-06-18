@@ -64,13 +64,11 @@ public class User extends AuditableEntity {
       @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
 
-    /*
-     * `mappedBy` marks this side as the inverse side of the relationship.
-     * The owning side (the one with the foreign key) is defined in the other entity.
-     * We keep this association LAZY and expose DTOs from the service layer
-     * to avoid LazyInitializationException and recursive JSON issues.
-     */
     @JsonIgnore
       @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     private List<Post> posts = new ArrayList<>();
+
+    @JsonIgnore
+      @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Address> addresses = new ArrayList<>();
 }

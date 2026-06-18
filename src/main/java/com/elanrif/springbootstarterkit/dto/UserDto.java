@@ -28,7 +28,7 @@ public final class UserDto {
     public record UpdateRequest(
             @Size(max = 100) String firstName,
             @Size(max = 100) String lastName,
-            @NotBlank @Email @Size(max = 255) String email,
+            @Email @Size(max = 255) String email,
             @Size(min = 8, max = 255) String password,
             @Size(max = 50) String phoneNumber,
             UserRole role,
