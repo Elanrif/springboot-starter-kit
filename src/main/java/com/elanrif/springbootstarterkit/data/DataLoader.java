@@ -1,6 +1,7 @@
 package com.elanrif.springbootstarterkit.data;
 
 import com.elanrif.springbootstarterkit.entity.*;
+import com.elanrif.springbootstarterkit.repository.AddressRepository;
 import com.elanrif.springbootstarterkit.repository.CommentRepository;
 import com.elanrif.springbootstarterkit.repository.PostRepository;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
@@ -19,6 +20,7 @@ import java.util.List;
 public class DataLoader implements ApplicationRunner {
     private static final Logger log = LoggerFactory.getLogger(DataLoader.class);
 
+    public final AddressRepository addressRepository;
     public final UserRepository userRepository;
     public final PostRepository postRepository;
     public final CommentRepository commentRepository;
@@ -28,34 +30,39 @@ public class DataLoader implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         log.info("Checking database for initial data...");
         populateUsers();
+        populateAddresses();
         populatePosts();
         populateComments();
     }
 
     public void populateUsers() {
         if (userRepository.count() == 0) {
+            var avatar = "https://res.cloudinary.com/dvjg8gm48/image/upload/v1777478590/nextjs-starter/f5476capb63o0jzeqshf.png";
             log.info("Populating users...");
             var usersToSave = List.of(
                     User.builder()
+                            .avatarUrl(avatar)
                             .email("admin@gmail.com")
                             .firstName("Admin")
-                            .lastName("User")
-                            .password(passwordEncoder.encode("admin123456"))
+                            .lastName("admin")
+                            .password(passwordEncoder.encode("admin123"))
                             .phoneNumber("+212600000001")
                             .role(UserRole.ADMIN)
                             .status(UserStatus.ACTIVE)
                             .build(),
                     User.builder()
+                            .avatarUrl(avatar)
                             .email("visitor@gmail.com")
                             .firstName("Visitor")
                             .lastName("visit")
-                            .password(passwordEncoder.encode("Simple123"))
+                            .password(passwordEncoder.encode("visitor123"))
                             .phoneNumber("+212600000002")
                             .role(UserRole.ADMIN)
                             .status(UserStatus.ACTIVE)
                             .build(),
 
                     User.builder()
+                            .avatarUrl(avatar)
                             .email("john.doe@gmail.com")
                             .firstName("John")
                             .lastName("Doe")
@@ -199,6 +206,66 @@ public class DataLoader implements ApplicationRunner {
             log.info("Users created successfully");
         }
     }
+    public void populateAddresses() {
+        if (addressRepository.count() > 0) {
+            return;
+        }
+
+        var users = userRepository.findAll();
+        if (users.isEmpty()) {
+            log.warn("Skipping addresses population: no users found");
+            return;
+        }
+
+        log.info("Populating realistic and unique addresses for all users...");
+
+        // Liste d'adresses réelles et variées à distribuer
+        var mockLocations = List.of(
+                new MockLocation("12 Avenue Mohammed V", "93000", "Tétouan", "Morocco"),
+                new MockLocation("45 Boulevard d'Anfa", "20250", "Casablanca", "Morocco"),
+                new MockLocation("8 Rue de la Paix", "75002", "Paris", "France"),
+                new MockLocation("10 Main Street", "10001", "New York", "USA"),
+                new MockLocation("24 Piccadilly Circus", "W1J 9HP", "London", "United Kingdom"),
+                new MockLocation("55 Corso Vittorio Emanuele", "00186", "Rome", "Italy"),
+                new MockLocation("102 Avenida de la Constitución", "41004", "Seville", "Spain"),
+                new MockLocation("33 Friedrichstraße", "10117", "Berlin", "Germany"),
+                new MockLocation("18 Rue du Marché", "1204", "Geneva", "Switzerland"),
+                new MockLocation("77 Rue de la Loi", "1040", "Brussels", "Belgium"),
+                new MockLocation("99 Orchard Road", "238839", "Singapore", "Singapore"),
+                new MockLocation("14 George Street", "NSW 2000", "Sydney", "Australia"),
+                new MockLocation("5-1 Chome Marunouchi", "100-0005", "Tokyo", "Japan"),
+                new MockLocation("220 Bay Street", "ON M5J 2W4", "Toronto", "Canada"),
+                new MockLocation("88 Av. del Libertador", "C1425", "Buenos Aires", "Argentina"),
+                new MockLocation("11 Sheikh Zayed Road", "00000", "Dubai", "UAE")
+        );
+
+        var addressesToSave = new java.util.ArrayList<Address>();
+
+        for (int i = 0; i < users.size(); i++) {
+            var currentUser = users.get(i);
+
+            // On utilise le modulo (%) pour boucler sur notre liste de villes
+            // si jamais il y a plus d'utilisateurs que de villes disponibles
+            var loc = mockLocations.get(i % mockLocations.size());
+
+            var address = Address.builder()
+                    .street(loc.street)
+                    .postalCode(loc.postalCode)
+                    .city(loc.city)
+                    .country(loc.country)
+                    .isDefault(true)
+                    .user(currentUser)
+                    .build();
+
+            addressesToSave.add(address);
+        }
+
+        addressRepository.saveAll(addressesToSave);
+        log.info("Successfully created " + addressesToSave.size() + " realistic addresses.");
+    }
+
+    // Petite classe interne utilitaire (Record) pour structurer nos fausses adresses
+    private record MockLocation(String street, String postalCode, String city, String country) {}
 
     public void populatePosts() {
         if (postRepository.count() > 0) {

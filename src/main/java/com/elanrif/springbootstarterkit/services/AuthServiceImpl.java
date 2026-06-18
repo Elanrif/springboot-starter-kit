@@ -38,9 +38,9 @@ public class AuthServiceImpl implements AuthService {
             throw new BadRequestException("Invalid email or password");
         }
 
-        if (user.getStatus() != UserStatus.ACTIVE) {
+        /*if (user.getStatus() != UserStatus.ACTIVE) {
             throw new BadRequestException("User account is inactive");
-        }
+        }*/
 
         log.info("User logged in successfully: {}", request.email());
         return authMapper.toResponse(user);

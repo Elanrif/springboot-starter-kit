@@ -14,7 +14,6 @@ import lombok.*;
 @Builder
 @Table(name = "comments")
 public class Comment extends AuditableEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

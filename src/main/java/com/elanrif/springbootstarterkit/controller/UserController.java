@@ -48,7 +48,7 @@ public class UserController {
         page = Math.max(0, page - 1);
         log.info("GET /api/v1/users - Fetching users page: {}, limit: {}", page, limit);
 
-        // toUppercase role, status
+        // Convertir UserRole et UserStatus.
         UserStatus userStatus = null;
         if (status != null && !status.trim().isEmpty()) {
             try {
