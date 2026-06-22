@@ -4,7 +4,20 @@ import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.entity.User;
 import org.mapstruct.*;
 
-@Mapper(componentModel = "spring")
+/**
+ * uses = {AddressMapper.class}
+ *
+ * Indique à MapStruct d'utiliser explicitement AddressMapper pour le mapping des objets Address.
+ *
+ * Sans cette configuration, MapStruct génère un mapping implicite pour Address
+ * lors du mapping de User -> UserDto.Response, ce qui peut entraîner :
+ * - des champs imbriqués mal résolus (ex: userId = null)
+ * - une perte des règles de mapping définies dans AddressMapper
+ *
+ * Avec "uses", MapStruct délègue entièrement le mapping de Address à AddressMapper,
+ * garantissant une cohérence et une réutilisation des règles de transformation.
+ */
+@Mapper(componentModel = "spring", uses = AddressMapper.class)
 public interface UserMapper {
 
     UserDto.Summary toSummary(User user);

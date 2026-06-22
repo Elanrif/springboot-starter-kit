@@ -253,7 +253,7 @@ public class DataLoader implements ApplicationRunner {
                     .postalCode(loc.postalCode)
                     .city(loc.city)
                     .country(loc.country)
-                    .isDefault(true)
+                    .defaultAddress(true)
                     .user(currentUser)
                     .build();
 

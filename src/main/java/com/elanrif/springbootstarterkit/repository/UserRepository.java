@@ -2,6 +2,8 @@ package com.elanrif.springbootstarterkit.repository;
 
 import com.elanrif.springbootstarterkit.entity.User;
 import com.elanrif.springbootstarterkit.entity.UserStatus;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -16,6 +18,12 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
 
     Optional<User> findByEmail(String email);
+
+    @EntityGraph(attributePaths = {"addresses"})
+    Page<User> findAll(Specification<User> spec, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"addresses"})
+    Optional<User> findById(Long id);
 
     @Query("SELECT u FROM User u WHERE " +
             "(:email IS NULL OR LOWER(u.email) LIKE :email) AND " +

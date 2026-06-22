@@ -6,6 +6,8 @@ import org.mapstruct.*;
 
 import java.util.List;
 
+// uses = {UserMapper.class} : permet à MapStruct de déléguer le mapping des types complexes
+// à un autre mapper existant (réutilisation des règles de mapping et gestion des objets imbriqués).
 @Mapper(componentModel = "spring", uses = {UserMapper.class, CommentMapper.class})
 public interface PostMapper {
 

@@ -80,6 +80,15 @@ public class AddressController {
         return ResponseEntity.ok(addressMapper.toResponse(updatedAddress));
     }
 
+    @DeleteMapping("/user/{userId}/address/{addressId}")
+    public ResponseEntity<Void> deleteUserAddress(
+            @PathVariable Long userId,
+            @PathVariable Long addressId
+    ) {
+        addressService.deleteUserAddress(userId, addressId);
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAddress(@PathVariable Long id) {
         addressService.deleteAddress(id);
