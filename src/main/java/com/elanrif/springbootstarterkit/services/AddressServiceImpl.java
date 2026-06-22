@@ -31,7 +31,7 @@ public class AddressServiceImpl implements AddressService {
     @Transactional(readOnly = true)
     public Address getDefaultAddressByUserId(Long userId) {
         return addressRepository.findByUserId(userId).stream()
-                .filter(Address::isDefault)
+                .filter(Address::getDefaultAddress)
                 .findFirst()
                 .orElseThrow(() -> new EntityNotFoundException("No default address found for user: " + userId));
     }
@@ -54,10 +54,10 @@ public class AddressServiceImpl implements AddressService {
         // Si c'est la première adresse de l'utilisateur, on la force par défaut
         boolean hasAddresses = addressRepository.existsByUserId(userId);
         if (!hasAddresses) {
-            address.setDefault(true);
-        } else if (address.isDefault()) {
+            address.setDefaultAddress(true);
+        } else if (address.getDefaultAddress()) {
             // Si l'utilisateur demande à ce qu'elle soit par défaut, on désactive les anciennes
-            resetDefaultAddresses(userId);
+            resetgetDefaultAddresses(userId);
         }
 
         return addressRepository.save(address);
@@ -74,9 +74,9 @@ public class AddressServiceImpl implements AddressService {
         address.setCountry(addressDetails.getCountry());
 
         // Gestion du changement d'adresse par défaut lors de l'update
-        if (addressDetails.isDefault() && !address.isDefault()) {
-            resetDefaultAddresses(address.getUser().getId());
-            address.setDefault(true);
+        if (addressDetails.getDefaultAddress() && !address.getDefaultAddress()) {
+            resetgetDefaultAddresses(address.getUser().getId());
+            address.setDefaultAddress(true);
         }
 
         return addressRepository.save(address);
@@ -91,10 +91,21 @@ public class AddressServiceImpl implements AddressService {
             throw new IllegalArgumentException("Address does not belong to this user");
         }
 
-        resetDefaultAddresses(userId);
-        address.setDefault(true);
+        resetgetDefaultAddresses(userId);
+        address.setDefaultAddress(true);
 
         return addressRepository.save(address);
+    }
+
+    @Override
+    public void deleteUserAddress(Long userId, Long addressId) {
+        Address address = getAddressById(addressId);
+
+        if (!address.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("Address does not belong to this user");
+        }
+
+        addressRepository.delete(address);
     }
 
     @Override
@@ -103,14 +114,14 @@ public class AddressServiceImpl implements AddressService {
         Address address = getAddressById(id);
 
         // Si on supprime l'adresse par défaut, on essaie de passer une autre adresse par défaut si elle existe
-        if (address.isDefault()) {
+        if (address.getDefaultAddress()) {
             Long userId = address.getUser().getId();
             addressRepository.delete(address);
 
             addressRepository.findByUserId(userId).stream()
                     .findFirst()
                     .ifPresent(nextAddress -> {
-                        nextAddress.setDefault(true);
+                        nextAddress.setDefaultAddress(true);
                         addressRepository.save(nextAddress);
                     });
         } else {
@@ -119,11 +130,11 @@ public class AddressServiceImpl implements AddressService {
     }
 
     // Méthode utilitaire interne pour passer toutes les adresses d'un utilisateur à false
-    private void resetDefaultAddresses(Long userId) {
+    private void resetgetDefaultAddresses(Long userId) {
         List<Address> userAddresses = addressRepository.findByUserId(userId);
         for (Address addr : userAddresses) {
-            if (addr.isDefault()) {
-                addr.setDefault(false);
+            if (addr.getDefaultAddress()) {
+                addr.setDefaultAddress(false);
                 addressRepository.save(addr);
             }
         }

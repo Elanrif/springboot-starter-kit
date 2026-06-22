@@ -4,6 +4,8 @@ import com.elanrif.springbootstarterkit.dto.CommentDto;
 import com.elanrif.springbootstarterkit.entity.Comment;
 import org.mapstruct.*;
 
+// uses = {UserMapper.class} : permet à MapStruct de déléguer le mapping des types complexes
+// à un autre mapper existant (réutilisation des règles de mapping et gestion des objets imbriqués).
 @Mapper(componentModel = "spring", uses = {UserMapper.class})
 public interface CommentMapper {
 

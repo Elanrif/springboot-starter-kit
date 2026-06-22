@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface AddressRepository extends JpaRepository<Address, Long>, JpaSpecificationExecutor<Address> {
 
-    List<Address> findByUserIdOrderByIsDefaultDesc(Long userId);
+    List<Address> findByUserIdOrderByDefaultAddressDesc(Long userId);
 
     List<Address> findByUserId(Long userId);
 

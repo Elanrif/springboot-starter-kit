@@ -1,5 +1,6 @@
 package com.elanrif.springbootstarterkit.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -10,7 +11,7 @@ public class AddressDto {
             @NotBlank @Size(max = 20) String postalCode,
             @NotBlank @Size(max = 100) String city,
             @NotBlank @Size(max = 100) String country,
-            boolean isDefault
+            Boolean defaultAddress
     ) {}
 
     public record UpdateRequest(
@@ -18,7 +19,7 @@ public class AddressDto {
             @NotBlank @Size(max = 20) String postalCode,
             @NotBlank @Size(max = 100) String city,
             @NotBlank @Size(max = 100) String country,
-            boolean isDefault
+            Boolean defaultAddress
     ) {}
 
     public record Response(
@@ -27,7 +28,7 @@ public class AddressDto {
             String postalCode,
             String city,
             String country,
-            boolean isDefault,
+            Boolean defaultAddress,
             Long userId
     ) {}
 }

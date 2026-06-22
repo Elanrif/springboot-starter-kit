@@ -27,7 +27,13 @@ public class Address extends AuditableEntity{
     @Column(nullable = false)
     private String country;
 
-    private boolean isDefault = false;
+    /**
+     * ⚠️ IMPORTANT:
+     * Avoid "isDefault" naming (JavaBean + Jackson + MapStruct confusion)
+     * Hibernate doesn't like boolean fileds start with isXxx (confusion JavaBean).
+     */
+    @Column(name = "is_default", nullable = false)
+    private Boolean defaultAddress;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
