@@ -44,7 +44,7 @@ public final class AuthDto {
 
     public record ChangePasswordRequest(
             @NotBlank @Email @Size(max = 255) String email,
-            @NotBlank @Size(max = 50) String oldPassword,
+            @NotBlank @Size(max = 50) String currentPassword,
             @NotBlank @Size(max = 50) String newPassword
     ) {}
 
