@@ -73,7 +73,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public UserDto.Response update(AuthDto.ProfileUpdateRequest request) {
+    public UserDto.Response updateMyAccount(AuthDto.ProfileUpdateRequest request) {
         log.debug("Profile update request for email: {}", request.email());
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> {
@@ -113,7 +113,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public UserDto.Response changePasswordProfile(AuthDto.ChangePasswordRequest request) {
+    public UserDto.Response updateMyPassword(AuthDto.ChangePasswordRequest request) {
         log.debug("Password change attempt for email: {}", request.email());
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> {
@@ -121,9 +121,9 @@ public class AuthServiceImpl implements AuthService {
                     return new ResourceNotFoundException("User not found: " + request.email());
                 });
 
-        if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
-            log.warn("Password change failed - incorrect old password for user: {}", request.email());
-            throw new BadRequestException("Old password is incorrect");
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+            log.warn("Password change failed - incorrect current password for user: {}", request.email());
+            throw new BadRequestException("Current password is incorrect");
         }
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         User updatedUser = userRepository.save(user);

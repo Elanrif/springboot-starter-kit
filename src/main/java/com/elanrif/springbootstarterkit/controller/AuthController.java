@@ -34,27 +34,28 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PatchMapping("/edit-profile")
-    public ResponseEntity<UserDto.Response> updateMe(@Valid @RequestBody AuthDto.ProfileUpdateRequest request) {
-        log.info("PATCH /api/v1/auth/edit-profile - Updating profile for email: {}", request.email());
-        UserDto.Response response = authService.update(request);
-        log.info("Profile updated successfully for email: {}", request.email());
-        return ResponseEntity.ok(response);
-    }
-
-    @PatchMapping("/change-password-profile")
-    public ResponseEntity<UserDto.Response> changePasswordProfile(@Valid @RequestBody AuthDto.ChangePasswordRequest request) {
-        log.info("PATCH /api/v1/auth/change-password-profile - Changing password for email: {}", request.email());
-        UserDto.Response response = authService.changePasswordProfile(request);
-        log.info("Password changed successfully for email: {}", request.email());
-        return ResponseEntity.ok(response);
-    }
-
     @PatchMapping("/reset-password")
-    public ResponseEntity<UserDto.Response> changePassword(@Valid @RequestBody AuthDto.ResetPasswordRequest request) {
+    public ResponseEntity<UserDto.Response> resetMyPwd(@Valid @RequestBody AuthDto.ResetPasswordRequest request) {
         log.info("PATCH /api/v1/auth/reset-password - Resetting password for email: {}", request.email());
         UserDto.Response response = authService.resetPassword(request);
         log.info("Password reset successfully for email: {}", request.email());
         return ResponseEntity.ok(response);
     }
+
+    @PatchMapping("/me")
+    public ResponseEntity<UserDto.Response> updateMyAccount(@Valid @RequestBody AuthDto.ProfileUpdateRequest request) {
+        log.info("PATCH /api/v1/auth/me - Updating profile for email: {}", request.email());
+        UserDto.Response response = authService.updateMyAccount(request);
+        log.info("Profile updated successfully for email: {}", request.email());
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/me/password")
+    public ResponseEntity<UserDto.Response> changeMyPwd(@Valid @RequestBody AuthDto.ChangePasswordRequest request) {
+        log.info("PATCH /api/v1/auth/me/password - Changing password for email: {}", request.email());
+        UserDto.Response response = authService.updateMyPassword(request);
+        log.info("Password changed successfully for email: {}", request.email());
+        return ResponseEntity.ok(response);
+    }
+
 }

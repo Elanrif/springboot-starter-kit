@@ -9,9 +9,9 @@ public interface AuthService {
 
     AuthDto.Response register(AuthDto.RegisterRequest request);
 
-    UserDto.Response update(AuthDto.ProfileUpdateRequest request);
+    UserDto.Response updateMyAccount(AuthDto.ProfileUpdateRequest request);
 
     UserDto.Response resetPassword(AuthDto.ResetPasswordRequest request);
 
-    UserDto.Response changePasswordProfile(AuthDto.ChangePasswordRequest request);
+    UserDto.Response updateMyPassword(AuthDto.ChangePasswordRequest request);
 }
