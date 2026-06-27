@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
+    public static final String MESSAGE_DELETE_ACCOUNT = "I WANT TO DELETE MY ACCOUNT";
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final AuthMapper authMapper;
@@ -131,4 +132,22 @@ public class AuthServiceImpl implements AuthService {
         log.info("Password changed successfully for user: {}", request.email());
         return userMapper.toResponse(updatedUser);
     }
+
+    @Override
+    public void deleteMyAccount(AuthDto.DeleteAccountRequest request) {
+        log.debug("Account deletion attempt for email: {}", request.emailInput());
+        User user = userRepository.findByEmail(request.emailInput())
+                .orElseThrow(() -> {
+                    log.warn("Account deletion failed - user not found: {}", request.emailInput());
+                    return new ResourceNotFoundException("User not found: " + request.emailInput());
+                });
+
+        if (request.messageInput() == null || !request.messageInput().trim().toUpperCase().equals(MESSAGE_DELETE_ACCOUNT.toUpperCase())) {
+            throw new IllegalArgumentException("The confirmation message is incorrect. You must type: " + MESSAGE_DELETE_ACCOUNT);
+        }
+
+        userRepository.delete(user);
+        log.info("Account deleted successfully for user: {}", request.emailInput());
+    }
+
 }

@@ -80,6 +80,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toResponse(user);
     }
 
+    // Admin only
     @Override
     public void deleteUser(Long id) {
         log.debug("Deleting user with id: {}", id);
