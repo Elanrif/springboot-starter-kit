@@ -58,4 +58,11 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/me/delete-account")
+    public ResponseEntity<Void> deleteUser(@Valid @RequestBody AuthDto.DeleteAccountRequest request) {
+        log.info("DELETE /api/v1/users/delete");
+        authService.deleteMyAccount(request);
+        return ResponseEntity.noContent().build();
+    }
+
 }

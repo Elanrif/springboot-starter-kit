@@ -14,4 +14,7 @@ public interface AuthService {
     UserDto.Response resetPassword(AuthDto.ResetPasswordRequest request);
 
     UserDto.Response updateMyPassword(AuthDto.ChangePasswordRequest request);
+
+    void deleteMyAccount(AuthDto.DeleteAccountRequest request);
+
 }

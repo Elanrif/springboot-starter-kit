@@ -57,6 +57,7 @@ public class Post extends AuditableEntity {
      * We keep this association LAZY and expose DTOs from the service layer
      * to avoid LazyInitializationException and recursive JSON issues.
      */
+    @Builder.Default
     @JsonIgnore
     @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();

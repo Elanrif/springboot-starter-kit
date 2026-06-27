@@ -7,7 +7,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+import org.springframework.data.annotation.LastModifiedDate;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +22,8 @@ import java.util.List;
 @Entity
 @Builder
 @Table(name = "users")
+@SQLDelete(sql = "UPDATE users SET deleted_at = NOW(), status = 'DELETED', email = CONCAT('deleted_', UUID(), '_', email) WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
 public class User extends AuditableEntity {
 
     @Id
@@ -60,15 +66,21 @@ public class User extends AuditableEntity {
      * We keep this association LAZY and expose DTOs from the service layer
      * to avoid LazyInitializationException and recursive JSON issues.
      */
+    @Builder.Default
     @JsonIgnore
       @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
 
+    @Builder.Default
     @JsonIgnore
       @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     private List<Post> posts = new ArrayList<>();
 
+    @Builder.Default
     @JsonIgnore
       @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Address> addresses = new ArrayList<>();
+
+    @Column(nullable = true)
+    private LocalDateTime deletedAt;
 }

@@ -55,6 +55,11 @@ public final class AuthDto {
             @NotBlank @Size(min = 8, max = 255) String newPassword
     ) {}
 
+    public record DeleteAccountRequest(
+            @NotBlank @Email String emailInput,
+            @NotBlank String messageInput
+    ) {}
+
     // === RESPONSES ===
 
     public record Response(
