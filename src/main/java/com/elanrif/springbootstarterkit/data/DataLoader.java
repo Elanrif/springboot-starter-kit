@@ -63,7 +63,7 @@ public class DataLoader implements ApplicationRunner {
                         .role(UserRole.ADMIN).status(UserStatus.ACTIVE).build(),
 
                 User.builder().email("john.doe@gmail.com").firstName("John").lastName("Doe")
-                        .password(passwordEncoder.encode("Simple123")).phoneNumber("+212600000002")
+                        .password(passwordEncoder.encode("Simple123")).phoneNumber("+212600000033")
                         .role(UserRole.USER).status(UserStatus.INACTIVE).build(),
 
                 User.builder().email("jane.smith@gmail.com").firstName("Jane").lastName("Smith")

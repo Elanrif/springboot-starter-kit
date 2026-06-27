@@ -9,7 +9,6 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,7 +21,7 @@ import java.util.List;
 @Entity
 @Builder
 @Table(name = "users")
-@SQLDelete(sql = "UPDATE users SET deleted_at = NOW(), status = 'DELETED', email = CONCAT('deleted_', UUID(), '_', email) WHERE id = ?")
+@SQLDelete(sql = "UPDATE users SET deleted_at = NOW(), status = 'DELETED', email = CONCAT('deleted_', phone_number, '_', email) WHERE id = ?")
 @SQLRestriction("deleted_at IS NULL")
 public class User extends AuditableEntity {
 
@@ -47,6 +46,7 @@ public class User extends AuditableEntity {
     private String lastName;
 
     @Size(max = 50)
+    @Column(unique = true)
     private String phoneNumber;
 
     @Size(max = 255)
