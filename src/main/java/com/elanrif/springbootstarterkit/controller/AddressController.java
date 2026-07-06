@@ -3,6 +3,7 @@ package com.elanrif.springbootstarterkit.controller;
 import com.elanrif.springbootstarterkit.dto.AddressDto;
 import com.elanrif.springbootstarterkit.mapper.AddressMapper; // 👈 Import du mapper
 import com.elanrif.springbootstarterkit.services.AddressService;
+import com.elanrif.springbootstarterkit.util.PageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,14 +53,31 @@ public class AddressController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<AddressDto.Response>> getAddressesByUserId(@PathVariable Long userId) {
-        log.info("GET /api/v1/addresses/user/{} - Fetching all addresses", userId);
+    public ResponseEntity<PageResponse<AddressDto.Response>> getAddressesByUserId(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "5") int limit,
+            @RequestParam(defaultValue = "id,desc") String sort,
+            @RequestParam(required = false) String country,
+            @RequestParam(required = false) String city) {
+        // 👈 Convertit la page reçue (commençant à 1) en index Spring (commençant à 0)
+        // et protège contre les valeurs négatives ou égales à zéro.
+        page = Math.max(0, page - 1);
+        log.info(
+                "GET /api/v1/addresses/user/{} - page={}, limit={}, sort={}, country={}, city={}",
+                userId, page, limit, sort, country, city);
 
-        List<AddressDto.Response> responses = addressService.getAddressesByUserId(userId).stream()
-                .map(addressMapper::toResponse) // 👈 Utilisation ici
-                .toList();
-
-        return ResponseEntity.ok(responses);
+        PageResponse<AddressDto.Response> response =
+                addressService.getAddressesByUserId(
+                        userId,
+                        page,
+                        limit,
+                        sort,
+                        country,
+                        city
+                );
+        log.info("Returned {} addresses (total: {})", response.data().size(), response.meta().total());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/user/{userId}/default")
