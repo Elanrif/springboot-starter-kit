@@ -1,11 +1,19 @@
 package com.elanrif.springbootstarterkit.services;
 
+import com.elanrif.springbootstarterkit.dto.AddressDto;
 import com.elanrif.springbootstarterkit.entity.Address;
+import com.elanrif.springbootstarterkit.util.PageResponse;
+
 import java.util.List;
 
 public interface AddressService {
 
-    List<Address> getAddressesByUserId(Long userId);
+    PageResponse<AddressDto.Response> getAddressesByUserId(Long userId,
+                                                           int page,
+                                                           int limit,
+                                                           String sort,
+                                                           String country,
+                                                           String city);
 
     Address getDefaultAddressByUserId(Long userId);
 

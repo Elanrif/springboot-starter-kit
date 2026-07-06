@@ -63,7 +63,7 @@ public class DataLoader implements ApplicationRunner {
                         .role(UserRole.ADMIN).status(UserStatus.ACTIVE).build(),
 
                 User.builder().email("john.doe@gmail.com").firstName("John").lastName("Doe")
-                        .password(passwordEncoder.encode("Simple123")).phoneNumber("+212600000033")
+                        .password(passwordEncoder.encode("Johndoe")).phoneNumber("+212600000033")
                         .role(UserRole.USER).status(UserStatus.INACTIVE).build(),
 
                 User.builder().email("jane.smith@gmail.com").firstName("Jane").lastName("Smith")
@@ -154,18 +154,37 @@ public class DataLoader implements ApplicationRunner {
         var addresses = new ArrayList<Address>();
 
         for (int i = 0; i < users.size(); i++) {
-            var u = users.get(i);
-            var loc = mockLocations.get(i % mockLocations.size());
+            var user = users.get(i);
 
-            addresses.add(Address.builder()
-                    .street(loc.street())
-                    .postalCode(loc.postalCode())
-                    .city(loc.city())
-                    .country(loc.country())
-                    .defaultAddress(true)
-                    .user(u)
-                    .build());
+            // L'utilisateur n°3 (index 2) aura 7 adresses
+            if (i == 1) {
+                for (int j = 0; j < 7; j++) {
+                    var loc = mockLocations.get((i + j) % mockLocations.size());
+
+                    addresses.add(Address.builder()
+                            .street(loc.street())
+                            .postalCode(loc.postalCode())
+                            .city(loc.city())
+                            .country(loc.country())
+                            .defaultAddress(j == 0) // une seule adresse par défaut
+                            .user(user)
+                            .build());
+                }
+            } else {
+                var loc = mockLocations.get(i % mockLocations.size());
+
+                addresses.add(Address.builder()
+                        .street(loc.street())
+                        .postalCode(loc.postalCode())
+                        .city(loc.city())
+                        .country(loc.country())
+                        .defaultAddress(true)
+                        .user(user)
+                        .build());
+            }
         }
+
+        addressRepository.saveAll(addresses);
 
         addressRepository.saveAll(addresses);
     }

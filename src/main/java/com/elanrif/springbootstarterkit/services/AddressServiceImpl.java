@@ -1,30 +1,72 @@
 package com.elanrif.springbootstarterkit.services;
 
+import com.elanrif.springbootstarterkit.dto.AddressDto;
+import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.entity.Address;
 import com.elanrif.springbootstarterkit.entity.User;
+import com.elanrif.springbootstarterkit.mapper.AddressMapper;
 import com.elanrif.springbootstarterkit.repository.AddressRepository;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
+import com.elanrif.springbootstarterkit.specification.AddressSpecification;
+import com.elanrif.springbootstarterkit.specification.UserSpecification;
+import com.elanrif.springbootstarterkit.util.PageResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AddressServiceImpl implements AddressService {
 
     private final AddressRepository addressRepository;
     private final UserRepository userRepository;
+    private final AddressMapper addressMapper;
 
     @Override
     @Transactional(readOnly = true)
-    public List<Address> getAddressesByUserId(Long userId) {
+    public PageResponse<AddressDto.Response> getAddressesByUserId(
+            Long userId,
+            int page,
+            int limit,
+            String sort,
+            String country,
+            String city) {
+
         if (!userRepository.existsById(userId)) {
             throw new EntityNotFoundException("User not found with id: " + userId);
         }
-        return addressRepository.findByUserId(userId);
+
+        log.debug("Fetching user {} addresses - page: {}, limit: {}", userId, page, limit);
+
+        Pageable pageable = PageRequest.of(page, limit, toSort(sort));
+        Specification<Address> spec = Specification
+                .where(AddressSpecification.hasUserId(userId))
+                .and(AddressSpecification.hasCountry(country))
+                .and(AddressSpecification.hasCity(city));
+//                .and(AddressSpecification.isDefault(defaultAddress))
+//                .and(AddressSpecification.contains(search));
+
+        Page<AddressDto.Response> result = addressRepository
+                .findAll(spec, pageable)
+                .map(addressMapper::toResponse);
+
+        log.debug(
+                "Found {} addresses (total: {})",
+                result.getNumberOfElements(),
+                result.getTotalElements()
+        );
+
+        return PageResponse.from(result);
     }
 
     @Override
@@ -138,5 +180,19 @@ public class AddressServiceImpl implements AddressService {
                 addressRepository.save(addr);
             }
         }
+    }
+
+    private Sort toSort(String sort) {
+        if (sort == null || sort.isBlank()) {
+            return Sort.by("id").ascending(); // Tri par défaut
+        }
+
+        String[] parts = sort.split(",");
+        String field = parts[0];
+        Sort.Direction direction = parts.length > 1 && parts[1].equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+
+        return Sort.by(direction, field);
     }
 }
