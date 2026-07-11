@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Size;
 import org.hibernate.validator.constraints.URL;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public final class AuthDto {
     private AuthDto() {}
@@ -71,6 +72,7 @@ public final class AuthDto {
             String avatarUrl,
             UserRole role,
             UserStatus status,
+            List<AddressDto.Response> addresses,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {}
