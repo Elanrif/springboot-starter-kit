@@ -5,7 +5,7 @@ import com.elanrif.springbootstarterkit.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = AddressMapper.class)
 public interface AuthMapper {
 
     AuthDto.Response toResponse(User user);
