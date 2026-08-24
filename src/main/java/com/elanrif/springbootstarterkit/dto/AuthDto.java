@@ -2,6 +2,7 @@ package com.elanrif.springbootstarterkit.dto;
 
 import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -12,11 +13,13 @@ public final class AuthDto {
 
     // === REQUESTS ===
 
+    @Schema(name = "AuthLoginRequest")
     public record LoginRequest(
             @NotBlank @Email String email,
             @NotBlank String password
     ) {}
 
+    @Schema(name = "AuthRegisterRequest")
     public record RegisterRequest(
             @NotBlank @Size(max = 200) String firstName,
             @NotBlank @Size(max = 200) String lastName,
@@ -26,11 +29,13 @@ public final class AuthDto {
             @URL @Size(max = 255) String avatarUrl
     ) {}
 
+    @Schema(name = "AuthRefreshTokenRequest")
     public record RefreshTokenRequest(
             @JsonProperty("refresh_token")
             @NotBlank String refreshToken
     ) {}
 
+    @Schema(name = "AuthProfileUpdateRequest")
     public record ProfileUpdateRequest(
             @NotBlank @Size(max = 200) String firstName,
             @NotBlank @Size(max = 200) String lastName,
@@ -39,12 +44,14 @@ public final class AuthDto {
             @URL @Size(max = 255) String avatarUrl
     ) {}
 
+    @Schema(name = "AuthChangePasswordRequest")
     public record ChangePasswordRequest(
             @NotBlank @Email @Size(max = 255) String email,
             @NotBlank @Size(max = 50) String oldPassword,
             @NotBlank @Size(max = 50) String newPassword
     ) {}
 
+    @Schema(name = "AuthResetPasswordRequest")
     public record ResetPasswordRequest(
             @NotBlank String code,
             @NotBlank String resetToken,
@@ -54,6 +61,7 @@ public final class AuthDto {
 
     // === RESPONSES ===
 
+    @Schema(name = "AuthTokenResponse")
     public record TokenResponse(
             @JsonProperty("access_token") String accessToken,
             @JsonProperty("refresh_token") String refreshToken,
@@ -63,6 +71,7 @@ public final class AuthDto {
             @JsonProperty("scope") String scope
     ) {}
 
+    @Schema(name = "AuthLoginResponse")
     public record Response(
             @JsonProperty("access_token") String accessToken,
             @JsonProperty("refresh_token") String refreshToken,

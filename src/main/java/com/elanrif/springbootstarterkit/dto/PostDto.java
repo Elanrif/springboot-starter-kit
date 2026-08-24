@@ -1,5 +1,6 @@
 package com.elanrif.springbootstarterkit.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
@@ -11,7 +12,7 @@ public final class PostDto {
     private PostDto() {}
 
     // === REQUESTS ===
-
+    @Schema(name = "PostCreateRequest")
     public record CreateRequest(
             @NotBlank @Size(max = 200) String title,
             @Size(max = 200) String imageUrl,
@@ -20,6 +21,7 @@ public final class PostDto {
             Long authorId
     ) {}
 
+    @Schema(name = "PostUpdateRequest")
     public record UpdateRequest(
             @Size(max = 200) String title,
             @Size(max = 200) String imageUrl,
@@ -34,6 +36,7 @@ public final class PostDto {
      * Summary léger pour les listes (GET /posts)
      * Utilise UserDto.Summary pour l'auteur
      */
+    @Schema(name = "PostSummary")
     public record Summary(
             Long id,
             String title,
@@ -47,6 +50,7 @@ public final class PostDto {
     /**
      * Response standard pour GET /posts (liste)
      */
+    @Schema(name = "PostResponse")
     public record Response(
             Long id,
             String title,
@@ -62,6 +66,7 @@ public final class PostDto {
     /**
      * DetailResponse complète pour GET /posts/{id} (avec commentaires)
      */
+    @Schema(name = "PostDetailResponse")
     public record DetailResponse(
             Long id,
             String title,
@@ -76,6 +81,7 @@ public final class PostDto {
 
     // === FILTER ===
 
+    @Schema(name = "PostFilter")
     public record Filter(
             String search,
             Long authorId,
