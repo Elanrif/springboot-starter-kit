@@ -2,6 +2,7 @@ package com.elanrif.springbootstarterkit.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
@@ -18,39 +19,31 @@ public final class PostDto {
 
     @Schema(name = "PostCreateRequest")
     public record CreateRequest(
-
             @NotBlank
             @Size(max = 200)
             String title,
-
             @Size(max = 200)
             String imageUrl,
-
             @Size(max = 2000)
             String description,
-
             @PositiveOrZero
             Long likes,
-
+            @NotNull
             Long authorId
 
     ) {}
 
     @Schema(name = "PostUpdateRequest")
     public record UpdateRequest(
-
             @Size(max = 200)
             String title,
-
             @Size(max = 200)
             String imageUrl,
-
             @Size(max = 2000)
             String description,
-
             @PositiveOrZero
             Long likes,
-
+            @NotNull
             Long authorId
 
     ) {}
