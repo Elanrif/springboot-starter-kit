@@ -1,5 +1,6 @@
 package com.elanrif.springbootstarterkit.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
@@ -8,33 +9,63 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public final class PostDto {
+
     private PostDto() {}
 
-    // === REQUESTS ===
+    // =========================================================
+    // REQUESTS
+    // =========================================================
 
+    @Schema(name = "PostCreateRequest")
     public record CreateRequest(
-            @NotBlank @Size(max = 200) String title,
-            @Size(max = 200) String imageUrl,
-            @Size(max = 2000) String description,
-            @PositiveOrZero Long likes,
+
+            @NotBlank
+            @Size(max = 200)
+            String title,
+
+            @Size(max = 200)
+            String imageUrl,
+
+            @Size(max = 2000)
+            String description,
+
+            @PositiveOrZero
+            Long likes,
+
             Long authorId
+
     ) {}
 
+    @Schema(name = "PostUpdateRequest")
     public record UpdateRequest(
-            @Size(max = 200) String title,
-            @Size(max = 200) String imageUrl,
-            @Size(max = 2000) String description,
-            @PositiveOrZero Long likes,
+
+            @Size(max = 200)
+            String title,
+
+            @Size(max = 200)
+            String imageUrl,
+
+            @Size(max = 2000)
+            String description,
+
+            @PositiveOrZero
+            Long likes,
+
             Long authorId
+
     ) {}
 
-    // === RESPONSES ===
+    // =========================================================
+    // RESPONSES
+    // =========================================================
 
     /**
-     * Summary léger pour les listes (GET /posts)
-     * Utilise UserDto.Summary pour l'auteur
+     * Lightweight representation of a post.
+     * Used when only a summary is required.
      */
+    @Schema(name = "PostSummary")
     public record Summary(
+
             Long id,
             String title,
             String imageUrl,
@@ -42,12 +73,16 @@ public final class PostDto {
             UserDto.Summary author,
             int commentCount,
             LocalDateTime createdAt
+
     ) {}
 
     /**
-     * Response standard pour GET /posts (liste)
+     * Standard post response.
+     * Used for GET /posts.
      */
+    @Schema(name = "PostResponse")
     public record Response(
+
             Long id,
             String title,
             String imageUrl,
@@ -57,12 +92,16 @@ public final class PostDto {
             int commentCount,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
+
     ) {}
 
     /**
-     * DetailResponse complète pour GET /posts/{id} (avec commentaires)
+     * Detailed post response including comments.
+     * Used for GET /posts/{id}.
      */
+    @Schema(name = "PostDetailResponse")
     public record DetailResponse(
+
             Long id,
             String title,
             String imageUrl,
@@ -72,13 +111,19 @@ public final class PostDto {
             List<CommentDto.Response> comments,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
+
     ) {}
 
-    // === FILTER ===
+    // =========================================================
+    // FILTER
+    // =========================================================
 
+    @Schema(name = "PostFilter")
     public record Filter(
+
             String search,
             Long authorId,
             String sort
+
     ) {}
 }

@@ -1,5 +1,6 @@
 package com.elanrif.springbootstarterkit.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -11,12 +12,14 @@ public final class CommentDto {
 
     // === REQUESTS ===
 
+    @Schema(name = "CommentCreateRequest")
     public record CreateRequest(
             @NotBlank @Size(max = 2000) String content,
             @NotNull Long postId,
             @NotNull Long authorId
     ) {}
 
+    @Schema(name = "CommentUpdateRequest")
     public record UpdateRequest(
             @Size(max = 2000) String content
     ) {}
@@ -26,6 +29,7 @@ public final class CommentDto {
     /**
      * Summary léger pour embedded dans PostDto.DetailResponse
      */
+    @Schema(name = "CommentSummary")
     public record Summary(
             Long id,
             String content,
@@ -36,6 +40,7 @@ public final class CommentDto {
     /**
      * Response standard pour GET /comments
      */
+    @Schema(name = "CommentResponse")
     public record Response(
             Long id,
             String content,
@@ -47,6 +52,7 @@ public final class CommentDto {
 
     // === FILTER ===
 
+    @Schema(name = "CommentFilter")
     public record Filter(
             String search,
             Long postId,
