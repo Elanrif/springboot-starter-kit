@@ -65,6 +65,7 @@ public class CommentServiceImpl implements CommentService {
         log.debug("Creating comment for post id: {}", request.postId());
         Comment comment = commentMapper.toEntity(request);
 
+        // Update relationships
         Post post = resolvePost(request.postId());
         User author = resolveAuthor(request.authorId());
         comment.setPost(post);
@@ -77,18 +78,32 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public CommentDto.Response updateComment(Long id, CommentDto.UpdateRequest request) {
+    public CommentDto.Response updateComment(
+            Long id,
+            CommentDto.UpdateRequest request
+    ) {
         log.debug("Updating comment with id: {}", id);
+
         Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("Update failed - comment not found with id: {}", id);
-                    return new ResourceNotFoundException("Comment not found: " + id);
+                    return new ResourceNotFoundException(
+                            "Comment not found: " + id
+                    );
                 });
 
+        // Update simple fields
         commentMapper.updateFromRequest(request, comment);
-        CommentDto.Response response = commentMapper.toResponse(commentRepository.save(comment));
+
+        // Update relationships
+        comment.setPost(resolvePost(request.postId()));
+        comment.setAuthor(resolveAuthor(request.authorId()));
+
+        CommentDto.Response response =
+                commentMapper.toResponse(commentRepository.save(comment));
 
         log.info("Comment updated successfully with id: {}", id);
+
         return response;
     }
 

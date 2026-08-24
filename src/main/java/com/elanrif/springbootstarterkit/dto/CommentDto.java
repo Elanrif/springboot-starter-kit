@@ -21,7 +21,9 @@ public final class CommentDto {
 
     @Schema(name = "CommentUpdateRequest")
     public record UpdateRequest(
-            @Size(max = 2000) String content
+            @NotBlank @Size(max = 2000) String content,
+            @NotNull Long postId,
+            @NotNull Long authorId
     ) {}
 
     // === RESPONSES ===
