@@ -2,6 +2,7 @@ package com.elanrif.springbootstarterkit.dto;
 
 import com.elanrif.springbootstarterkit.entity.UserRole;
 import com.elanrif.springbootstarterkit.entity.UserStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -14,7 +15,7 @@ public final class UserDto {
     private UserDto() {}
 
     // === REQUESTS ===
-
+    @Schema(name = "UserCreateRequest")
     public record CreateRequest(
             @Size(max = 100) String firstName,
             @Size(max = 100) String lastName,
@@ -26,6 +27,7 @@ public final class UserDto {
             UserStatus status
     ) {}
 
+    @Schema(name = "UserUpdateRequest")
     public record UpdateRequest(
             @Size(max = 100) String firstName,
             @Size(max = 100) String lastName,
@@ -42,6 +44,7 @@ public final class UserDto {
     /**
      * Summary léger pour embedded dans d'autres DTOs (ex: author d'un Post/Comment)
      */
+    @Schema(name = "UserSummary")
     public record Summary(
             Long id,
             String firstName,
@@ -53,6 +56,7 @@ public final class UserDto {
     /**
      * Response complète pour GET /users/{id}
      */
+    @Schema(name = "UserResponse")
     public record Response(
             Long id,
             String email,
