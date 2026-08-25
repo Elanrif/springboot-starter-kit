@@ -64,15 +64,15 @@ Sur Windows (PowerShell) :
 .\mvnw.cmd -DskipTests package
 ```
 
-Puis construire l'image Docker depuis la racine (si `Dockerfile` présent) :
+Puis construire l'image Docker depuis la racine (si `../Dockerfile` présent) :
 
 ```bash
 docker build -t spring-boot-app .
 ```
 
-### Forcer le chargement d'un `.env` avec Docker Compose
-Parfois Docker Compose ne charge pas le `.env` que vous pensez utiliser.
-Pour être sûr que Compose utilise bien votre fichier `.env`, utilisez l'option `--env-file` :
+### Forcer le chargement d'un `../.env` avec Docker Compose
+Parfois Docker Compose ne charge pas le `../.env` que vous pensez utiliser.
+Pour être sûr que Compose utilise bien votre fichier `../.env`, utilisez l'option `--env-file` :
 
 ```powershell
 # Affiche la configuration interpolée (utile pour vérifier les valeurs)
@@ -97,6 +97,6 @@ docker compose --env-file .env -f ops/docker-compose.yml up --build -d
 ---
 
 ## Conseils pratiques
-- Gardez un fichier `.env.example` dans le repo (sans secrets) et mettez `.env` dans `.gitignore`.
+- Gardez un fichier `.env.example` dans le repo (sans secrets) et mettez `../.env` dans `../.gitignore`.
 - Pour les environnements reproductibles, placez des scripts SQL d'initialisation dans `./ops/db/init` et montez-les sur `/docker-entrypoint-initdb.d` pour que Postgres les exécute au premier démarrage.
 - Si votre application utilise `devtools`, notez que Spring ne reconnecte pas toujours automatiquement à la DB si la base est créée après le démarrage — un redémarrage de l'app peut être nécessaire.
