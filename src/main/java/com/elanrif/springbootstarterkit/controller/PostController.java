@@ -20,11 +20,11 @@ public class PostController {
 
     @GetMapping
     public ResponseEntity<PageResponse<PostDto.Response>> list(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "5") int limit,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Long authorId,
-            @RequestParam(required = false) String sort,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int limit) {
+            @RequestParam(required = false) String sort) {
         page = Math.max(0, page - 1);
         log.info("GET /api/v1/posts - Fetching posts with search: {}, authorId: {}, page: {}, limit: {}",
                 search, authorId, page, limit);

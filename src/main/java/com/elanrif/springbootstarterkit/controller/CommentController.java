@@ -25,7 +25,7 @@ public class CommentController {
             @RequestParam(required = false) Long authorId,
             @RequestParam(required = false) String sort,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int limit) {
+            @RequestParam(defaultValue = "5") int limit) {
         page = Math.max(0, page - 1);
         log.info("GET /api/v1/comments - Fetching comments with search: {}, postId: {}, authorId: {}, page: {}, limit: {}",
                 search, postId, authorId, page, limit);

@@ -53,11 +53,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public PageResponse<UserDto.Response> getAll(int page,
-                                                 int limit,
-                                                 UserRole role,
-                                                 UserStatus status,
-                                                 String sort) {
+    public PageResponse<UserDto.Response> getUsers(int page,
+                                                   int limit,
+                                                   UserRole role,
+                                                   UserStatus status,
+                                                   String sort) {
         log.debug("Fetching all users - page: {}, limit: {}, role: {}, status: {}", page, limit, role, status);
 
         Pageable pageable = PageRequest.of(page, limit, toSort(sort));
@@ -109,7 +109,7 @@ public class UserServiceImpl implements UserService {
 
     private Sort toSort(String sort) {
         if (sort == null || sort.isBlank()) {
-            return Sort.by("id").ascending(); // Tri par défaut
+            return Sort.by("id").descending(); // Tri par défaut
         }
 
         String[] parts = sort.split(",");
