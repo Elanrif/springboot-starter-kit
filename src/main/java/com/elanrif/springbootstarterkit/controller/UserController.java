@@ -67,7 +67,7 @@ public class UserController {
             }
         }
 
-        PageResponse<UserDto.Response> response = userService.getAll(page, limit, userRole, userStatus, sort);
+        PageResponse<UserDto.Response> response = userService.getUsers(page, limit, userRole, userStatus, sort);
         log.info("Returned {} users (total: {})", response.data().size(), response.meta().total());
         return ResponseEntity.ok(response);
     }

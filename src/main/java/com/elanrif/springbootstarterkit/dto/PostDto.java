@@ -113,7 +113,6 @@ public final class PostDto {
 
     @Schema(name = "PostFilter")
     public record Filter(
-
             String search,
             Long authorId,
             String sort

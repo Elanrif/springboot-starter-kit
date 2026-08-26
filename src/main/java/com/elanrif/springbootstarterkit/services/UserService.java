@@ -11,7 +11,7 @@ public interface UserService {
 
     UserDto.Response update(Long id, UserDto.UpdateRequest request);
 
-    PageResponse<UserDto.Response> getAll(int page, int size, UserRole role, UserStatus status, String sort);
+    PageResponse<UserDto.Response> getUsers(int page, int size, UserRole role, UserStatus status, String sort);
 
     UserDto.Response getById(Long id);
 
