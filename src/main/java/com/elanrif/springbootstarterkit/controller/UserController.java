@@ -1,5 +1,6 @@
 package com.elanrif.springbootstarterkit.controller;
 
+import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.entity.UserRole;
 import com.elanrif.springbootstarterkit.entity.UserStatus;
@@ -38,37 +39,19 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<PageResponse<UserDto.Response>> list(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "5") int limit,
-            @RequestParam(required = false) String role,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String sort) {
-        // 👈 Convertit la page reçue (commençant à 1) en index Spring (commençant à 0)
-        // et protège contre les valeurs négatives ou égales à zéro.
-        page = Math.max(0, page - 1);
-        log.info("GET /api/v1/users - Fetching users page: {}, limit: {}", page, limit);
+            @ModelAttribute UserDto.Filter filter,
+            @ModelAttribute CommonDto.Pagination pagination
+    ) {
+        log.info("GET /api/v1/users - Fetching users");
+        PageResponse<UserDto.Response> response =
+                userService.getUsers(filter, pagination);
 
-        // Convertir UserRole et UserStatus.
-        UserStatus userStatus = null;
-        if (status != null && !status.trim().isEmpty()) {
-            try {
-                userStatus = UserStatus.valueOf(status.trim().toUpperCase());
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid status provided: {}, ignoring filter.", status);
-            }
-        }
+        log.info(
+                "Returned {} users (total: {})",
+                response.data().size(),
+                response.meta().total()
+        );
 
-        UserRole userRole = null;
-        if (role != null && !role.trim().isEmpty()) {
-            try {
-                userRole = UserRole.valueOf(role.trim().toUpperCase());
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid role provided: {}, ignoring filter.", role);
-            }
-        }
-
-        PageResponse<UserDto.Response> response = userService.getUsers(page, limit, userRole, userStatus, sort);
-        log.info("Returned {} users (total: {})", response.data().size(), response.meta().total());
         return ResponseEntity.ok(response);
     }
 

@@ -25,6 +25,7 @@ public class PostController {
             @ModelAttribute PostDto.Filter filter,
             @ModelAttribute CommonDto.Pagination pagination
     ) {
+        log.info("GET /api/v1/posts - Fetching posts");
         PageResponse<PostDto.Response> response =
                 postService.getPosts(filter, pagination);
         log.info("Returned {} posts (total: {})", response.data().size(), response.meta().total());
