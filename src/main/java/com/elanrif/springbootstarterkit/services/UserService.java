@@ -1,5 +1,6 @@
 package com.elanrif.springbootstarterkit.services;
 
+import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.entity.UserRole;
 import com.elanrif.springbootstarterkit.entity.UserStatus;
@@ -11,7 +12,8 @@ public interface UserService {
 
     UserDto.Response update(Long id, UserDto.UpdateRequest request);
 
-    PageResponse<UserDto.Response> getUsers(int page, int size, UserRole role, UserStatus status, String sort);
+    PageResponse<UserDto.Response> getUsers(UserDto.Filter filter,
+                                            CommonDto.Pagination pagination);
 
     UserDto.Response getById(Long id);
 

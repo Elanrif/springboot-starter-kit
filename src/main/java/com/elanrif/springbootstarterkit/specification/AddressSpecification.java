@@ -1,30 +1,60 @@
 package com.elanrif.springbootstarterkit.specification;
 
+import com.elanrif.springbootstarterkit.dto.AddressDto;
 import com.elanrif.springbootstarterkit.entity.Address;
 import org.springframework.data.jpa.domain.Specification;
 
+public final class AddressSpecification {
 
-public class AddressSpecification {
-
-    public static Specification<Address> hasUserId(Long userId) {
-        return (root, query, cb) ->
-                cb.equal(root.get("user").get("id"), userId);
+    private AddressSpecification() {
     }
 
-    public static Specification<Address> hasCountry(String country) {
-        return (root, query, cb) ->
-                country == null || country.isBlank()
-                        ? null
-                        : cb.equal(root.get("country"), country);
+    public static Specification<Address> from(
+            Long userId,
+            AddressDto.Filter filter
+    ) {
+        return Specification.allOf(
+                hasUserId(userId),
+                hasCountry(filter != null ? filter.country() : null),
+                hasCity(filter != null ? filter.city() : null)
+        );
     }
 
-    public static Specification<Address> hasCity(String city) {
+    private static Specification<Address> hasUserId(Long userId) {
+        if (userId == null) {
+            return Specification.unrestricted();
+        }
+
         return (root, query, cb) ->
-                city == null || city.isBlank()
-                        ? null
-                        : cb.like(
+                cb.equal(
+                        root.get("user").get("id"),
+                        userId
+                );
+    }
+
+    private static Specification<Address> hasCountry(String country) {
+        if (country == null || country.isBlank()) {
+            return Specification.unrestricted();
+        }
+
+        return (root, query, cb) ->
+                cb.equal(
+                        cb.lower(root.get("country")),
+                        country.toLowerCase()
+                );
+    }
+
+    private static Specification<Address> hasCity(String city) {
+        if (city == null || city.isBlank()) {
+            return Specification.unrestricted();
+        }
+
+        String like = "%" + city.toLowerCase() + "%";
+
+        return (root, query, cb) ->
+                cb.like(
                         cb.lower(root.get("city")),
-                        "%" + city.toLowerCase() + "%"
+                        like
                 );
     }
 }

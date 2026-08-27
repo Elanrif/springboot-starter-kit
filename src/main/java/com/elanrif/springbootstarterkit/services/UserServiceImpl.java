@@ -1,5 +1,6 @@
 package com.elanrif.springbootstarterkit.services;
 
+import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.entity.User;
 import com.elanrif.springbootstarterkit.entity.UserRole;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -53,20 +55,33 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public PageResponse<UserDto.Response> getUsers(int page,
-                                                   int limit,
-                                                   UserRole role,
-                                                   UserStatus status,
-                                                   String sort) {
-        log.debug("Fetching all users - page: {}, limit: {}, role: {}, status: {}", page, limit, role, status);
+    @Transactional(readOnly = true)
+    public PageResponse<UserDto.Response> getUsers(
+            UserDto.Filter filter,
+            CommonDto.Pagination pagination
+    ) {
+        log.debug(
+                "Fetching users - page: {}, size: {}, role: {}, status: {}",
+                pagination.page(),
+                pagination.size(),
+                filter != null ? filter.role() : null,
+                filter != null ? filter.status() : null
+        );
 
-        Pageable pageable = PageRequest.of(page, limit, toSort(sort));
-        Specification<User> spec = UserSpecification.hasRoleStatus(role, status);
-        Page<UserDto.Response> result = userRepository.findAll(spec,pageable)
+        Page<UserDto.Response> users = userRepository
+                .findAll(
+                        UserSpecification.from(filter),
+                        pagination.toPageable()
+                )
                 .map(userMapper::toResponse);
 
-        log.debug("Found {} users (total: {})", result.getNumberOfElements(), result.getTotalElements());
-        return PageResponse.from(result);
+        log.debug(
+                "Found {} users (total: {})",
+                users.getNumberOfElements(),
+                users.getTotalElements()
+        );
+
+        return PageResponse.from(users);
     }
 
     @Override

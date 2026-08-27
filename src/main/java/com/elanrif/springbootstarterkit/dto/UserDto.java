@@ -70,4 +70,10 @@ public final class UserDto {
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {}
+
+    @Schema(name = "UserFilter")
+    public record Filter(
+            UserRole role,
+            UserStatus status
+    ) {}
 }

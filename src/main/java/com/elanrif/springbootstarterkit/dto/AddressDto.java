@@ -1,6 +1,5 @@
 package com.elanrif.springbootstarterkit.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -34,5 +33,15 @@ public class AddressDto {
             String country,
             Boolean defaultAddress,
             Long userId
+    ) {}
+
+    // =========================================================
+    // FILTER
+    // =========================================================
+
+    @Schema(name = "AddressFilter")
+    public record Filter(
+            String city,
+            String country
     ) {}
 }

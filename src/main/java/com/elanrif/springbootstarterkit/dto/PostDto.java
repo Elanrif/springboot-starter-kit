@@ -131,6 +131,5 @@ public final class PostDto {
     public record Filter(
             String search,
             Long authorId
-
     ) {}
 }

@@ -1,6 +1,8 @@
 package com.elanrif.springbootstarterkit.controller;
 
 import com.elanrif.springbootstarterkit.dto.AddressDto;
+import com.elanrif.springbootstarterkit.dto.CommonDto;
+import com.elanrif.springbootstarterkit.dto.PostDto;
 import com.elanrif.springbootstarterkit.mapper.AddressMapper; // 👈 Import du mapper
 import com.elanrif.springbootstarterkit.services.AddressService;
 import com.elanrif.springbootstarterkit.util.PageResponse;
@@ -55,27 +57,12 @@ public class AddressController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<PageResponse<AddressDto.Response>> getAddressesByUserId(
             @PathVariable Long userId,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "5") int limit,
-            @RequestParam(defaultValue = "id,desc") String sort,
-            @RequestParam(required = false) String country,
-            @RequestParam(required = false) String city) {
-        // 👈 Convertit la page reçue (commençant à 1) en index Spring (commençant à 0)
-        // et protège contre les valeurs négatives ou égales à zéro.
-        page = Math.max(0, page - 1);
-        log.info(
-                "GET /api/v1/addresses/user/{} - page={}, limit={}, sort={}, country={}, city={}",
-                userId, page, limit, sort, country, city);
-
+            @ModelAttribute AddressDto.Filter filter,
+            @ModelAttribute CommonDto.Pagination pagination
+            ) {
+        log.info("GET /api/v1/addresses/user/{} - Fetching addresses", userId);
         PageResponse<AddressDto.Response> response =
-                addressService.getAddressesByUserId(
-                        userId,
-                        page,
-                        limit,
-                        sort,
-                        country,
-                        city
-                );
+                addressService.getAddressesByUserId(userId, filter, pagination);
         log.info("Returned {} addresses (total: {})", response.data().size(), response.meta().total());
         return ResponseEntity.ok(response);
     }
