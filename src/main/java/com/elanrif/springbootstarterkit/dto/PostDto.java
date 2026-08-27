@@ -59,7 +59,6 @@ public final class PostDto {
      */
     @Schema(name = "PostSummary")
     public record Summary(
-
             Long id,
             String title,
             String imageUrl,
@@ -83,26 +82,7 @@ public final class PostDto {
             String description,
             Long likes,
             UserDto.Summary author,
-            int commentCount,
-            LocalDateTime createdAt,
-            LocalDateTime updatedAt
-
-    ) {}
-
-    /**
-     * Detailed post response including comments.
-     * Used for GET /posts/{id}.
-     */
-    @Schema(name = "PostDetailResponse")
-    public record DetailResponse(
-
-            Long id,
-            String title,
-            String imageUrl,
-            String description,
-            Long likes,
-            UserDto.Summary author,
-            List<CommentDto.Response> comments,
+            int commentSize,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
 
@@ -110,7 +90,6 @@ public final class PostDto {
 
     @Schema(name = "PostCommentsResponse")
     public record CommentsResponse(
-
             Long id,
             String title,
             String imageUrl,

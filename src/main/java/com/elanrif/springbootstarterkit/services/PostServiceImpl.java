@@ -112,14 +112,14 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional(readOnly = true)
-    public PostDto.DetailResponse getPostById(Long id) {
+    public PostDto.Response getPostById(Long id) {
         log.debug("Fetching post detail with id: {}", id);
         Post post = postRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> {
                     log.warn("Post not found with id: {}", id);
                     return new ResourceNotFoundException("Post not found: " + id);
                 });
-        return postMapper.toDetailResponse(post);
+        return postMapper.toResponse(post);
     }
 
     @Override

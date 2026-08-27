@@ -24,6 +24,7 @@ public interface UserMapper {
 
     UserDto.Summary toSummary(User user);
 
+    @Mapping(target = "addrSize", expression = "java(user.getAddresses() != null ? user.getAddresses().size() : 0)")
     UserDto.Response toResponse(User user);
 
     @Mapping(target = "addresses", source = "addresses")

@@ -22,6 +22,24 @@ public class UserController {
 
     private final UserService userService;
 
+    @GetMapping
+    public ResponseEntity<PageResponse<UserDto.Response>> list(
+            @ModelAttribute UserDto.Filter filter,
+            @ModelAttribute CommonDto.Pagination pagination
+    ) {
+        log.info("GET /api/v1/users - Fetching users");
+        PageResponse<UserDto.Response> response =
+                userService.getUsers(filter, pagination);
+
+        log.info(
+                "Returned {} users (total: {})",
+                response.data().size(),
+                response.meta().total()
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping
     public ResponseEntity<UserDto.Response> createUser(@Valid @RequestBody UserDto.CreateRequest request) {
         log.info("POST /api/v1/users - Creating user with email: {}", request.email());
@@ -54,26 +72,8 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping
-    public ResponseEntity<PageResponse<UserDto.Response>> list(
-            @ModelAttribute UserDto.Filter filter,
-            @ModelAttribute CommonDto.Pagination pagination
-    ) {
-        log.info("GET /api/v1/users - Fetching users");
-        PageResponse<UserDto.Response> response =
-                userService.getUsers(filter, pagination);
-
-        log.info(
-                "Returned {} users (total: {})",
-                response.data().size(),
-                response.meta().total()
-        );
-
-        return ResponseEntity.ok(response);
-    }
-
     @GetMapping("/{id}")
-    public ResponseEntity<UserDto.Response> getById(@PathVariable Long id) {
+    public ResponseEntity<UserDto.Response> getUser(@PathVariable Long id) {
         log.info("GET /api/v1/users/{} - Fetching user by id", id);
         UserDto.Response response = userService.getById(id);
         log.info("Returned user with id: {}", id);

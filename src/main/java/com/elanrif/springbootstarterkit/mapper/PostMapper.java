@@ -18,12 +18,8 @@ public interface PostMapper {
     PostDto.Summary toSummary(Post post);
 
     @Mapping(target = "author", source = "author")
-    @Mapping(target = "commentCount", expression = "java(post.getComments() != null ? post.getComments().size() : 0)")
+    @Mapping(target = "commentSize", expression = "java(post.getComments() != null ? post.getComments().size() : 0)")
     PostDto.Response toResponse(Post post);
-
-    @Mapping(target = "author", source = "author")
-    @Mapping(target = "comments", source = "comments")
-    PostDto.DetailResponse toDetailResponse(Post post);
 
     @Mapping(target = "author", source = "post.author")
     @Mapping(target = "comments", source = "comments")
