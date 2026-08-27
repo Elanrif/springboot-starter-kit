@@ -220,7 +220,107 @@ public class DataLoader implements ApplicationRunner {
                 Comment.builder().content("Very useful").post(posts.get(1)).author(users.get(2)).build(),
                 Comment.builder().content("Great explanation").post(posts.get(2)).author(users.get(3)).build(),
                 Comment.builder().content("Nice work").post(posts.get(3)).author(users.get(1)).build(),
-                Comment.builder().content("Very clear").post(posts.get(4)).author(users.get(2)).build()
+                Comment.builder().content("Very clear").post(posts.get(4)).author(users.get(2)).build(),
+                // =====================================================
+                // POST 1 — 5 commentaires
+                // =====================================================
+                Comment.builder()
+                        .content("Excellent article")
+                        .post(posts.get(0))
+                        .author(users.get(1))
+                        .build(),
+
+                Comment.builder()
+                        .content("Très intéressant")
+                        .post(posts.get(0))
+                        .author(users.get(2))
+                        .build(),
+
+                Comment.builder()
+                        .content("Merci pour ces informations")
+                        .post(posts.get(0))
+                        .author(users.get(3))
+                        .build(),
+
+                Comment.builder()
+                        .content("Très bonne explication")
+                        .post(posts.get(0))
+                        .author(users.get(1))
+                        .build(),
+
+                Comment.builder()
+                        .content("J'ai beaucoup apprécié")
+                        .post(posts.get(0))
+                        .author(users.get(2))
+                        .build(),
+
+
+                // =====================================================
+                // POST 2 — 5 commentaires
+                // =====================================================
+                Comment.builder()
+                        .content("Very useful")
+                        .post(posts.get(1))
+                        .author(users.get(2))
+                        .build(),
+
+                Comment.builder()
+                        .content("This helped me a lot")
+                        .post(posts.get(1))
+                        .author(users.get(3))
+                        .build(),
+
+                Comment.builder()
+                        .content("Great information")
+                        .post(posts.get(1))
+                        .author(users.get(1))
+                        .build(),
+
+                Comment.builder()
+                        .content("Very well explained")
+                        .post(posts.get(1))
+                        .author(users.get(2))
+                        .build(),
+
+                Comment.builder()
+                        .content("Thanks for sharing")
+                        .post(posts.get(1))
+                        .author(users.get(3))
+                        .build(),
+
+
+                // =====================================================
+                // POST 3 — 5 commentaires
+                // =====================================================
+                Comment.builder()
+                        .content("Great explanation")
+                        .post(posts.get(2))
+                        .author(users.get(3))
+                        .build(),
+
+                Comment.builder()
+                        .content("Excellent work")
+                        .post(posts.get(2))
+                        .author(users.get(1))
+                        .build(),
+
+                Comment.builder()
+                        .content("Very clear and useful")
+                        .post(posts.get(2))
+                        .author(users.get(2))
+                        .build(),
+
+                Comment.builder()
+                        .content("I completely agree")
+                        .post(posts.get(2))
+                        .author(users.get(3))
+                        .build(),
+
+                Comment.builder()
+                        .content("Thank you for the explanation")
+                        .post(posts.get(2))
+                        .author(users.get(1))
+                        .build()
         );
 
         commentRepository.saveAll(comments);

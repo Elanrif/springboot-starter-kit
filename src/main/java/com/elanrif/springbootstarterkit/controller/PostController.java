@@ -1,5 +1,6 @@
 package com.elanrif.springbootstarterkit.controller;
 
+import com.elanrif.springbootstarterkit.dto.CommentDto;
 import com.elanrif.springbootstarterkit.dto.PostDto;
 import com.elanrif.springbootstarterkit.services.PostService;
 import com.elanrif.springbootstarterkit.util.PageResponse;
@@ -42,16 +43,47 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/{postId}/comments")
+    public ResponseEntity<PostDto.CommentsResponse> getPostComments(
+            @PathVariable Long postId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "5") int limit,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long authorId,
+            @RequestParam(required = false) String sort
+    ) {
+        page = Math.max(0, page - 1);
+
+        log.info(
+                "GET /api/v1/posts/{}/comments - Fetching comments with search: {}, " +
+                        "authorId: {}, page: {}, limit: {}",
+                postId,
+                search,
+                authorId,
+                page,
+                limit
+        );
+
+        CommentDto.Filter filter = new CommentDto.Filter(search,postId,authorId,sort);
+
+        PostDto.CommentsResponse response =
+                postService.getPostComments(postId,filter,page,limit);
+
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping
     public ResponseEntity<PostDto.Response> create(@Valid @RequestBody PostDto.CreateRequest request) {
-        log.info("POST /api/v1/posts - Creating post with title: {}, authorId: {}", request.title(), request.authorId());
+        log.info("POST /api/v1/posts - Creating post with title: {}, authorId: {}",
+                request.title(), request.authorId());
         PostDto.Response response = postService.createPost(request);
         log.info("Post created with id: {}", response.id());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<PostDto.Response> update(@PathVariable Long id, @Valid @RequestBody PostDto.UpdateRequest request) {
+    public ResponseEntity<PostDto.Response> update(@PathVariable Long id,
+                                                   @Valid @RequestBody PostDto.UpdateRequest request) {
         log.info("PATCH /api/v1/posts/{} - Updating post", id);
         PostDto.Response response = postService.updatePost(id, request);
         log.info("Post updated with id: {}", id);

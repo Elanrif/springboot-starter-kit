@@ -1,5 +1,6 @@
 package com.elanrif.springbootstarterkit.dto;
 
+import com.elanrif.springbootstarterkit.util.PageResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -102,6 +103,21 @@ public final class PostDto {
             Long likes,
             UserDto.Summary author,
             List<CommentDto.Response> comments,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt
+
+    ) {}
+
+    @Schema(name = "PostCommentsResponse")
+    public record CommentsResponse(
+
+            Long id,
+            String title,
+            String imageUrl,
+            String description,
+            Long likes,
+            UserDto.Summary author,
+            PageResponse<CommentDto.Response> comments,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
 
