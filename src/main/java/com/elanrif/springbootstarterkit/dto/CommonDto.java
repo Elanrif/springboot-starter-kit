@@ -11,9 +11,30 @@ public final class CommonDto {
 
     @Schema(name = "Pagination")
     public record Pagination(
+
+            @Schema(
+                    description = "Page number (starts at 1)",
+                    defaultValue = "1",
+                    example = "1",
+                    minimum = "1"
+            )
             Integer page,
+
+            @Schema(
+                    description = "Number of elements per page",
+                    defaultValue = "5",
+                    example = "5",
+                    minimum = "1"
+            )
             Integer size,
+
+            @Schema(
+                    description = "Sorting criteria: property,direction",
+                    defaultValue = "createdAt,desc",
+                    example = "createdAt,desc"
+            )
             String sort
+
     ) {
 
         public Pagination {

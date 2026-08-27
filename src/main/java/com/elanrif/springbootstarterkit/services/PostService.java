@@ -15,7 +15,7 @@ public interface PostService {
             CommonDto.Pagination pagination
     );
 
-    PostDto.DetailResponse getPostById(Long id);
+    PostDto.Response getPostById(Long id);
 
     PostDto.Response createPost(PostDto.CreateRequest request);
 

@@ -33,9 +33,9 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PostDto.DetailResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<PostDto.Response> getById(@PathVariable Long id) {
         log.info("GET /api/v1/posts/{} - Fetching post by id", id);
-        PostDto.DetailResponse response = postService.getPostById(id);
+        PostDto.Response response = postService.getPostById(id);
         log.info("Returned post with id: {}", id);
         return ResponseEntity.ok(response);
     }
@@ -46,6 +46,7 @@ public class PostController {
             @ModelAttribute CommentDto.Filter filter,
             @ModelAttribute CommonDto.Pagination pagination
     ) {
+        log.info("GET /api/v1/posts/{}/comments - Fetching comments for post", postId);
         PostDto.CommentsResponse response =
                 postService.getComments(
                         postId,

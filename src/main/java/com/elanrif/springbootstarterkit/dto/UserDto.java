@@ -67,7 +67,7 @@ public final class UserDto {
             String avatarUrl,
             UserRole role,
             UserStatus status,
-            List<AddressDto.Response> addresses,
+            int addrSize,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {}
