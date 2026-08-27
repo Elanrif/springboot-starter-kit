@@ -1,7 +1,9 @@
 package com.elanrif.springbootstarterkit.mapper;
 
+import com.elanrif.springbootstarterkit.dto.AddressDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.entity.User;
+import com.elanrif.springbootstarterkit.util.PageResponse;
 import org.mapstruct.*;
 
 /**
@@ -23,6 +25,12 @@ public interface UserMapper {
     UserDto.Summary toSummary(User user);
 
     UserDto.Response toResponse(User user);
+
+    @Mapping(target = "addresses", source = "addresses")
+    UserDto.AddressesResponse toAddressesResponse(
+            User user,
+            PageResponse<AddressDto.Response> addresses
+    );
 
     @Mapping(target = "id", ignore = true)
     User toEntity(UserDto.CreateRequest request);

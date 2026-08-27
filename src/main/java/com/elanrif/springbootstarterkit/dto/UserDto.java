@@ -2,6 +2,7 @@ package com.elanrif.springbootstarterkit.dto;
 
 import com.elanrif.springbootstarterkit.entity.UserRole;
 import com.elanrif.springbootstarterkit.entity.UserStatus;
+import com.elanrif.springbootstarterkit.util.PageResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -67,6 +68,21 @@ public final class UserDto {
             UserRole role,
             UserStatus status,
             List<AddressDto.Response> addresses,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt
+    ) {}
+
+    @Schema(name = "UserAddressesResponse")
+    public record AddressesResponse(
+            Long id,
+            String email,
+            String firstName,
+            String lastName,
+            String phoneNumber,
+            String avatarUrl,
+            UserRole role,
+            UserStatus status,
+            PageResponse<AddressDto.Response> addresses,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {}

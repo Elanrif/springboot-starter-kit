@@ -1,5 +1,6 @@
 package com.elanrif.springbootstarterkit.controller;
 
+import com.elanrif.springbootstarterkit.dto.AddressDto;
 import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.entity.UserRole;
@@ -34,6 +35,22 @@ public class UserController {
         log.info("PATCH /api/v1/users/{} - Updating user", id);
         UserDto.Response response = userService.update(id, request);
         log.info("User updated with id: {}", id);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{userId}/addresses")
+    public ResponseEntity<UserDto.AddressesResponse> getUserAddresses(
+            @PathVariable Long userId,
+            @ModelAttribute AddressDto.Filter filter,
+            @ModelAttribute CommonDto.Pagination pagination
+    ) {
+        UserDto.AddressesResponse response =
+                userService.getAddresses(
+                        userId,
+                        filter,
+                        pagination
+                );
+
         return ResponseEntity.ok(response);
     }
 

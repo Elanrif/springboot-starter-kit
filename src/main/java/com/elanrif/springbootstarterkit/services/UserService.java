@@ -1,5 +1,6 @@
 package com.elanrif.springbootstarterkit.services;
 
+import com.elanrif.springbootstarterkit.dto.AddressDto;
 import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.entity.UserRole;
@@ -14,7 +15,9 @@ public interface UserService {
 
     PageResponse<UserDto.Response> getUsers(UserDto.Filter filter,
                                             CommonDto.Pagination pagination);
-
+    UserDto.AddressesResponse getAddresses(Long userId,
+                                                AddressDto.Filter filter,
+                                                CommonDto.Pagination pagination);
     UserDto.Response getById(Long id);
 
     void deleteUser(Long id);
