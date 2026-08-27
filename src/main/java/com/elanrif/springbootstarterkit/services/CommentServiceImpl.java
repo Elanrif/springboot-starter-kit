@@ -1,6 +1,7 @@
 package com.elanrif.springbootstarterkit.services;
 
 import com.elanrif.springbootstarterkit.dto.CommentDto;
+import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.entity.Comment;
 import com.elanrif.springbootstarterkit.entity.Post;
 import com.elanrif.springbootstarterkit.entity.User;
@@ -9,6 +10,7 @@ import com.elanrif.springbootstarterkit.mapper.CommentMapper;
 import com.elanrif.springbootstarterkit.repository.CommentRepository;
 import com.elanrif.springbootstarterkit.repository.PostRepository;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
+import com.elanrif.springbootstarterkit.specification.CommentSpecification;
 import com.elanrif.springbootstarterkit.util.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,20 +33,32 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<CommentDto.Response> getComments(CommentDto.Filter filter, int page, int size) {
-        log.debug("Fetching comments with filter - page: {}, size: {}, search: {}, postId: {}, authorId: {}",
-                page, size,
-                filter != null ? filter.search() : null,
-                filter != null ? filter.postId() : null,
-                filter != null ? filter.authorId() : null);
+    public PageResponse<CommentDto.Response> getComments(
+            CommentDto.Filter filter,
+            CommonDto.Pagination pagination
+    ) {
+        log.debug(
+                "Fetching comments - page: {}, size: {}, search: {}, authorId: {}",
+                pagination.page(),
+                pagination.size(),
+                filter.search(),
+                filter.authorId()
+        );
 
-        PageRequest pageRequest = PageRequest.of(page, size, toSort(filter));
-        Specification<Comment> specification = buildSpecification(filter);
-        Page<CommentDto.Response> result = commentRepository.findAll(specification, pageRequest)
+        Page<CommentDto.Response> comments = commentRepository
+                .findAll(
+                        CommentSpecification.from(filter, null),
+                        pagination.toPageable()
+                )
                 .map(commentMapper::toResponse);
 
-        log.debug("Found {} comments (total: {})", result.getNumberOfElements(), result.getTotalElements());
-        return PageResponse.from(result);
+        log.debug(
+                "Found {} comments (total: {})",
+                comments.getNumberOfElements(),
+                comments.getTotalElements()
+        );
+
+        return PageResponse.from(comments);
     }
 
     @Override
@@ -66,10 +80,20 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentMapper.toEntity(request);
 
         // Update relationships
-        Post post = resolvePost(request.postId());
-        User author = resolveAuthor(request.authorId());
-        comment.setPost(post);
-        comment.setAuthor(author);
+        Post getPost = postRepository.findById(request.postId())
+                .orElseThrow(() -> {
+                    log.warn("Post not found with id: {}", request.postId());
+                    return new ResourceNotFoundException("Post not found: " + request.postId());
+                });
+        User getUser = userRepository.findById(request.authorId())
+                .orElseThrow(() -> {
+                    log.warn("Author not found with id: {}", request.authorId());
+                    return new ResourceNotFoundException("Author not found: " + request.authorId());
+                });
+
+        comment.setPost(getPost);
+        comment.setAuthor(getUser);
+
 
         CommentDto.Response response = commentMapper.toResponse(commentRepository.save(comment));
         log.info("Comment created successfully with id: {}", response.id());
@@ -96,8 +120,19 @@ public class CommentServiceImpl implements CommentService {
         commentMapper.updateFromRequest(request, comment);
 
         // Update relationships
-        comment.setPost(resolvePost(request.postId()));
-        comment.setAuthor(resolveAuthor(request.authorId()));
+        Post getPost = postRepository.findById(request.postId())
+                .orElseThrow(() -> {
+                    log.warn("Post not found with id: {}", request.postId());
+                    return new ResourceNotFoundException("Post not found: " + request.postId());
+                });
+        User getUser = userRepository.findById(request.authorId())
+                .orElseThrow(() -> {
+                    log.warn("Author not found with id: {}", request.authorId());
+                    return new ResourceNotFoundException("Author not found: " + request.authorId());
+                });
+
+        comment.setPost(getPost);
+        comment.setAuthor(getUser);
 
         CommentDto.Response response =
                 commentMapper.toResponse(commentRepository.save(comment));
@@ -119,65 +154,4 @@ public class CommentServiceImpl implements CommentService {
         log.info("Comment deleted successfully with id: {}", id);
     }
 
-    private Post resolvePost(Long postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> {
-                    log.warn("Post not found with id: {}", postId);
-                    return new ResourceNotFoundException("Post not found: " + postId);
-                });
-    }
-
-    private User resolveAuthor(Long authorId) {
-        return userRepository.findById(authorId)
-                .orElseThrow(() -> {
-                    log.warn("Author not found with id: {}", authorId);
-                    return new ResourceNotFoundException("Author not found: " + authorId);
-                });
-    }
-
-    private Sort toSort(CommentDto.Filter filter) {
-        if (filter == null || filter.sort() == null || filter.sort().isBlank()) {
-            return Sort.by(Sort.Direction.DESC, "createdAt");
-        }
-
-        String sort = filter.sort();
-        String[] parts = sort.split(",");
-        String field = parts[0];
-        Sort.Direction direction = parts.length > 1 && parts[1].equalsIgnoreCase("desc")
-                ? Sort.Direction.DESC
-                : Sort.Direction.ASC;
-
-        return Sort.by(direction, field);
-    }
-
-    private Specification<Comment> buildSpecification(CommentDto.Filter filter) {
-        if (filter == null) {
-            return (root, query, cb) -> null;
-        }
-        return Specification.where(search(filter.search()))
-                .and(post(filter.postId()))
-                .and(author(filter.authorId()));
-    }
-
-    private Specification<Comment> search(String search) {
-        return (root, query, cb) -> {
-            if (search == null || search.isBlank()) {
-                return null;
-            }
-            String like = "%" + search.toLowerCase() + "%";
-            return cb.like(cb.lower(root.get("content")), like);
-        };
-    }
-
-    private Specification<Comment> post(Long postId) {
-        return (root, query, cb) -> postId == null
-                ? null
-                : cb.equal(root.get("post").get("id"), postId);
-    }
-
-    private Specification<Comment> author(Long authorId) {
-        return (root, query, cb) -> authorId == null
-                ? null
-                : cb.equal(root.get("author").get("id"), authorId);
-    }
 }

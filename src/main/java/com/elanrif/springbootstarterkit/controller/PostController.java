@@ -1,6 +1,7 @@
 package com.elanrif.springbootstarterkit.controller;
 
 import com.elanrif.springbootstarterkit.dto.CommentDto;
+import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.dto.PostDto;
 import com.elanrif.springbootstarterkit.services.PostService;
 import com.elanrif.springbootstarterkit.util.PageResponse;
@@ -21,16 +22,11 @@ public class PostController {
 
     @GetMapping
     public ResponseEntity<PageResponse<PostDto.Response>> list(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "5") int limit,
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) Long authorId,
-            @RequestParam(required = false) String sort) {
-        page = Math.max(0, page - 1);
-        log.info("GET /api/v1/posts - Fetching posts with search: {}, authorId: {}, page: {}, limit: {}",
-                search, authorId, page, limit);
-        PostDto.Filter filter = new PostDto.Filter(search, authorId, sort);
-        PageResponse<PostDto.Response> response = postService.getPosts(filter, page, limit);
+            @ModelAttribute PostDto.Filter filter,
+            @ModelAttribute CommonDto.Pagination pagination
+    ) {
+        PageResponse<PostDto.Response> response =
+                postService.getPosts(filter, pagination);
         log.info("Returned {} posts (total: {})", response.data().size(), response.meta().total());
         return ResponseEntity.ok(response);
     }
@@ -46,28 +42,15 @@ public class PostController {
     @GetMapping("/{postId}/comments")
     public ResponseEntity<PostDto.CommentsResponse> getPostComments(
             @PathVariable Long postId,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "5") int limit,
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) Long authorId,
-            @RequestParam(required = false) String sort
+            @ModelAttribute CommentDto.Filter filter,
+            @ModelAttribute CommonDto.Pagination pagination
     ) {
-        page = Math.max(0, page - 1);
-
-        log.info(
-                "GET /api/v1/posts/{}/comments - Fetching comments with search: {}, " +
-                        "authorId: {}, page: {}, limit: {}",
-                postId,
-                search,
-                authorId,
-                page,
-                limit
-        );
-
-        CommentDto.Filter filter = new CommentDto.Filter(search,postId,authorId,sort);
-
         PostDto.CommentsResponse response =
-                postService.getPostComments(postId,filter,page,limit);
+                postService.getPostComments(
+                        postId,
+                        filter,
+                        pagination
+                );
 
         return ResponseEntity.ok(response);
     }

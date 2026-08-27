@@ -1,6 +1,7 @@
 package com.elanrif.springbootstarterkit.services;
 
 import com.elanrif.springbootstarterkit.dto.CommentDto;
+import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.dto.PostDto;
 import com.elanrif.springbootstarterkit.entity.Comment;
 import com.elanrif.springbootstarterkit.entity.Post;
@@ -12,6 +13,8 @@ import com.elanrif.springbootstarterkit.mapper.PostMapper;
 import com.elanrif.springbootstarterkit.repository.CommentRepository;
 import com.elanrif.springbootstarterkit.repository.PostRepository;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
+import com.elanrif.springbootstarterkit.specification.CommentSpecification;
+import com.elanrif.springbootstarterkit.specification.PostSpecification;
 import com.elanrif.springbootstarterkit.util.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,15 +38,32 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<PostDto.Response> getPosts(PostDto.Filter filter, int page, int size) {
-        log.debug("Fetching posts with filter - page: {}, size: {}, search: {}, authorId: {}",
-                page, size, filter != null ? filter.search() : null, filter != null ? filter.authorId() : null);
-        PageRequest pageRequest = PageRequest.of(page, size, toSort(filter));
-        Specification<Post> specification = buildSpecification(filter);
-        Page<PostDto.Response> result = postRepository.findAll(specification, pageRequest)
+    public PageResponse<PostDto.Response> getPosts(
+            PostDto.Filter filter,
+            CommonDto.Pagination pagination
+    ) {
+        log.debug(
+                "Fetching posts - page: {}, size: {}, search: {}, authorId: {}",
+                pagination.page(),
+                pagination.size(),
+                filter != null ? filter.search() : null,
+                filter != null ? filter.authorId() : null
+        );
+
+        Page<PostDto.Response> posts = postRepository
+                .findAll(
+                        PostSpecification.from(filter),
+                        pagination.toPageable()
+                )
                 .map(postMapper::toResponse);
-        log.debug("Found {} posts (total: {})", result.getNumberOfElements(), result.getTotalElements());
-        return PageResponse.from(result);
+
+        log.debug(
+                "Found {} posts (total: {})",
+                posts.getNumberOfElements(),
+                posts.getTotalElements()
+        );
+
+        return PageResponse.from(posts);
     }
 
     @Override
@@ -51,19 +71,17 @@ public class PostServiceImpl implements PostService {
     public PostDto.CommentsResponse getPostComments(
             Long postId,
             CommentDto.Filter filter,
-            int page,
-            int size
+            CommonDto.Pagination pagination
     ) {
         log.debug(
-                "Fetching comments for post - postId: {}, page: {}, size: {}, search: {}, authorId: {}",
+                "Fetching comments - postId: {}, page: {}, size: {}, search: {}, authorId: {}",
                 postId,
-                page,
-                size,
+                pagination.page(),
+                pagination.size(),
                 filter != null ? filter.search() : null,
                 filter != null ? filter.authorId() : null
         );
 
-        // Vérifier que le Post existe
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> {
                     log.warn("Post not found with id: {}", postId);
@@ -72,22 +90,12 @@ public class PostServiceImpl implements PostService {
                     );
                 });
 
-        // Pagination + tri
-        PageRequest pageRequest = PageRequest.of(
-                page,
-                size,
-                toSort(filter)
-        );
-
-        // Filtres + postId
-        Specification<Comment> specification =
-                buildCommentSpecification(postId, filter);
-
-        // Récupérer uniquement les commentaires de CE post
-        Page<CommentDto.Response> comments =
-                commentRepository
-                        .findAll(specification, pageRequest)
-                        .map(commentMapper::toResponse);
+        Page<CommentDto.Response> comments = commentRepository
+                .findAll(
+                        CommentSpecification.from(filter, postId),
+                        pagination.toPageable()
+                )
+                .map(commentMapper::toResponse);
 
         log.debug(
                 "Found {} comments for post {} (total: {})",
@@ -123,7 +131,11 @@ public class PostServiceImpl implements PostService {
         }
 
         Post post = postMapper.toEntity(request);
-        User author = resolveAuthor(request.authorId());
+        User author = userRepository.findById(request.authorId())
+                .orElseThrow(() -> {
+                    log.warn("Author not found with id: {}", request.authorId());
+                    return new ResourceNotFoundException("Author not found: " + request.authorId());
+                });
         post.setAuthor(author);
 
         PostDto.Response response = postMapper.toResponse(postRepository.save(post));
@@ -144,7 +156,11 @@ public class PostServiceImpl implements PostService {
         postMapper.updateFromRequest(request, post);
 
         if (request.authorId() != null) {
-            User author = resolveAuthor(request.authorId());
+            User author = userRepository.findById(request.authorId())
+                    .orElseThrow(() -> {
+                        log.warn("Author not found with id: {}", request.authorId());
+                        return new ResourceNotFoundException("Author not found: " + request.authorId());
+                    });
             post.setAuthor(author);
         }
 
@@ -163,99 +179,5 @@ public class PostServiceImpl implements PostService {
         }
         postRepository.deleteById(id);
         log.info("Post deleted successfully with id: {}", id);
-    }
-
-    private User resolveAuthor(Long authorId) {
-        return userRepository.findById(authorId)
-                .orElseThrow(() -> {
-                    log.warn("Author not found with id: {}", authorId);
-                    return new ResourceNotFoundException("Author not found: " + authorId);
-                });
-    }
-
-    private Sort toSort(PostDto.Filter filter) {
-        if (filter == null || filter.sort() == null || filter.sort().isBlank()) {
-            return Sort.by(Sort.Direction.DESC, "createdAt");
-        }
-
-        String sort = filter.sort();
-        String[] parts = sort.split(",");
-        String field = parts[0];
-        Sort.Direction direction = parts.length > 1 && parts[1].equalsIgnoreCase("desc")
-                ? Sort.Direction.DESC
-                : Sort.Direction.ASC;
-
-        return Sort.by(direction, field);
-    }
-
-    private Specification<Post> buildSpecification(PostDto.Filter filter) {
-        if (filter == null) {
-            return (root, query, cb) -> null;
-        }
-        return Specification.where(search(filter.search()))
-                .and(author(filter.authorId()));
-    }
-
-    private Specification<Post> search(String search) {
-        return (root, query, cb) -> {
-            if (search == null || search.isBlank()) {
-                return null;
-            }
-            String like = "%" + search.toLowerCase() + "%";
-            return cb.or(
-                    cb.like(cb.lower(root.get("title")), like),
-                    cb.like(cb.lower(root.get("description")), like)
-            );
-        };
-    }
-
-    private Specification<Post> author(Long authorId) {
-        return (root, query, cb) -> authorId == null
-                ? null
-                : cb.equal(root.get("author").get("id"), authorId);
-    }
-
-    private Sort toSort(CommentDto.Filter filter) {
-        if (filter == null || filter.sort() == null || filter.sort().isBlank()) {
-            return Sort.by(Sort.Direction.DESC, "createdAt");
-        }
-
-        String sort = filter.sort();
-        String[] parts = sort.split(",");
-        String field = parts[0];
-        Sort.Direction direction = parts.length > 1 && parts[1].equalsIgnoreCase("desc")
-                ? Sort.Direction.DESC
-                : Sort.Direction.ASC;
-
-        return Sort.by(direction, field);
-    }
-
-    private Specification<Comment> buildCommentSpecification(Long postId, CommentDto.Filter filter) {
-        if (filter == null) {
-            return post(postId);
-        }
-        return Specification.where(commentSearch(filter.search()))
-                .and(post(postId))
-                .and(commentAuthor(filter.authorId()));
-    }
-
-    private Specification<Comment> commentSearch(String search) {
-        return (root, query, cb) -> {
-            if (search == null || search.isBlank()) {
-                return null;
-            }
-            String like = "%" + search.toLowerCase() + "%";
-            return cb.like(cb.lower(root.get("content")), like);
-        };
-    }
-
-    private Specification<Comment> post(Long postId) {
-        return (root, query, cb) -> cb.equal(root.get("post").get("id"), postId);
-    }
-
-    private Specification<Comment> commentAuthor(Long authorId) {
-        return (root, query, cb) -> authorId == null
-                ? null
-                : cb.equal(root.get("author").get("id"), authorId);
     }
 }

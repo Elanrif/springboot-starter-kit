@@ -1,6 +1,7 @@
 package com.elanrif.springbootstarterkit.controller;
 
 import com.elanrif.springbootstarterkit.dto.CommentDto;
+import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.services.CommentService;
 import com.elanrif.springbootstarterkit.util.PageResponse;
 import jakarta.validation.Valid;
@@ -20,18 +21,19 @@ public class CommentController {
 
     @GetMapping
     public ResponseEntity<PageResponse<CommentDto.Response>> list(
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) Long postId,
-            @RequestParam(required = false) Long authorId,
-            @RequestParam(required = false) String sort,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "5") int limit) {
-        page = Math.max(0, page - 1);
-        log.info("GET /api/v1/comments - Fetching comments with search: {}, postId: {}, authorId: {}, page: {}, limit: {}",
-                search, postId, authorId, page, limit);
-        CommentDto.Filter filter = new CommentDto.Filter(search, postId, authorId, sort);
-        PageResponse<CommentDto.Response> response = commentService.getComments(filter, page, limit);
-        log.info("Returned {} comments (total: {})", response.data().size(), response.meta().total());
+            @ModelAttribute CommentDto.Filter filter,
+            @ModelAttribute CommonDto.Pagination pagination
+    ) {
+        log.info("GET /api/v1/comments - Fetching comments");
+        PageResponse<CommentDto.Response> response =
+                commentService.getComments(filter, pagination);
+
+        log.info(
+                "Returned {} comments (total: {})",
+                response.data().size(),
+                response.meta().total()
+        );
+
         return ResponseEntity.ok(response);
     }
 
