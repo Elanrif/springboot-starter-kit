@@ -22,7 +22,7 @@ public final class CommentSpecification {
 
     private static Specification<Comment> post(Long postId) {
         if (postId == null) {
-            return null;
+            return Specification.unrestricted();
         }
 
         return (root, query, cb) ->
@@ -34,7 +34,7 @@ public final class CommentSpecification {
 
     private static Specification<Comment> search(String search) {
         if (search == null || search.isBlank()) {
-            return null;
+            return Specification.unrestricted();
         }
 
         String like = "%" + search.toLowerCase() + "%";
@@ -48,7 +48,7 @@ public final class CommentSpecification {
 
     private static Specification<Comment> author(Long authorId) {
         if (authorId == null) {
-            return null;
+            return Specification.unrestricted();
         }
 
         return (root, query, cb) ->

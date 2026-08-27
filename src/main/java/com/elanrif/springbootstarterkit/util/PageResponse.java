@@ -12,7 +12,7 @@ public record PageResponse<T>(
     public record Meta(
             long total,
             int page,
-            int limit,
+            int size,
             int totalPages
     ) {}
 
