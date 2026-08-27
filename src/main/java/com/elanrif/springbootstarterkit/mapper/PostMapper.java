@@ -1,7 +1,9 @@
 package com.elanrif.springbootstarterkit.mapper;
 
+import com.elanrif.springbootstarterkit.dto.CommentDto;
 import com.elanrif.springbootstarterkit.dto.PostDto;
 import com.elanrif.springbootstarterkit.entity.Post;
+import com.elanrif.springbootstarterkit.util.PageResponse;
 import org.mapstruct.*;
 
 import java.util.List;
@@ -22,6 +24,13 @@ public interface PostMapper {
     @Mapping(target = "author", source = "author")
     @Mapping(target = "comments", source = "comments")
     PostDto.DetailResponse toDetailResponse(Post post);
+
+    @Mapping(target = "author", source = "post.author")
+    @Mapping(target = "comments", source = "comments")
+    PostDto.CommentsResponse toCommentsResponse(
+            Post post,
+            PageResponse<CommentDto.Response> comments
+    );
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "author", ignore = true)
