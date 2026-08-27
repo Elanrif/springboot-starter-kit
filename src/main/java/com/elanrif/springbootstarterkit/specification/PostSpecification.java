@@ -10,9 +10,8 @@ public final class PostSpecification {
     }
 
     public static Specification<Post> from(PostDto.Filter filter) {
-
         if (filter == null) {
-            return Specification.allOf();
+            return Specification.unrestricted();
         }
 
         return Specification.allOf(
@@ -23,22 +22,20 @@ public final class PostSpecification {
 
     private static Specification<Post> search(String search) {
         if (search == null || search.isBlank()) {
-            return null;
+            return Specification.unrestricted();
         }
 
-        return (root, query, cb) -> {
-            String like = "%" + search.toLowerCase() + "%";
+        String like = "%" + search.toLowerCase() + "%";
 
-            return cb.or(
-                    cb.like(cb.lower(root.get("title")), like),
-                    cb.like(cb.lower(root.get("description")), like)
-            );
-        };
+        return (root, query, cb) -> cb.or(
+                cb.like(cb.lower(root.get("title")), like),
+                cb.like(cb.lower(root.get("description")), like)
+        );
     }
 
     private static Specification<Post> author(Long authorId) {
         if (authorId == null) {
-            return null;
+            return Specification.unrestricted();
         }
 
         return (root, query, cb) ->
