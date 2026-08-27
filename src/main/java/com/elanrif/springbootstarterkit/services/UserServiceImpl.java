@@ -1,13 +1,17 @@
 package com.elanrif.springbootstarterkit.services;
 
+import com.elanrif.springbootstarterkit.dto.AddressDto;
 import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.entity.User;
 import com.elanrif.springbootstarterkit.entity.UserRole;
 import com.elanrif.springbootstarterkit.entity.UserStatus;
 import com.elanrif.springbootstarterkit.exception.ResourceNotFoundException;
+import com.elanrif.springbootstarterkit.mapper.AddressMapper;
 import com.elanrif.springbootstarterkit.mapper.UserMapper;
+import com.elanrif.springbootstarterkit.repository.AddressRepository;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
+import com.elanrif.springbootstarterkit.specification.AddressSpecification;
 import com.elanrif.springbootstarterkit.specification.UserSpecification;
 import com.elanrif.springbootstarterkit.util.PageResponse;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +30,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
+    private final AddressRepository addressRepository;
+    private final AddressMapper addressMapper;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
@@ -82,6 +88,33 @@ public class UserServiceImpl implements UserService {
         );
 
         return PageResponse.from(users);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserDto.AddressesResponse getAddresses(
+            Long userId,
+            AddressDto.Filter filter,
+            CommonDto.Pagination pagination
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "User not found: " + userId
+                        )
+                );
+
+        Page<AddressDto.Response> addresses = addressRepository
+                .findAll(
+                        AddressSpecification.from(userId, filter),
+                        pagination.toPageable()
+                )
+                .map(addressMapper::toResponse);
+
+        return userMapper.toAddressesResponse(
+                user,
+                PageResponse.from(addresses)
+        );
     }
 
     @Override

@@ -68,7 +68,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional(readOnly = true)
-    public PostDto.CommentsResponse getPostComments(
+    public PostDto.CommentsResponse getComments(
             Long postId,
             CommentDto.Filter filter,
             CommonDto.Pagination pagination

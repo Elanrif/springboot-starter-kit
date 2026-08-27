@@ -9,7 +9,7 @@ public interface PostService {
 
     PageResponse<PostDto.Response> getPosts(PostDto.Filter filter, CommonDto.Pagination pageRequest);
 
-    PostDto.CommentsResponse getPostComments(
+    PostDto.CommentsResponse getComments(
             Long postId,
             CommentDto.Filter filter,
             CommonDto.Pagination pagination

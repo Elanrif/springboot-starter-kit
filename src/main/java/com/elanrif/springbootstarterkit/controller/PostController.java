@@ -47,7 +47,7 @@ public class PostController {
             @ModelAttribute CommonDto.Pagination pagination
     ) {
         PostDto.CommentsResponse response =
-                postService.getPostComments(
+                postService.getComments(
                         postId,
                         filter,
                         pagination
