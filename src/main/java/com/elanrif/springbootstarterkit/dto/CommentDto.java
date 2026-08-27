@@ -56,9 +56,8 @@ public final class CommentDto {
 
     @Schema(name = "CommentFilter")
     public record Filter(
-            String search,
-            Long postId,
             Long authorId,
-            String sort
+            Long postId,
+            String search
     ) {}
 }

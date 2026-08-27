@@ -1,18 +1,18 @@
 package com.elanrif.springbootstarterkit.services;
 
 import com.elanrif.springbootstarterkit.dto.CommentDto;
+import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.dto.PostDto;
 import com.elanrif.springbootstarterkit.util.PageResponse;
 
 public interface PostService {
 
-    PageResponse<PostDto.Response> getPosts(PostDto.Filter filter, int page, int size);
+    PageResponse<PostDto.Response> getPosts(PostDto.Filter filter, CommonDto.Pagination pageRequest);
 
     PostDto.CommentsResponse getPostComments(
             Long postId,
             CommentDto.Filter filter,
-            int page,
-            int size
+            CommonDto.Pagination pagination
     );
 
     PostDto.DetailResponse getPostById(Long id);

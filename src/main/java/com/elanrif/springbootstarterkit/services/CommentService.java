@@ -1,11 +1,12 @@
 package com.elanrif.springbootstarterkit.services;
 
 import com.elanrif.springbootstarterkit.dto.CommentDto;
+import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.util.PageResponse;
 
 public interface CommentService {
 
-    PageResponse<CommentDto.Response> getComments(CommentDto.Filter filter, int page, int size);
+    PageResponse<CommentDto.Response> getComments(CommentDto.Filter filter, CommonDto.Pagination pagination);
 
     CommentDto.Response getCommentById(Long id);
 
