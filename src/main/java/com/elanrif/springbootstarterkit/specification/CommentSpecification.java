@@ -10,14 +10,25 @@ public final class CommentSpecification {
     }
 
     public static Specification<Comment> from(
-            CommentDto.Filter filter,
-            Long postId
+            CommentDto.Filter filter
     ) {
         return Specification.allOf(
-                post(postId),
-                search(filter != null ? filter.search() : null),
-                author(filter != null ? filter.authorId() : null)
+                author(filter != null ? filter.authorId() : null),
+                post(filter != null ? filter.postId() : null),
+                search(filter != null ? filter.search() : null)
         );
+    }
+
+    private static Specification<Comment> author(Long authorId) {
+        if (authorId == null) {
+            return Specification.unrestricted();
+        }
+
+        return (root, query, cb) ->
+                cb.equal(
+                        root.get("author").get("id"),
+                        authorId
+                );
     }
 
     private static Specification<Comment> post(Long postId) {
@@ -43,18 +54,6 @@ public final class CommentSpecification {
                 cb.like(
                         cb.lower(root.get("content")),
                         like
-                );
-    }
-
-    private static Specification<Comment> author(Long authorId) {
-        if (authorId == null) {
-            return Specification.unrestricted();
-        }
-
-        return (root, query, cb) ->
-                cb.equal(
-                        root.get("author").get("id"),
-                        authorId
                 );
     }
 }

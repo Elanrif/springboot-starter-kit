@@ -8,17 +8,13 @@ import com.elanrif.springbootstarterkit.entity.UserStatus;
 import com.elanrif.springbootstarterkit.util.PageResponse;
 
 public interface UserService {
-    // =========================================================
-    // CRUD operations for User entity
-    // =========================================================
-
-    UserDto.Response createUser(UserDto.CreateRequest request);
-
     PageResponse<UserDto.Response> getUsers(
             UserDto.Filter filter,
             CommonDto.Pagination pagination
     );
     UserDto.Response getById(Long id);
+
+    UserDto.Response createUser(UserDto.CreateRequest request);
 
     UserDto.Response updateUser(
             Long id,

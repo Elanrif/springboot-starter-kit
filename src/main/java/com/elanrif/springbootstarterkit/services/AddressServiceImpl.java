@@ -29,48 +29,8 @@ public class AddressServiceImpl implements AddressService {
     private final AddressMapper addressMapper;
 
     @Override
-    @Transactional
-    public AddressDto.Response createUserAddress(
-            Long userId,
-            AddressDto.CreateRequest request
-    ) {
-        log.debug("Creating address for user {}", userId);
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.warn("User not found with id: {}", userId);
-                    return new ResourceNotFoundException(
-                            "User not found with id: " + userId
-                    );
-                });
-
-        Address address = addressMapper.toEntity(request);
-        address.setUser(user);
-
-        boolean hasAddresses =
-                addressRepository.existsByUserId(userId);
-
-        if (!hasAddresses) {
-            address.setDefaultAddress(true);
-        } else if (Boolean.TRUE.equals(address.getDefaultAddress())) {
-            resetDefaultAddresses(userId);
-        }
-
-        Address savedAddress =
-                addressRepository.save(address);
-
-        log.info(
-                "Address created successfully with id: {} for user {}",
-                savedAddress.getId(),
-                userId
-        );
-
-        return addressMapper.toResponse(savedAddress);
-    }
-
-    @Override
     @Transactional(readOnly = true)
-    public PageResponse<AddressDto.Response> getAllAddresses(
+    public PageResponse<AddressDto.Response> getAddresses(
             AddressDto.Filter filter,
             CommonDto.Pagination pagination
     ) {
@@ -100,45 +60,6 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<AddressDto.Response> getAddressesByUserId(
-            Long userId,
-            AddressDto.Filter filter,
-            CommonDto.Pagination pagination
-    ) {
-        if (!userRepository.existsById(userId)) {
-            throw new ResourceNotFoundException(
-                    "User not found with id: " + userId
-            );
-        }
-
-        log.debug(
-                "Fetching addresses for user {} - page: {}, size: {}, country: {}, city: {}",
-                userId,
-                pagination.page(),
-                pagination.size(),
-                filter != null ? filter.country() : null,
-                filter != null ? filter.city() : null
-        );
-
-        Page<AddressDto.Response> addresses = addressRepository
-                .findAll(
-                        AddressSpecification.from(userId, filter),
-                        pagination.toPageable()
-                )
-                .map(addressMapper::toResponse);
-
-        log.debug(
-                "Found {} addresses for user {} (total: {})",
-                addresses.getNumberOfElements(),
-                userId,
-                addresses.getTotalElements()
-        );
-
-        return PageResponse.from(addresses);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public AddressDto.Response getAddressById(Long id) {
         log.debug("Fetching address with id: {}", id);
 
@@ -151,6 +72,43 @@ public class AddressServiceImpl implements AddressService {
                 });
 
         return addressMapper.toResponse(address);
+    }
+
+    @Override
+    @Transactional
+    public AddressDto.Response createAddress(AddressDto.CreateRequest request) {
+        log.debug("Creating address for user {}", request.userId());
+
+        User user = userRepository.findById(request.userId())
+                .orElseThrow(() -> {
+                    log.warn("User not found with id: {}", request.userId());
+                    return new ResourceNotFoundException(
+                            "User not found with id: " + request.userId()
+                    );
+                });
+
+        Address address = addressMapper.toEntity(request);
+        address.setUser(user);
+
+        boolean hasAddresses =
+                addressRepository.existsByUserId(request.userId());
+
+        if (!hasAddresses) {
+            address.setDefaultAddress(true);
+        } else if (Boolean.TRUE.equals(address.getDefaultAddress())) {
+            resetDefaultAddresses(request.userId());
+        }
+
+        Address savedAddress =
+                addressRepository.save(address);
+
+        log.info(
+                "Address created successfully with id: {} for user {}",
+                savedAddress.getId(),
+                request.userId()
+        );
+
+        return addressMapper.toResponse(savedAddress);
     }
 
     @Override

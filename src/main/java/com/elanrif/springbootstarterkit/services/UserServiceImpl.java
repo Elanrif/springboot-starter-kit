@@ -1,17 +1,11 @@
 package com.elanrif.springbootstarterkit.services;
 
-import com.elanrif.springbootstarterkit.dto.AddressDto;
 import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.entity.User;
-import com.elanrif.springbootstarterkit.entity.UserRole;
-import com.elanrif.springbootstarterkit.entity.UserStatus;
 import com.elanrif.springbootstarterkit.exception.ResourceNotFoundException;
-import com.elanrif.springbootstarterkit.mapper.AddressMapper;
 import com.elanrif.springbootstarterkit.mapper.UserMapper;
-import com.elanrif.springbootstarterkit.repository.AddressRepository;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
-import com.elanrif.springbootstarterkit.specification.AddressSpecification;
 import com.elanrif.springbootstarterkit.specification.UserSpecification;
 import com.elanrif.springbootstarterkit.util.PageResponse;
 import lombok.RequiredArgsConstructor;
@@ -26,26 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private final AddressRepository addressRepository;
-    private final AddressMapper addressMapper;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
-
-    @Override
-    @Transactional
-    public UserDto.Response createUser(UserDto.CreateRequest request) {
-        log.debug("Creating user with email: {}", request.email());
-
-        User user = userMapper.toEntity(request);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-        User savedUser = userRepository.save(user);
-
-        log.info("User created successfully with id: {}", savedUser.getId());
-
-        return userMapper.toResponse(savedUser);
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -91,6 +68,22 @@ public class UserServiceImpl implements UserService {
                 });
 
         return userMapper.toResponse(user);
+    }
+
+
+    @Override
+    @Transactional
+    public UserDto.Response createUser(UserDto.CreateRequest request) {
+        log.debug("Creating user with email: {}", request.email());
+
+        User user = userMapper.toEntity(request);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        User savedUser = userRepository.save(user);
+
+        log.info("User created successfully with id: {}", savedUser.getId());
+
+        return userMapper.toResponse(savedUser);
     }
 
     @Override
