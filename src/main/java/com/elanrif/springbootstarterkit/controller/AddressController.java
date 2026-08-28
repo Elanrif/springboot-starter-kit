@@ -2,7 +2,6 @@ package com.elanrif.springbootstarterkit.controller;
 
 import com.elanrif.springbootstarterkit.dto.AddressDto;
 import com.elanrif.springbootstarterkit.dto.CommonDto;
-import com.elanrif.springbootstarterkit.entity.Address;
 import com.elanrif.springbootstarterkit.mapper.AddressMapper;
 import com.elanrif.springbootstarterkit.services.AddressService;
 import com.elanrif.springbootstarterkit.util.PageResponse;
@@ -21,6 +20,10 @@ public class AddressController {
     private final AddressService addressService;
     private final AddressMapper addressMapper;
 
+    // =========================================================
+    // RCUD (Read,Create,Update,Delete) operations for User entity
+    // =========================================================
+
     @GetMapping
     public ResponseEntity<PageResponse<AddressDto.Response>> getAddresses(
             @ModelAttribute AddressDto.Filter filter,
@@ -33,7 +36,7 @@ public class AddressController {
         );
 
         PageResponse<AddressDto.Response> response =
-                addressService.getAddresses(filter, pagination);
+                addressService.getAllAddresses(filter, pagination);
 
         log.info(
                 "Returned {} addresses (total: {})",
@@ -50,10 +53,7 @@ public class AddressController {
     ) {
         log.info("GET /api/v1/addresses/{} - Fetching address", id);
 
-        AddressDto.Response response =
-                addressMapper.toResponse(
-                        addressService.getAddressById(id)
-                );
+        AddressDto.Response response = addressService.getAddressById(id);
 
         return ResponseEntity.ok(response);
     }
@@ -63,19 +63,15 @@ public class AddressController {
             @PathVariable Long id,
             @Valid @RequestBody AddressDto.UpdateRequest request
     ) {
-        log.info("PATCH /api/v1/addresses/{} - Updating address", id);
-
-        var address = addressService.getAddressById(id);
-
-        // TODO: est il vraiment utilise cette ligne de code.
-        addressMapper.updateFromRequest(request, address);
-
-        var updatedAddress =
-                addressService.updateAddress(id, address);
-
-        return ResponseEntity.ok(
-                addressMapper.toResponse(updatedAddress)
+        log.info(
+                "PATCH /api/v1/addresses/{} - Updating address",
+                id
         );
+
+        AddressDto.Response response =
+                addressService.updateAddress(id, request);
+
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/{id}/default")
@@ -86,11 +82,9 @@ public class AddressController {
                 "PATCH /api/v1/addresses/{}/default - Setting address as default",
                 id
         );
-        Address address = addressService.setDefaultAddress(id);
+        AddressDto.Response response = addressService.setDefaultAddress(id);
 
-        return ResponseEntity.ok(
-                addressMapper.toResponse(address)
-        );
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")

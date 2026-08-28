@@ -94,50 +94,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public UserDto.AddressesResponse getAddresses(
-            Long userId,
-            AddressDto.Filter filter,
-            CommonDto.Pagination pagination
-    ) {
-        log.debug(
-                "Fetching addresses for user {} - page: {}, size: {}, city: {}, country: {}",
-                userId,
-                pagination.page(),
-                pagination.size(),
-                filter != null ? filter.city() : null,
-                filter != null ? filter.country() : null
-        );
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.warn("User not found with id: {}", userId);
-                    return new ResourceNotFoundException(
-                            "User not found: " + userId
-                    );
-                });
-
-        Page<AddressDto.Response> addresses = addressRepository
-                .findAll(
-                        AddressSpecification.from(userId, filter),
-                        pagination.toPageable()
-                )
-                .map(addressMapper::toResponse);
-
-        log.debug(
-                "Found {} addresses for user {} (total: {})",
-                addresses.getNumberOfElements(),
-                userId,
-                addresses.getTotalElements()
-        );
-
-        return userMapper.toAddressesResponse(
-                user,
-                PageResponse.from(addresses)
-        );
-    }
-
-    @Override
     @Transactional
     public UserDto.Response updateUser(
             Long id,

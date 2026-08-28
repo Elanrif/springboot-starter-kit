@@ -3,8 +3,6 @@ package com.elanrif.springbootstarterkit.controller;
 import com.elanrif.springbootstarterkit.dto.AddressDto;
 import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
-import com.elanrif.springbootstarterkit.entity.Address;
-import com.elanrif.springbootstarterkit.mapper.AddressMapper;
 import com.elanrif.springbootstarterkit.services.AddressService;
 import com.elanrif.springbootstarterkit.services.UserService;
 import com.elanrif.springbootstarterkit.util.PageResponse;
@@ -23,11 +21,11 @@ public class UserController {
 
     private final UserService userService;
     private final AddressService addressService;
-    private final AddressMapper addressMapper;
 
     // =========================================================
-    // READ
+    // RCUD (Read,Create,Update,Delete) operations for User entity
     // =========================================================
+
     @GetMapping
     public ResponseEntity<PageResponse<UserDto.Response>> getUsers(
             @ModelAttribute UserDto.Filter filter,
@@ -99,11 +97,11 @@ public class UserController {
     }
 
     // =========================================================
-    // Addresses
+    // Address operations for User
     // =========================================================
 
     @GetMapping("/{userId}/addresses")
-    public ResponseEntity<UserDto.AddressesResponse> getUserAddresses(
+    public ResponseEntity<PageResponse<AddressDto.Response>> getUserAddresses(
             @PathVariable Long userId,
             @ModelAttribute AddressDto.Filter filter,
             @ModelAttribute CommonDto.Pagination pagination
@@ -112,8 +110,9 @@ public class UserController {
                 "GET /api/v1/users/{}/addresses - Fetching addresses",
                 userId
         );
-        UserDto.AddressesResponse response =
-                userService.getAddresses(
+
+        PageResponse<AddressDto.Response> response =
+                addressService.getAddressesByUserId(
                         userId,
                         filter,
                         pagination
@@ -123,7 +122,7 @@ public class UserController {
     }
 
     @PostMapping("/{userId}/addresses")
-    public ResponseEntity<AddressDto.Response> createAddress(
+    public ResponseEntity<AddressDto.Response> createUserAddress(
             @PathVariable Long userId,
             @Valid @RequestBody AddressDto.CreateRequest request
     ) {
@@ -131,12 +130,11 @@ public class UserController {
                 "POST /api/v1/users/{}/addresses - Creating address",
                 userId
         );
-
-        Address savedAddress =
-                addressService.createAddress(userId, request);
+        AddressDto.Response response =
+                addressService.createUserAddress(userId, request);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(addressMapper.toResponse(savedAddress));
+                .body(response);
     }
 }

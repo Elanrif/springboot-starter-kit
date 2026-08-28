@@ -4,6 +4,7 @@ import com.elanrif.springbootstarterkit.dto.AddressDto;
 import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.entity.Address;
 import com.elanrif.springbootstarterkit.entity.User;
+import com.elanrif.springbootstarterkit.exception.BadRequestException;
 import com.elanrif.springbootstarterkit.exception.ResourceNotFoundException;
 import com.elanrif.springbootstarterkit.mapper.AddressMapper;
 import com.elanrif.springbootstarterkit.repository.AddressRepository;
@@ -29,7 +30,7 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional
-    public Address createAddress(
+    public AddressDto.Response createUserAddress(
             Long userId,
             AddressDto.CreateRequest request
     ) {
@@ -64,7 +65,7 @@ public class AddressServiceImpl implements AddressService {
                 userId
         );
 
-        return savedAddress;
+        return addressMapper.toResponse(savedAddress);
     }
 
     @Override
@@ -138,27 +139,35 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional(readOnly = true)
-    public Address getAddressById(Long id) {
+    public AddressDto.Response getAddressById(Long id) {
         log.debug("Fetching address with id: {}", id);
 
-        return addressRepository.findById(id)
+        Address address = addressRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("Address not found with id: {}", id);
                     return new ResourceNotFoundException(
                             "Address not found with id: " + id
                     );
                 });
+
+        return addressMapper.toResponse(address);
     }
 
     @Override
     @Transactional
-    public Address updateAddress(
+    public AddressDto.Response updateAddress(
             Long id,
             AddressDto.UpdateRequest request
     ) {
         log.debug("Updating address with id: {}", id);
 
-        Address existingAddress = getAddressById(id);
+        Address existingAddress = addressRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("Address not found with id: {}", id);
+                    return new ResourceNotFoundException(
+                            "Address not found with id: " + id
+                    );
+                });
 
         addressMapper.updateFromRequest(
                 request,
@@ -169,9 +178,7 @@ public class AddressServiceImpl implements AddressService {
                 && !Boolean.TRUE.equals(existingAddress.getDefaultAddress())) {
 
             Long userId = existingAddress.getUser().getId();
-
             resetDefaultAddresses(userId);
-
             existingAddress.setDefaultAddress(true);
         }
 
@@ -183,16 +190,21 @@ public class AddressServiceImpl implements AddressService {
                 id
         );
 
-        return updatedAddress;
+        return addressMapper.toResponse(updatedAddress);
     }
 
     @Override
     @Transactional
-    public Address setDefaultAddress(Long addressId) {
-        Address address = getAddressById(addressId);
+    public AddressDto.Response setDefaultAddress(Long addressId) {
+        Address address = addressRepository.findById(addressId)
+                .orElseThrow(() -> {
+                    log.warn("Address not found with id: {}", addressId);
+                    return new ResourceNotFoundException(
+                            "Address not found with id: " + addressId
+                    );
+                });
 
         Long userId = address.getUser().getId();
-
         log.debug(
                 "Setting address {} as default for user {}",
                 addressId,
@@ -200,9 +212,7 @@ public class AddressServiceImpl implements AddressService {
         );
 
         resetDefaultAddresses(userId);
-
         address.setDefaultAddress(true);
-
         Address updatedAddress =
                 addressRepository.save(address);
 
@@ -212,7 +222,7 @@ public class AddressServiceImpl implements AddressService {
                 userId
         );
 
-        return updatedAddress;
+        return addressMapper.toResponse(updatedAddress);
     }
 
     @Override
@@ -220,7 +230,13 @@ public class AddressServiceImpl implements AddressService {
     public void deleteAddress(Long id) {
         log.debug("Deleting address with id: {}", id);
 
-        Address address = getAddressById(id);
+        Address address = addressRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("Address not found with id: {}", id);
+                    return new ResourceNotFoundException(
+                            "Address not found with id: " + id
+                    );
+                });
 
         boolean isDefault =
                 Boolean.TRUE.equals(address.getDefaultAddress());
@@ -240,10 +256,7 @@ public class AddressServiceImpl implements AddressService {
                     });
         }
 
-        log.info(
-                "Address deleted successfully with id: {}",
-                id
-        );
+        log.info("Address deleted successfully with id: {}", id);
     }
 
     private void resetDefaultAddresses(Long userId) {

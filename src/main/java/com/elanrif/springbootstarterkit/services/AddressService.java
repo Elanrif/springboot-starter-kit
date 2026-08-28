@@ -6,8 +6,11 @@ import com.elanrif.springbootstarterkit.entity.Address;
 import com.elanrif.springbootstarterkit.util.PageResponse;
 
 public interface AddressService {
+    // =========================================================
+    // CRUD operations for Address entity
+    // =========================================================
 
-    Address createAddress(
+    AddressDto.Response createUserAddress(
             Long userId,
             AddressDto.CreateRequest request
     );
@@ -23,14 +26,14 @@ public interface AddressService {
             CommonDto.Pagination pagination
     );
 
-    Address getAddressById(Long id);
+    AddressDto.Response getAddressById(Long id);
 
-    Address updateAddress(
+    AddressDto.Response updateAddress(
             Long id,
             AddressDto.UpdateRequest request
     );
 
-    Address setDefaultAddress(Long addressId);
+    AddressDto.Response setDefaultAddress(Long addressId);
 
     void deleteAddress(Long id);
 }

@@ -11,17 +11,15 @@ public interface UserService {
     // =========================================================
     // CRUD operations for User entity
     // =========================================================
+
     UserDto.Response createUser(UserDto.CreateRequest request);
+
     PageResponse<UserDto.Response> getUsers(
             UserDto.Filter filter,
             CommonDto.Pagination pagination
     );
     UserDto.Response getById(Long id);
-    UserDto.AddressesResponse getAddresses(
-            Long userId,
-            AddressDto.Filter filter,
-            CommonDto.Pagination pagination
-    );
+
     UserDto.Response updateUser(
             Long id,
             UserDto.UpdateRequest request
