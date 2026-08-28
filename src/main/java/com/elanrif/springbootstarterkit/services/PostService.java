@@ -7,7 +7,8 @@ import com.elanrif.springbootstarterkit.util.PageResponse;
 
 public interface PostService {
 
-    PageResponse<PostDto.Response> getPosts(PostDto.Filter filter, CommonDto.Pagination pageRequest);
+    PageResponse<PostDto.Response> getPosts(PostDto.Filter filter,
+                                            CommonDto.Pagination pageRequest);
 
     PostDto.CommentsResponse getComments(
             Long postId,

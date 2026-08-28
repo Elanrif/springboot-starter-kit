@@ -2,12 +2,12 @@ package com.elanrif.springbootstarterkit.controller;
 
 import com.elanrif.springbootstarterkit.dto.AddressDto;
 import com.elanrif.springbootstarterkit.dto.CommonDto;
-import com.elanrif.springbootstarterkit.mapper.AddressMapper;
 import com.elanrif.springbootstarterkit.services.AddressService;
 import com.elanrif.springbootstarterkit.util.PageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 public class AddressController {
 
     private final AddressService addressService;
-    private final AddressMapper addressMapper;
 
     // =========================================================
     // RCUD (Read,Create,Update,Delete) operations for User entity
@@ -36,7 +35,7 @@ public class AddressController {
         );
 
         PageResponse<AddressDto.Response> response =
-                addressService.getAllAddresses(filter, pagination);
+                addressService.getAddresses(filter, pagination);
 
         log.info(
                 "Returned {} addresses (total: {})",
@@ -56,6 +55,21 @@ public class AddressController {
         AddressDto.Response response = addressService.getAddressById(id);
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping
+    public ResponseEntity<AddressDto.Response> createAddress(
+            @Valid @RequestBody AddressDto.CreateRequest request
+    ) {
+        log.info(
+                "POST /api/v1/addresses - Creating address"
+        );
+        AddressDto.Response response =
+                addressService.createAddress(request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
     }
 
     @PatchMapping("/{id}")

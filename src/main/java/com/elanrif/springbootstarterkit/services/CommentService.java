@@ -6,8 +6,8 @@ import com.elanrif.springbootstarterkit.util.PageResponse;
 
 public interface CommentService {
 
-    PageResponse<CommentDto.Response> getComments(CommentDto.Filter filter, CommonDto.Pagination pagination);
-
+    PageResponse<CommentDto.Response> getComments(CommentDto.Filter filter,
+                                                  CommonDto.Pagination pagination);
     CommentDto.Response getCommentById(Long id);
 
     CommentDto.Response createComment(CommentDto.CreateRequest request);

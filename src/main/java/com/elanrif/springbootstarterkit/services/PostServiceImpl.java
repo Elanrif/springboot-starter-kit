@@ -3,7 +3,6 @@ package com.elanrif.springbootstarterkit.services;
 import com.elanrif.springbootstarterkit.dto.CommentDto;
 import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.dto.PostDto;
-import com.elanrif.springbootstarterkit.entity.Comment;
 import com.elanrif.springbootstarterkit.entity.Post;
 import com.elanrif.springbootstarterkit.entity.User;
 import com.elanrif.springbootstarterkit.exception.BadRequestException;
@@ -19,9 +18,6 @@ import com.elanrif.springbootstarterkit.util.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -92,7 +88,7 @@ public class PostServiceImpl implements PostService {
 
         Page<CommentDto.Response> comments = commentRepository
                 .findAll(
-                        CommentSpecification.from(filter, postId),
+                        CommentSpecification.from(filter),
                         pagination.toPageable()
                 )
                 .map(commentMapper::toResponse);

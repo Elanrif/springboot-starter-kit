@@ -95,46 +95,4 @@ public class UserController {
 
         return ResponseEntity.noContent().build();
     }
-
-    // =========================================================
-    // Address operations for User
-    // =========================================================
-
-    @GetMapping("/{userId}/addresses")
-    public ResponseEntity<PageResponse<AddressDto.Response>> getUserAddresses(
-            @PathVariable Long userId,
-            @ModelAttribute AddressDto.Filter filter,
-            @ModelAttribute CommonDto.Pagination pagination
-    ) {
-        log.info(
-                "GET /api/v1/users/{}/addresses - Fetching addresses",
-                userId
-        );
-
-        PageResponse<AddressDto.Response> response =
-                addressService.getAddressesByUserId(
-                        userId,
-                        filter,
-                        pagination
-                );
-
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/{userId}/addresses")
-    public ResponseEntity<AddressDto.Response> createUserAddress(
-            @PathVariable Long userId,
-            @Valid @RequestBody AddressDto.CreateRequest request
-    ) {
-        log.info(
-                "POST /api/v1/users/{}/addresses - Creating address",
-                userId
-        );
-        AddressDto.Response response =
-                addressService.createUserAddress(userId, request);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
-    }
 }

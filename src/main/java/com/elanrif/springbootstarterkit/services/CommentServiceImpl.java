@@ -47,7 +47,7 @@ public class CommentServiceImpl implements CommentService {
 
         Page<CommentDto.Response> comments = commentRepository
                 .findAll(
-                        CommentSpecification.from(filter, null),
+                        CommentSpecification.from(filter),
                         pagination.toPageable()
                 )
                 .map(commentMapper::toResponse);
