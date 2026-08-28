@@ -9,12 +9,19 @@ public interface AuthService {
 
     AuthDto.Response register(AuthDto.RegisterRequest request);
 
-    UserDto.Response updateMyAccount(AuthDto.ProfileUpdateRequest request);
+    UserDto.Response updateMyProfile(
+            AuthDto.ProfileUpdateRequest request
+    );
 
-    UserDto.Response resetPassword(AuthDto.ResetPasswordRequest request);
+    void changeMyPassword(
+            AuthDto.ChangePasswordRequest request
+    );
 
-    UserDto.Response updateMyPassword(AuthDto.ChangePasswordRequest request);
+    void resetMyPassword(
+            AuthDto.ResetPasswordRequest request
+    );
 
-    void deleteMyAccount(AuthDto.DeleteAccountRequest request);
-
+    void deleteMyAccount(
+            AuthDto.DeleteAccountRequest request
+    );
 }

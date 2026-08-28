@@ -18,51 +18,95 @@ public class AuthController {
 
     private final AuthService authService;
 
+    // =========================================================
+    // Authentication
+    // =========================================================
+
     @PostMapping("/login")
-    public ResponseEntity<AuthDto.Response> login(@Valid @RequestBody AuthDto.LoginRequest request) {
-        log.info("POST /api/v1/auth/login - Login attempt for email: {}", request.email());
-        AuthDto.Response response = authService.login(request);
-        log.info("Login successful for email: {}", request.email());
+    public ResponseEntity<AuthDto.Response> login(
+            @Valid @RequestBody AuthDto.LoginRequest request
+    ) {
+        log.info(
+                "POST /api/v1/auth/login - Login attempt for email: {}",
+                request.email()
+        );
+
+        AuthDto.Response response =
+                authService.login(request);
+
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthDto.Response> register(@Valid @RequestBody AuthDto.RegisterRequest request) {
-        log.info("POST /api/v1/auth/register - Registration attempt for email: {}", request.email());
-        AuthDto.Response response = authService.register(request);
-        log.info("Registration successful for email: {}", request.email());
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
+    public ResponseEntity<AuthDto.Response> register(
+            @Valid @RequestBody AuthDto.RegisterRequest request
+    ) {
+        log.info(
+                "POST /api/v1/auth/register - Registration attempt for email: {}",
+                request.email()
+        );
 
-    @PatchMapping("/reset-password")
-    public ResponseEntity<UserDto.Response> resetMyPwd(@Valid @RequestBody AuthDto.ResetPasswordRequest request) {
-        log.info("PATCH /api/v1/auth/reset-password - Resetting password for email: {}", request.email());
-        UserDto.Response response = authService.resetPassword(request);
-        log.info("Password reset successfully for email: {}", request.email());
-        return ResponseEntity.ok(response);
+        AuthDto.Response response =
+                authService.register(request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
     }
 
     @PatchMapping("/me")
-    public ResponseEntity<UserDto.Response> updateMyAccount(@Valid @RequestBody AuthDto.ProfileUpdateRequest request) {
-        log.info("PATCH /api/v1/auth/me - Updating profile for email: {}", request.email());
-        UserDto.Response response = authService.updateMyAccount(request);
-        log.info("Profile updated successfully for email: {}", request.email());
+    public ResponseEntity<UserDto.Response> updateMyProfile(
+            @Valid @RequestBody AuthDto.ProfileUpdateRequest request
+    ) {
+        log.info(
+                "PATCH /api/v1/auth/me - Updating profile for email: {}",
+                request.email()
+        );
+
+        UserDto.Response response =
+                authService.updateMyProfile(request);
+
         return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/me/password")
-    public ResponseEntity<UserDto.Response> changeMyPwd(@Valid @RequestBody AuthDto.ChangePasswordRequest request) {
-        log.info("PATCH /api/v1/auth/me/password - Changing password for email: {}", request.email());
-        UserDto.Response response = authService.updateMyPassword(request);
-        log.info("Password changed successfully for email: {}", request.email());
-        return ResponseEntity.ok(response);
-    }
+    public ResponseEntity<Void> changeMyPassword(
+            @Valid @RequestBody AuthDto.ChangePasswordRequest request
+    ) {
+        log.info(
+                "PATCH /api/v1/auth/me/password - Changing password for email: {}",
+                request.email()
+        );
 
-    @PostMapping("/me/delete-account")
-    public ResponseEntity<Void> deleteUser(@Valid @RequestBody AuthDto.DeleteAccountRequest request) {
-        log.info("DELETE /api/v1/users/delete");
-        authService.deleteMyAccount(request);
+        authService.changeMyPassword(request);
+
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping("/password/reset")
+    public ResponseEntity<Void> resetMyPassword(
+            @Valid @RequestBody AuthDto.ResetPasswordRequest request
+    ) {
+        log.info(
+                "PATCH /api/v1/auth/password/reset - Resetting password for email: {}",
+                request.email()
+        );
+
+        authService.resetMyPassword(request);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteMyAccount(
+            @Valid @RequestBody AuthDto.DeleteAccountRequest request
+    ) {
+        log.info(
+                "DELETE /api/v1/auth/me - Deleting account"
+        );
+
+        authService.deleteMyAccount(request);
+
+        return ResponseEntity.noContent().build();
+    }
 }

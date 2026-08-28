@@ -16,13 +16,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    public static final String MESSAGE_DELETE_ACCOUNT = "I WANT TO DELETE MY ACCOUNT";
+    private static final String MESSAGE_DELETE_ACCOUNT =
+            "I WANT TO DELETE MY ACCOUNT";
+
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final AuthMapper authMapper;
@@ -32,14 +33,23 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthDto.Response login(AuthDto.LoginRequest request) {
         log.debug("Login attempt for email: {}", request.email());
-        User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + request.email()));
 
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "User not found with email: " + request.email()
+                        )
+                );
+
+        if (!passwordEncoder.matches(
+                request.password(),
+                user.getPassword()
+        )) {
             throw new BadRequestException("Invalid email or password");
         }
 
         log.info("User logged in successfully: {}", request.email());
+
         return authMapper.toResponse(user);
     }
 
@@ -49,8 +59,14 @@ public class AuthServiceImpl implements AuthService {
         log.debug("Registration attempt for email: {}", request.email());
 
         if (userRepository.findByEmail(request.email()).isPresent()) {
-            log.warn("Registration failed - user already exists: {}", request.email());
-            throw new BadRequestException("User already exists with email: " + request.email());
+            log.warn(
+                    "Registration failed - user already exists: {}",
+                    request.email()
+            );
+
+            throw new BadRequestException(
+                    "User already exists with email: " + request.email()
+            );
         }
 
         User user = User.builder()
@@ -63,87 +79,191 @@ public class AuthServiceImpl implements AuthService {
                 .role(UserRole.USER)
                 .status(UserStatus.INACTIVE)
                 .build();
-        userRepository.save(user);
 
-        log.info("User registered successfully: {}", request.email());
-        return authMapper.toResponse(user);
+        User savedUser = userRepository.save(user);
+
+        log.info(
+                "User registered successfully: {}",
+                request.email()
+        );
+
+        return authMapper.toResponse(savedUser);
     }
 
     @Override
-    public UserDto.Response updateMyAccount(AuthDto.ProfileUpdateRequest request) {
-        log.debug("Profile update request for email: {}", request.email());
+    @Transactional
+    public UserDto.Response updateMyProfile(
+            AuthDto.ProfileUpdateRequest request
+    ) {
+        log.debug(
+                "Profile update request for email: {}",
+                request.email()
+        );
+
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> {
-                    log.warn("Profile update failed - user not found: {}", request.email());
-                    return new ResourceNotFoundException("User not found for subject");
+                    log.warn(
+                            "Profile update failed - user not found: {}",
+                            request.email()
+                    );
+
+                    return new ResourceNotFoundException(
+                            "User not found: " + request.email()
+                    );
                 });
+
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
         user.setEmail(request.email());
         user.setPhoneNumber(request.phoneNumber());
         user.setAvatarUrl(request.avatarUrl());
-        UserDto.Response response = userMapper.toResponse(userRepository.save(user));
-        log.info("Profile updated successfully for user: {}", request.email());
-        return response;
+
+        User updatedUser = userRepository.save(user);
+
+        log.info(
+                "Profile updated successfully for user: {}",
+                request.email()
+        );
+
+        return userMapper.toResponse(updatedUser);
     }
 
     @Override
-    public UserDto.Response resetPassword(AuthDto.ResetPasswordRequest request) {
-        log.debug("Password reset attempt for email: {}", request.email());
+    @Transactional
+    public void changeMyPassword(
+            AuthDto.ChangePasswordRequest request
+    ) {
+        log.debug(
+                "Password change attempt for email: {}",
+                request.email()
+        );
+
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> {
-                    log.warn("Password reset failed - user not found: {}", request.email());
-                    return new ResourceNotFoundException("User not found: " + request.email());
+                    log.warn(
+                            "Password change failed - user not found: {}",
+                            request.email()
+                    );
+
+                    return new ResourceNotFoundException(
+                            "User not found: " + request.email()
+                    );
                 });
 
-        var tokenValid = resetTokenValidator.isValidToken(request.code(), request.resetToken());
+        if (!passwordEncoder.matches(
+                request.currentPassword(),
+                user.getPassword()
+        )) {
+            log.warn(
+                    "Password change failed - incorrect current password for user: {}",
+                    request.email()
+            );
+
+            throw new BadRequestException(
+                    "Current password is incorrect"
+            );
+        }
+
+        user.setPassword(
+                passwordEncoder.encode(request.newPassword())
+        );
+
+        userRepository.save(user);
+
+        log.info(
+                "Password changed successfully for user: {}",
+                request.email()
+        );
+    }
+
+    @Override
+    @Transactional
+    public void resetMyPassword(
+            AuthDto.ResetPasswordRequest request
+    ) {
+        log.debug(
+                "Password reset attempt for email: {}",
+                request.email()
+        );
+
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> {
+                    log.warn(
+                            "Password reset failed - user not found: {}",
+                            request.email()
+                    );
+
+                    return new ResourceNotFoundException(
+                            "User not found: " + request.email()
+                    );
+                });
+
+        boolean tokenValid = resetTokenValidator.isValidToken(
+                request.code(),
+                request.resetToken()
+        );
+
         if (!tokenValid) {
-            log.warn("Password reset failed - invalid or expired token for user: {}", request.email());
-            throw new IllegalArgumentException("Token invalid or expired.");
+            log.warn(
+                    "Password reset failed - invalid or expired token for user: {}",
+                    request.email()
+            );
+
+            throw new BadRequestException(
+                    "Token invalid or expired."
+            );
         }
 
-        user.setPassword(passwordEncoder.encode(request.newPassword()));
-        User updatedUser = userRepository.save(user);
+        user.setPassword(
+                passwordEncoder.encode(request.newPassword())
+        );
 
-        log.info("Password reset successfully for user: {}", request.email());
-        return userMapper.toResponse(updatedUser);
+        userRepository.save(user);
+
+        log.info(
+                "Password reset successfully for user: {}",
+                request.email()
+        );
     }
 
     @Override
-    public UserDto.Response updateMyPassword(AuthDto.ChangePasswordRequest request) {
-        log.debug("Password change attempt for email: {}", request.email());
-        User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> {
-                    log.warn("Password change failed - user not found: {}", request.email());
-                    return new ResourceNotFoundException("User not found: " + request.email());
-                });
+    @Transactional
+    public void deleteMyAccount(
+            AuthDto.DeleteAccountRequest request
+    ) {
+        log.debug(
+                "Account deletion attempt for email: {}",
+                request.emailInput()
+        );
 
-        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
-            log.warn("Password change failed - incorrect current password for user: {}", request.email());
-            throw new BadRequestException("Current password is incorrect");
-        }
-        user.setPassword(passwordEncoder.encode(request.newPassword()));
-        User updatedUser = userRepository.save(user);
-
-        log.info("Password changed successfully for user: {}", request.email());
-        return userMapper.toResponse(updatedUser);
-    }
-
-    @Override
-    public void deleteMyAccount(AuthDto.DeleteAccountRequest request) {
-        log.debug("Account deletion attempt for email: {}", request.emailInput());
         User user = userRepository.findByEmail(request.emailInput())
                 .orElseThrow(() -> {
-                    log.warn("Account deletion failed - user not found: {}", request.emailInput());
-                    return new ResourceNotFoundException("User not found: " + request.emailInput());
+                    log.warn(
+                            "Account deletion failed - user not found: {}",
+                            request.emailInput()
+                    );
+
+                    return new ResourceNotFoundException(
+                            "User not found: " + request.emailInput()
+                    );
                 });
 
-        if (request.messageInput() == null || !request.messageInput().trim().toUpperCase().equals(MESSAGE_DELETE_ACCOUNT.toUpperCase())) {
-            throw new IllegalArgumentException("The confirmation message is incorrect. You must type: " + MESSAGE_DELETE_ACCOUNT);
+        if (request.messageInput() == null
+                || !request.messageInput()
+                .trim()
+                .equalsIgnoreCase(MESSAGE_DELETE_ACCOUNT)) {
+
+            throw new BadRequestException(
+                    "The confirmation message is incorrect. " +
+                            "You must type: " + MESSAGE_DELETE_ACCOUNT
+            );
         }
 
         userRepository.delete(user);
-        log.info("Account deleted successfully for user: {}", request.emailInput());
-    }
 
+        log.info(
+                "Account deleted successfully for user: {}",
+                request.emailInput()
+        );
+    }
 }
