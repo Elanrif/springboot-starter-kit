@@ -15,9 +15,21 @@ public final class PostSpecification {
         }
 
         return Specification.allOf(
-                search(filter.search()),
-                author(filter.authorId())
+                author(filter.authorId()),
+                search(filter.search())
         );
+    }
+
+    private static Specification<Post> author(Long authorId) {
+        if (authorId == null) {
+            return Specification.unrestricted();
+        }
+
+        return (root, query, cb) ->
+                cb.equal(
+                        root.get("author").get("id"),
+                        authorId
+                );
     }
 
     private static Specification<Post> search(String search) {
@@ -33,15 +45,4 @@ public final class PostSpecification {
         );
     }
 
-    private static Specification<Post> author(Long authorId) {
-        if (authorId == null) {
-            return Specification.unrestricted();
-        }
-
-        return (root, query, cb) ->
-                cb.equal(
-                        root.get("author").get("id"),
-                        authorId
-                );
-    }
 }

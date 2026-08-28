@@ -10,13 +10,12 @@ public final class AddressSpecification {
     }
 
     public static Specification<Address> from(
-            Long userId,
             AddressDto.Filter filter
     ) {
         return Specification.allOf(
-                hasUserId(userId),
-                hasCountry(filter != null ? filter.country() : null),
-                hasCity(filter != null ? filter.city() : null)
+                hasUserId(filter.userId()),
+                hasCountry(filter.country()),
+                hasCity(filter.city())
         );
     }
 

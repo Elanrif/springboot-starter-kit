@@ -88,19 +88,6 @@ public class AddressController {
         return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/{id}/default")
-    public ResponseEntity<AddressDto.Response> setDefaultAddress(
-            @PathVariable Long id
-    ) {
-        log.info(
-                "PATCH /api/v1/addresses/{}/default - Setting address as default",
-                id
-        );
-        AddressDto.Response response = addressService.setDefaultAddress(id);
-
-        return ResponseEntity.ok(response);
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAddress(
             @PathVariable Long id

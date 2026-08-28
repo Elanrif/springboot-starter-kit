@@ -40,23 +40,6 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{postId}/comments")
-    public ResponseEntity<PostDto.CommentsResponse> getPostComments(
-            @PathVariable Long postId,
-            @ModelAttribute CommentDto.Filter filter,
-            @ModelAttribute CommonDto.Pagination pagination
-    ) {
-        log.info("GET /api/v1/posts/{}/comments - Fetching comments for post", postId);
-        PostDto.CommentsResponse response =
-                postService.getComments(
-                        postId,
-                        filter,
-                        pagination
-                );
-
-        return ResponseEntity.ok(response);
-    }
-
     @PostMapping
     public ResponseEntity<PostDto.Response> create(@Valid @RequestBody PostDto.CreateRequest request) {
         log.info("POST /api/v1/posts - Creating post with title: {}, authorId: {}",

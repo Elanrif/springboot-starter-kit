@@ -22,7 +22,5 @@ public interface AddressService {
             AddressDto.UpdateRequest request
     );
 
-    AddressDto.Response setDefaultAddress(Long addressId);
-
     void deleteAddress(Long id);
 }

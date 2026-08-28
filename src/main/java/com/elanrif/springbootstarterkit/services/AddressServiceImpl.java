@@ -4,7 +4,6 @@ import com.elanrif.springbootstarterkit.dto.AddressDto;
 import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.entity.Address;
 import com.elanrif.springbootstarterkit.entity.User;
-import com.elanrif.springbootstarterkit.exception.BadRequestException;
 import com.elanrif.springbootstarterkit.exception.ResourceNotFoundException;
 import com.elanrif.springbootstarterkit.mapper.AddressMapper;
 import com.elanrif.springbootstarterkit.repository.AddressRepository;
@@ -34,17 +33,19 @@ public class AddressServiceImpl implements AddressService {
             AddressDto.Filter filter,
             CommonDto.Pagination pagination
     ) {
+
         log.debug(
-                "Fetching all addresses - page: {}, size: {}, country: {}, city: {}",
+                "Fetching addresses - page: {}, size: {}, userId: {}, country: {}, city: {}",
                 pagination.page(),
                 pagination.size(),
-                filter != null ? filter.country() : null,
-                filter != null ? filter.city() : null
+                filter.userId(),
+                filter.country(),
+                filter.city()
         );
 
         Page<AddressDto.Response> addresses = addressRepository
                 .findAll(
-                        AddressSpecification.from(null, filter),
+                        AddressSpecification.from(filter),
                         pagination.toPageable()
                 )
                 .map(addressMapper::toResponse);
@@ -76,14 +77,18 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional
-    public AddressDto.Response createAddress(AddressDto.CreateRequest request) {
-        log.debug("Creating address for user {}", request.userId());
+    public AddressDto.Response createAddress(
+            AddressDto.CreateRequest request
+    ) {
+        Long userId = request.userId();
 
-        User user = userRepository.findById(request.userId())
+        log.debug("Creating address for user {}", userId);
+
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
-                    log.warn("User not found with id: {}", request.userId());
+                    log.warn("User not found with id: {}", userId);
                     return new ResourceNotFoundException(
-                            "User not found with id: " + request.userId()
+                            "User not found with id: " + userId
                     );
                 });
 
@@ -91,12 +96,12 @@ public class AddressServiceImpl implements AddressService {
         address.setUser(user);
 
         boolean hasAddresses =
-                addressRepository.existsByUserId(request.userId());
+                addressRepository.existsByUserId(userId);
 
         if (!hasAddresses) {
             address.setDefaultAddress(true);
         } else if (Boolean.TRUE.equals(address.getDefaultAddress())) {
-            resetDefaultAddresses(request.userId());
+            resetDefaultAddresses(userId);
         }
 
         Address savedAddress =
@@ -105,7 +110,7 @@ public class AddressServiceImpl implements AddressService {
         log.info(
                 "Address created successfully with id: {} for user {}",
                 savedAddress.getId(),
-                request.userId()
+                userId
         );
 
         return addressMapper.toResponse(savedAddress);
@@ -132,12 +137,15 @@ public class AddressServiceImpl implements AddressService {
                 existingAddress
         );
 
-        if (Boolean.TRUE.equals(request.defaultAddress())
-                && !Boolean.TRUE.equals(existingAddress.getDefaultAddress())) {
-
+        if (request.defaultAddress() != null) {
             Long userId = existingAddress.getUser().getId();
-            resetDefaultAddresses(userId);
-            existingAddress.setDefaultAddress(true);
+
+            if (request.defaultAddress()) {
+                resetDefaultAddresses(userId);
+                existingAddress.setDefaultAddress(true);
+            } else {
+                existingAddress.setDefaultAddress(false);
+            }
         }
 
         Address updatedAddress =
@@ -146,38 +154,6 @@ public class AddressServiceImpl implements AddressService {
         log.info(
                 "Address updated successfully with id: {}",
                 id
-        );
-
-        return addressMapper.toResponse(updatedAddress);
-    }
-
-    @Override
-    @Transactional
-    public AddressDto.Response setDefaultAddress(Long addressId) {
-        Address address = addressRepository.findById(addressId)
-                .orElseThrow(() -> {
-                    log.warn("Address not found with id: {}", addressId);
-                    return new ResourceNotFoundException(
-                            "Address not found with id: " + addressId
-                    );
-                });
-
-        Long userId = address.getUser().getId();
-        log.debug(
-                "Setting address {} as default for user {}",
-                addressId,
-                userId
-        );
-
-        resetDefaultAddresses(userId);
-        address.setDefaultAddress(true);
-        Address updatedAddress =
-                addressRepository.save(address);
-
-        log.info(
-                "Address {} set as default for user {}",
-                addressId,
-                userId
         );
 
         return addressMapper.toResponse(updatedAddress);
@@ -214,18 +190,19 @@ public class AddressServiceImpl implements AddressService {
                     });
         }
 
-        log.info("Address deleted successfully with id: {}", id);
+        log.info(
+                "Address deleted successfully with id: {}",
+                id
+        );
     }
 
     private void resetDefaultAddresses(Long userId) {
         List<Address> addresses =
                 addressRepository.findByUserId(userId);
 
-        addresses.forEach(address -> {
-            if (Boolean.TRUE.equals(address.getDefaultAddress())) {
-                address.setDefaultAddress(false);
-            }
-        });
+        addresses.forEach(address ->
+                address.setDefaultAddress(false)
+        );
 
         addressRepository.saveAll(addresses);
     }
