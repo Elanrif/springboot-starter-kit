@@ -1,6 +1,5 @@
 package com.elanrif.springbootstarterkit.services;
 
-import com.elanrif.springbootstarterkit.dto.CommentDto;
 import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.dto.PostDto;
 import com.elanrif.springbootstarterkit.entity.Post;
@@ -12,7 +11,6 @@ import com.elanrif.springbootstarterkit.mapper.PostMapper;
 import com.elanrif.springbootstarterkit.repository.CommentRepository;
 import com.elanrif.springbootstarterkit.repository.PostRepository;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
-import com.elanrif.springbootstarterkit.specification.CommentSpecification;
 import com.elanrif.springbootstarterkit.specification.PostSpecification;
 import com.elanrif.springbootstarterkit.util.PageResponse;
 import lombok.RequiredArgsConstructor;
@@ -60,50 +58,6 @@ public class PostServiceImpl implements PostService {
         );
 
         return PageResponse.from(posts);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public PostDto.CommentsResponse getComments(
-            Long postId,
-            CommentDto.Filter filter,
-            CommonDto.Pagination pagination
-    ) {
-        log.debug(
-                "Fetching comments - postId: {}, page: {}, size: {}, search: {}, authorId: {}",
-                postId,
-                pagination.page(),
-                pagination.size(),
-                filter != null ? filter.search() : null,
-                filter != null ? filter.authorId() : null
-        );
-
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> {
-                    log.warn("Post not found with id: {}", postId);
-                    return new ResourceNotFoundException(
-                            "Post not found: " + postId
-                    );
-                });
-
-        Page<CommentDto.Response> comments = commentRepository
-                .findAll(
-                        CommentSpecification.from(filter),
-                        pagination.toPageable()
-                )
-                .map(commentMapper::toResponse);
-
-        log.debug(
-                "Found {} comments for post {} (total: {})",
-                comments.getNumberOfElements(),
-                postId,
-                comments.getTotalElements()
-        );
-
-        return postMapper.toCommentsResponse(
-                post,
-                PageResponse.from(comments)
-        );
     }
 
     @Override

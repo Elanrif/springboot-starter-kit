@@ -43,6 +43,7 @@ public class AddressDto {
 
     @Schema(name = "AddressFilter")
     public record Filter(
+            Long userId,
             String city,
             String country
     ) {}
