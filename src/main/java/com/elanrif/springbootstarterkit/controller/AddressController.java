@@ -2,18 +2,15 @@ package com.elanrif.springbootstarterkit.controller;
 
 import com.elanrif.springbootstarterkit.dto.AddressDto;
 import com.elanrif.springbootstarterkit.dto.CommonDto;
-import com.elanrif.springbootstarterkit.dto.PostDto;
-import com.elanrif.springbootstarterkit.mapper.AddressMapper; // 👈 Import du mapper
+import com.elanrif.springbootstarterkit.entity.Address;
+import com.elanrif.springbootstarterkit.mapper.AddressMapper;
 import com.elanrif.springbootstarterkit.services.AddressService;
 import com.elanrif.springbootstarterkit.util.PageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -22,81 +19,88 @@ import java.util.List;
 public class AddressController {
 
     private final AddressService addressService;
-    private final AddressMapper addressMapper; // 👈 Injection du mapper
+    private final AddressMapper addressMapper;
 
-    @PostMapping("/user/{userId}")
-    public ResponseEntity<AddressDto.Response> createAddress(
-            @PathVariable Long userId,
-            @Valid @RequestBody AddressDto.CreateRequest request) {
-        log.info("POST /api/v1/addresses/user/{} - Creating address", userId);
+    @GetMapping
+    public ResponseEntity<PageResponse<AddressDto.Response>> getAddresses(
+            @ModelAttribute AddressDto.Filter filter,
+            @ModelAttribute CommonDto.Pagination pagination
+    ) {
+        log.info(
+                "GET /api/v1/addresses - page: {}, size: {}",
+                pagination.page(),
+                pagination.size()
+        );
 
-        var addressEntity = addressMapper.toEntity(request); // 👈 Utilisation ici
-        var savedAddress = addressService.createAddress(userId, addressEntity);
+        PageResponse<AddressDto.Response> response =
+                addressService.getAddresses(filter, pagination);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(addressMapper.toResponse(savedAddress));
+        log.info(
+                "Returned {} addresses (total: {})",
+                response.data().size(),
+                response.meta().total()
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<AddressDto.Response> getAddress(
+            @PathVariable Long id
+    ) {
+        log.info("GET /api/v1/addresses/{} - Fetching address", id);
+
+        AddressDto.Response response =
+                addressMapper.toResponse(
+                        addressService.getAddressById(id)
+                );
+
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<AddressDto.Response> updateAddress(
             @PathVariable Long id,
-            @Valid @RequestBody AddressDto.UpdateRequest request) {
-        log.info("PUT /api/v1/addresses/{} - Updating address", id);
-
-        // 1. On récupère d'abord l'entité existante depuis la base de données
-        var existingAddress = addressService.getAddressById(id);
-
-        // 2. On utilise MapStruct pour fusionner les modifications du 'request' dans l'entité existante
-        addressMapper.updateFromRequest(request, existingAddress);
-
-        // 3. On envoie l'entité fusionnée au service pour la sauvegarde
-        var updatedAddress = addressService.updateAddress(id, existingAddress);
-
-        return ResponseEntity.ok(addressMapper.toResponse(updatedAddress));
-    }
-
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<PageResponse<AddressDto.Response>> getAddressesByUserId(
-            @PathVariable Long userId,
-            @ModelAttribute AddressDto.Filter filter,
-            @ModelAttribute CommonDto.Pagination pagination
-            ) {
-        log.info("GET /api/v1/addresses/user/{} - Fetching addresses", userId);
-        PageResponse<AddressDto.Response> response =
-                addressService.getAddressesByUserId(userId, filter, pagination);
-        log.info("Returned {} addresses (total: {})", response.data().size(), response.meta().total());
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/user/{userId}/default")
-    public ResponseEntity<AddressDto.Response> getDefaultAddressByUserId(@PathVariable Long userId) {
-        var defaultAddress = addressService.getDefaultAddressByUserId(userId);
-        return ResponseEntity.ok(addressMapper.toResponse(defaultAddress));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<AddressDto.Response> getById(@PathVariable Long id) {
-        var address = addressService.getAddressById(id);
-        return ResponseEntity.ok(addressMapper.toResponse(address));
-    }
-
-    @PatchMapping("/user/{userId}/default/{addressId}")
-    public ResponseEntity<AddressDto.Response> setDefaultAddress(@PathVariable Long userId, @PathVariable Long addressId) {
-        var updatedAddress = addressService.setDefaultAddress(userId, addressId);
-        return ResponseEntity.ok(addressMapper.toResponse(updatedAddress));
-    }
-
-    @DeleteMapping("/user/{userId}/address/{addressId}")
-    public ResponseEntity<Void> deleteUserAddress(
-            @PathVariable Long userId,
-            @PathVariable Long addressId
+            @Valid @RequestBody AddressDto.UpdateRequest request
     ) {
-        addressService.deleteUserAddress(userId, addressId);
-        return ResponseEntity.noContent().build();
+        log.info("PATCH /api/v1/addresses/{} - Updating address", id);
+
+        var address = addressService.getAddressById(id);
+
+        // TODO: est il vraiment utilise cette ligne de code.
+        addressMapper.updateFromRequest(request, address);
+
+        var updatedAddress =
+                addressService.updateAddress(id, address);
+
+        return ResponseEntity.ok(
+                addressMapper.toResponse(updatedAddress)
+        );
+    }
+
+    @PatchMapping("/{id}/default")
+    public ResponseEntity<AddressDto.Response> setDefaultAddress(
+            @PathVariable Long id
+    ) {
+        log.info(
+                "PATCH /api/v1/addresses/{}/default - Setting address as default",
+                id
+        );
+        Address address = addressService.setDefaultAddress(id);
+
+        return ResponseEntity.ok(
+                addressMapper.toResponse(address)
+        );
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAddress(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteAddress(
+            @PathVariable Long id
+    ) {
+        log.info("DELETE /api/v1/addresses/{} - Deleting address", id);
+
         addressService.deleteAddress(id);
+
         return ResponseEntity.noContent().build();
     }
 }
