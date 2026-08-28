@@ -8,19 +8,23 @@ import com.elanrif.springbootstarterkit.entity.UserStatus;
 import com.elanrif.springbootstarterkit.util.PageResponse;
 
 public interface UserService {
-
+    // =========================================================
+    // CRUD operations for User entity
+    // =========================================================
     UserDto.Response createUser(UserDto.CreateRequest request);
-
-    UserDto.Response update(Long id, UserDto.UpdateRequest request);
-
-    PageResponse<UserDto.Response> getUsers(UserDto.Filter filter,
-                                            CommonDto.Pagination pagination);
-    UserDto.AddressesResponse getAddresses(Long userId,
-                                                AddressDto.Filter filter,
-                                                CommonDto.Pagination pagination);
+    PageResponse<UserDto.Response> getUsers(
+            UserDto.Filter filter,
+            CommonDto.Pagination pagination
+    );
     UserDto.Response getById(Long id);
-
+    UserDto.AddressesResponse getAddresses(
+            Long userId,
+            AddressDto.Filter filter,
+            CommonDto.Pagination pagination
+    );
+    UserDto.Response updateUser(
+            Long id,
+            UserDto.UpdateRequest request
+    );
     void deleteUser(Long id);
-
-    PageResponse<UserDto.Response> searchUsers(String email, String firstName, String lastName, UserStatus status, int page, int size, String sort);
 }
