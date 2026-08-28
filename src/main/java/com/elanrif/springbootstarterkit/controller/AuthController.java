@@ -69,7 +69,7 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/account/password")
+    @PatchMapping("/account/change-password")
     public ResponseEntity<Void> changeMyPassword(
             @Valid @RequestBody AuthDto.ChangePasswordRequest request
     ) {
