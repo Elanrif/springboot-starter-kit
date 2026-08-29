@@ -2,6 +2,7 @@ package com.elanrif.springbootstarterkit.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class AddressDto {
@@ -12,7 +13,7 @@ public class AddressDto {
             @NotBlank @Size(max = 20) String postalCode,
             @NotBlank @Size(max = 100) String city,
             @NotBlank @Size(max = 100) String country,
-            @NotBlank Long userId,
+            @NotNull Long userId,
             Boolean defaultAddress
     ) {}
 
@@ -22,7 +23,7 @@ public class AddressDto {
             @NotBlank @Size(max = 20) String postalCode,
             @NotBlank @Size(max = 100) String city,
             @NotBlank @Size(max = 100) String country,
-            @NotBlank Long userId,
+            @NotNull Long userId,
             Boolean defaultAddress
     ) {}
 
@@ -45,6 +46,7 @@ public class AddressDto {
     public record Filter(
             Long userId,
             String city,
-            String country
+            String country,
+            Boolean isDefault
     ) {}
 }

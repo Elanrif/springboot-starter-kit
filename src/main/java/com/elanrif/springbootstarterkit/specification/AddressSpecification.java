@@ -15,7 +15,8 @@ public final class AddressSpecification {
         return Specification.allOf(
                 hasUserId(filter.userId()),
                 hasCountry(filter.country()),
-                hasCity(filter.city())
+                hasCity(filter.city()),
+                hasDefaultAddress(filter.isDefault())
         );
     }
 
@@ -54,6 +55,20 @@ public final class AddressSpecification {
                 cb.like(
                         cb.lower(root.get("city")),
                         like
+                );
+    }
+
+    private static Specification<Address> hasDefaultAddress(
+            Boolean isDefault
+    ) {
+        if (isDefault == null) {
+            return Specification.unrestricted();
+        }
+
+        return (root, query, cb) ->
+                cb.equal(
+                        root.get("defaultAddress"),
+                        isDefault
                 );
     }
 }
