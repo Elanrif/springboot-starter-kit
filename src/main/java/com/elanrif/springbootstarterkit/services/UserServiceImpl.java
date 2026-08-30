@@ -3,7 +3,6 @@ package com.elanrif.springbootstarterkit.services;
 import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.entity.User;
-import com.elanrif.springbootstarterkit.exception.ResourceNotFoundException;
 import com.elanrif.springbootstarterkit.mapper.UserMapper;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
 import com.elanrif.springbootstarterkit.specification.UserSpecification;
@@ -11,9 +10,11 @@ import com.elanrif.springbootstarterkit.util.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Slf4j
 @Service
@@ -62,7 +63,8 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("User not found with id: {}", id);
-                    return new ResourceNotFoundException(
+                    return new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
                             "User not found: " + id
                     );
                 });
@@ -97,7 +99,8 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("Update failed - user not found with id: {}", id);
-                    return new ResourceNotFoundException(
+                    return new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
                             "User not found: " + id
                     );
                 });
@@ -119,7 +122,8 @@ public class UserServiceImpl implements UserService {
 
         if (!userRepository.existsById(id)) {
             log.warn("Delete failed - user not found with id: {}", id);
-            throw new ResourceNotFoundException(
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
                     "User not found: " + id
             );
         }

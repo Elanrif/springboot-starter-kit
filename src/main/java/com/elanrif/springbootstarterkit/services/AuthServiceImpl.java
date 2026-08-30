@@ -5,16 +5,16 @@ import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.entity.User;
 import com.elanrif.springbootstarterkit.entity.UserRole;
 import com.elanrif.springbootstarterkit.entity.UserStatus;
-import com.elanrif.springbootstarterkit.exception.BadRequestException;
-import com.elanrif.springbootstarterkit.exception.ResourceNotFoundException;
 import com.elanrif.springbootstarterkit.mapper.AuthMapper;
 import com.elanrif.springbootstarterkit.mapper.UserMapper;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Slf4j
 @Service
@@ -36,7 +36,8 @@ public class AuthServiceImpl implements AuthService {
 
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() ->
-                        new ResourceNotFoundException(
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
                                 "User not found with email: " + request.email()
                         )
                 );
@@ -45,7 +46,10 @@ public class AuthServiceImpl implements AuthService {
                 request.password(),
                 user.getPassword()
         )) {
-            throw new BadRequestException("Invalid email or password");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Invalid email or password"
+            );
         }
 
         log.info("User logged in successfully: {}", request.email());
@@ -64,7 +68,8 @@ public class AuthServiceImpl implements AuthService {
                     request.email()
             );
 
-            throw new BadRequestException(
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
                     "User already exists with email: " + request.email()
             );
         }
@@ -107,7 +112,8 @@ public class AuthServiceImpl implements AuthService {
                             request.email()
                     );
 
-                    return new ResourceNotFoundException(
+                    return new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
                             "User not found: " + request.email()
                     );
                 });
@@ -145,7 +151,8 @@ public class AuthServiceImpl implements AuthService {
                             request.email()
                     );
 
-                    return new ResourceNotFoundException(
+                    return new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
                             "User not found: " + request.email()
                     );
                 });
@@ -159,7 +166,8 @@ public class AuthServiceImpl implements AuthService {
                     request.email()
             );
 
-            throw new BadRequestException(
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
                     "Current password is incorrect"
             );
         }
@@ -193,7 +201,8 @@ public class AuthServiceImpl implements AuthService {
                             request.email()
                     );
 
-                    return new ResourceNotFoundException(
+                    return new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
                             "User not found: " + request.email()
                     );
                 });
@@ -209,7 +218,8 @@ public class AuthServiceImpl implements AuthService {
                     request.email()
             );
 
-            throw new BadRequestException(
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
                     "Token invalid or expired."
             );
         }
@@ -243,7 +253,8 @@ public class AuthServiceImpl implements AuthService {
                             request.emailInput()
                     );
 
-                    return new ResourceNotFoundException(
+                    return new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
                             "User not found: " + request.emailInput()
                     );
                 });
@@ -253,7 +264,8 @@ public class AuthServiceImpl implements AuthService {
                 .trim()
                 .equalsIgnoreCase(MESSAGE_DELETE_ACCOUNT)) {
 
-            throw new BadRequestException(
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
                     "The confirmation message is incorrect. " +
                             "You must type: " + MESSAGE_DELETE_ACCOUNT
             );

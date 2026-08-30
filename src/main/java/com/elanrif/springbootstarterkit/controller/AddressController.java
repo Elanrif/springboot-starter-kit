@@ -37,12 +37,6 @@ public class AddressController {
         PageResponse<AddressDto.Response> response =
                 addressService.getAddresses(filter, pagination);
 
-        log.info(
-                "Returned {} addresses (total: {})",
-                response.data().size(),
-                response.meta().total()
-        );
-
         return ResponseEntity.ok(response);
     }
 
@@ -51,7 +45,6 @@ public class AddressController {
             @PathVariable Long id
     ) {
         log.info("GET /api/v1/addresses/{} - Fetching address", id);
-
         AddressDto.Response response = addressService.getAddressById(id);
 
         return ResponseEntity.ok(response);

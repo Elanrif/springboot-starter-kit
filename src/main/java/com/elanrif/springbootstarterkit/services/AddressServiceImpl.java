@@ -4,7 +4,6 @@ import com.elanrif.springbootstarterkit.dto.AddressDto;
 import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.entity.Address;
 import com.elanrif.springbootstarterkit.entity.User;
-import com.elanrif.springbootstarterkit.exception.ResourceNotFoundException;
 import com.elanrif.springbootstarterkit.mapper.AddressMapper;
 import com.elanrif.springbootstarterkit.repository.AddressRepository;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
@@ -13,8 +12,10 @@ import com.elanrif.springbootstarterkit.util.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -67,7 +68,8 @@ public class AddressServiceImpl implements AddressService {
         Address address = addressRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("Address not found with id: {}", id);
-                    return new ResourceNotFoundException(
+                    return new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
                             "Address not found with id: " + id
                     );
                 });
@@ -87,7 +89,8 @@ public class AddressServiceImpl implements AddressService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("User not found with id: {}", userId);
-                    return new ResourceNotFoundException(
+                    return new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
                             "User not found with id: " + userId
                     );
                 });
@@ -127,7 +130,8 @@ public class AddressServiceImpl implements AddressService {
         Address existingAddress = addressRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("Address not found with id: {}", id);
-                    return new ResourceNotFoundException(
+                    return new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
                             "Address not found with id: " + id
                     );
                 });
@@ -167,7 +171,8 @@ public class AddressServiceImpl implements AddressService {
         Address address = addressRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("Address not found with id: {}", id);
-                    return new ResourceNotFoundException(
+                    return new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
                             "Address not found with id: " + id
                     );
                 });

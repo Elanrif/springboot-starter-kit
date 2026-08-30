@@ -4,8 +4,6 @@ import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.dto.PostDto;
 import com.elanrif.springbootstarterkit.entity.Post;
 import com.elanrif.springbootstarterkit.entity.User;
-import com.elanrif.springbootstarterkit.exception.BadRequestException;
-import com.elanrif.springbootstarterkit.exception.ResourceNotFoundException;
 import com.elanrif.springbootstarterkit.mapper.CommentMapper;
 import com.elanrif.springbootstarterkit.mapper.PostMapper;
 import com.elanrif.springbootstarterkit.repository.CommentRepository;
@@ -16,8 +14,10 @@ import com.elanrif.springbootstarterkit.util.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Slf4j
 @Service
@@ -67,7 +67,10 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> {
                     log.warn("Post not found with id: {}", id);
-                    return new ResourceNotFoundException("Post not found: " + id);
+                    return new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "Post not found: " + id
+                    );
                 });
         return postMapper.toResponse(post);
     }
@@ -77,14 +80,20 @@ public class PostServiceImpl implements PostService {
     public PostDto.Response createPost(PostDto.CreateRequest request) {
         log.debug("Creating post with title: {}", request.title());
         if (request.authorId() == null) {
-            throw new BadRequestException("authorId is required");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "authorId is required"
+            );
         }
 
         Post post = postMapper.toEntity(request);
         User author = userRepository.findById(request.authorId())
                 .orElseThrow(() -> {
                     log.warn("Author not found with id: {}", request.authorId());
-                    return new ResourceNotFoundException("Author not found: " + request.authorId());
+                    return new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "Author not found: " + request.authorId()
+                    );
                 });
         post.setAuthor(author);
 
@@ -100,7 +109,10 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("Update failed - post not found with id: {}", id);
-                    return new ResourceNotFoundException("Post not found: " + id);
+                    return new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "Post not found: " + id
+                    );
                 });
 
         postMapper.updateFromRequest(request, post);
@@ -109,7 +121,10 @@ public class PostServiceImpl implements PostService {
             User author = userRepository.findById(request.authorId())
                     .orElseThrow(() -> {
                         log.warn("Author not found with id: {}", request.authorId());
-                        return new ResourceNotFoundException("Author not found: " + request.authorId());
+                        return new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Author not found: " + request.authorId()
+                        );
                     });
             post.setAuthor(author);
         }
@@ -125,7 +140,10 @@ public class PostServiceImpl implements PostService {
         log.debug("Deleting post with id: {}", id);
         if (!postRepository.existsById(id)) {
             log.warn("Delete failed - post not found with id: {}", id);
-            throw new ResourceNotFoundException("Post not found: " + id);
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Post not found: " + id
+            );
         }
         postRepository.deleteById(id);
         log.info("Post deleted successfully with id: {}", id);
