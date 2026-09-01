@@ -5,9 +5,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-public final class CommonDto {
+public final class PaginationDto {
 
-    private CommonDto() {}
+    private PaginationDto() {}
 
     @Schema(name = "Pagination")
     public record Pagination(

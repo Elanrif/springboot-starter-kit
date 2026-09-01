@@ -67,18 +67,18 @@ public class User extends AuditableEntity {
      * to avoid LazyInitializationException and recursive JSON issues.
      */
     @Builder.Default
+    @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     @JsonIgnore
-      @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
 
-    @Builder.Default
     @JsonIgnore
+    @Builder.Default
       @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     private List<Post> posts = new ArrayList<>();
 
     @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
-      @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Address> addresses = new ArrayList<>();
 
     @Column(nullable = true)

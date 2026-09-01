@@ -29,6 +29,7 @@ public class Comment extends AuditableEntity {
      * @JsonIgnore prevents recursive serialization with Jackson.
      */
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
@@ -37,8 +38,8 @@ public class Comment extends AuditableEntity {
      * LAZY controls database fetching only, not JSON recursion.
      * @JsonIgnore prevents recursive serialization with Jackson.
      */
-    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 }

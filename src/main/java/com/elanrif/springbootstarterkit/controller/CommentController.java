@@ -1,7 +1,7 @@
 package com.elanrif.springbootstarterkit.controller;
 
 import com.elanrif.springbootstarterkit.dto.CommentDto;
-import com.elanrif.springbootstarterkit.dto.CommonDto;
+import com.elanrif.springbootstarterkit.dto.PaginationDto;
 import com.elanrif.springbootstarterkit.services.CommentService;
 import com.elanrif.springbootstarterkit.util.PageResponse;
 import jakarta.validation.Valid;
@@ -22,7 +22,7 @@ public class CommentController {
     @GetMapping
     public ResponseEntity<PageResponse<CommentDto.Response>> list(
             @ModelAttribute CommentDto.Filter filter,
-            @ModelAttribute CommonDto.Pagination pagination
+            @ModelAttribute PaginationDto.Pagination pagination
     ) {
         log.info("GET /api/v1/comments - Fetching comments");
         PageResponse<CommentDto.Response> response =
@@ -31,7 +31,7 @@ public class CommentController {
         log.info(
                 "Returned {} comments (total: {})",
                 response.data().size(),
-                response.meta().total()
+                response.meta().totalElements()
         );
 
         return ResponseEntity.ok(response);

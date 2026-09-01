@@ -1,13 +1,13 @@
 package com.elanrif.springbootstarterkit.services;
 
-import com.elanrif.springbootstarterkit.dto.CommonDto;
+import com.elanrif.springbootstarterkit.dto.PaginationDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.util.PageResponse;
 
 public interface UserService {
     PageResponse<UserDto.Response> getUsers(
             UserDto.Filter filter,
-            CommonDto.Pagination pagination
+            PaginationDto.Pagination pagination
     );
     UserDto.Response getById(Long id);
 

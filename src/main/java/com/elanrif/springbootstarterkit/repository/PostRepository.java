@@ -19,5 +19,4 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
         WHERE p.id = :id
         """)
     Optional<Post> findByIdWithDetails(@Param("id") Long id);
-
 }

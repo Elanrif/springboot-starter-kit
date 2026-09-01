@@ -1,7 +1,7 @@
 package com.elanrif.springbootstarterkit.controller;
 
 import com.elanrif.springbootstarterkit.dto.AddressDto;
-import com.elanrif.springbootstarterkit.dto.CommonDto;
+import com.elanrif.springbootstarterkit.dto.PaginationDto;
 import com.elanrif.springbootstarterkit.services.AddressService;
 import com.elanrif.springbootstarterkit.util.PageResponse;
 import jakarta.validation.Valid;
@@ -26,7 +26,7 @@ public class AddressController {
     @GetMapping
     public ResponseEntity<PageResponse<AddressDto.Response>> getAddresses(
             @ModelAttribute AddressDto.Filter filter,
-            @ModelAttribute CommonDto.Pagination pagination
+            @ModelAttribute PaginationDto.Pagination pagination
     ) {
         log.info(
                 "GET /api/v1/addresses - page: {}, size: {}",

@@ -1,7 +1,6 @@
 package com.elanrif.springbootstarterkit.controller;
 
-import com.elanrif.springbootstarterkit.dto.AddressDto;
-import com.elanrif.springbootstarterkit.dto.CommonDto;
+import com.elanrif.springbootstarterkit.dto.PaginationDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.services.AddressService;
 import com.elanrif.springbootstarterkit.services.UserService;
@@ -29,7 +28,7 @@ public class UserController {
     @GetMapping
     public ResponseEntity<PageResponse<UserDto.Response>> getUsers(
             @ModelAttribute UserDto.Filter filter,
-            @ModelAttribute CommonDto.Pagination pagination
+            @ModelAttribute PaginationDto.Pagination pagination
     ) {
         log.info(
                 "GET /api/v1/users - page: {}, size: {}",

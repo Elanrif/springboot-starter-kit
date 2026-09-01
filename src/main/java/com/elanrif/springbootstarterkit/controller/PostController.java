@@ -1,6 +1,6 @@
 package com.elanrif.springbootstarterkit.controller;
 
-import com.elanrif.springbootstarterkit.dto.CommonDto;
+import com.elanrif.springbootstarterkit.dto.PaginationDto;
 import com.elanrif.springbootstarterkit.dto.PostDto;
 import com.elanrif.springbootstarterkit.services.PostService;
 import com.elanrif.springbootstarterkit.util.PageResponse;
@@ -22,12 +22,12 @@ public class PostController {
     @GetMapping
     public ResponseEntity<PageResponse<PostDto.Response>> list(
             @ModelAttribute PostDto.Filter filter,
-            @ModelAttribute CommonDto.Pagination pagination
+            @ModelAttribute PaginationDto.Pagination pagination
     ) {
         log.info("GET /api/v1/posts - Fetching posts");
         PageResponse<PostDto.Response> response =
                 postService.getPosts(filter, pagination);
-        log.info("Returned {} posts (total: {})", response.data().size(), response.meta().total());
+        log.info("Returned {} posts (total: {})", response.data().size(), response.meta().totalElements());
         return ResponseEntity.ok(response);
     }
 

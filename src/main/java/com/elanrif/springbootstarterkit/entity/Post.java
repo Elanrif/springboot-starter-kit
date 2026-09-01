@@ -48,6 +48,7 @@ public class Post extends AuditableEntity {
      * @JsonIgnore prevents recursive serialization with Jackson.
      */
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
@@ -58,8 +59,8 @@ public class Post extends AuditableEntity {
      * to avoid LazyInitializationException and recursive JSON issues.
      */
     @Builder.Default
-    @JsonIgnore
     @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Comment> comments = new ArrayList<>();
 
 }
