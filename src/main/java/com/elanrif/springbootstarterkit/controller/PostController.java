@@ -1,6 +1,5 @@
 package com.elanrif.springbootstarterkit.controller;
 
-import com.elanrif.springbootstarterkit.dto.CommentDto;
 import com.elanrif.springbootstarterkit.dto.CommonDto;
 import com.elanrif.springbootstarterkit.dto.PostDto;
 import com.elanrif.springbootstarterkit.services.PostService;
