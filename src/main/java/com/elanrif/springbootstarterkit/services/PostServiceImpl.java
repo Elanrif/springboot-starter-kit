@@ -1,6 +1,6 @@
 package com.elanrif.springbootstarterkit.services;
 
-import com.elanrif.springbootstarterkit.dto.CommonDto;
+import com.elanrif.springbootstarterkit.dto.PaginationDto;
 import com.elanrif.springbootstarterkit.dto.PostDto;
 import com.elanrif.springbootstarterkit.entity.Post;
 import com.elanrif.springbootstarterkit.entity.User;
@@ -34,7 +34,7 @@ public class PostServiceImpl implements PostService {
     @Transactional(readOnly = true)
     public PageResponse<PostDto.Response> getPosts(
             PostDto.Filter filter,
-            CommonDto.Pagination pagination
+            PaginationDto.Pagination pagination
     ) {
         log.debug(
                 "Fetching posts - page: {}, size: {}, search: {}, authorId: {}",

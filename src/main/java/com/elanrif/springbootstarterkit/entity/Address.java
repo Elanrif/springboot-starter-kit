@@ -1,5 +1,6 @@
 package com.elanrif.springbootstarterkit.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -36,6 +37,7 @@ public class Address extends AuditableEntity{
     private Boolean defaultAddress;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @JoinColumn(name = "user_id", nullable = false)
     private User user; // 👈 Lien vers l'utilisateur
 }

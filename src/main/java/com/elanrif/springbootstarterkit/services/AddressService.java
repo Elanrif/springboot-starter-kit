@@ -1,14 +1,14 @@
 package com.elanrif.springbootstarterkit.services;
 
 import com.elanrif.springbootstarterkit.dto.AddressDto;
-import com.elanrif.springbootstarterkit.dto.CommonDto;
+import com.elanrif.springbootstarterkit.dto.PaginationDto;
 import com.elanrif.springbootstarterkit.util.PageResponse;
 
 public interface AddressService {
 
     PageResponse<AddressDto.Response> getAddresses(
             AddressDto.Filter filter,
-            CommonDto.Pagination pagination
+            PaginationDto.Pagination pagination
     );
 
     AddressDto.Response getAddressById(Long id);

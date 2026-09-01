@@ -1,13 +1,14 @@
 package com.elanrif.springbootstarterkit.services;
 
-import com.elanrif.springbootstarterkit.dto.CommonDto;
+import com.elanrif.springbootstarterkit.dto.PaginationDto;
 import com.elanrif.springbootstarterkit.dto.PostDto;
 import com.elanrif.springbootstarterkit.util.PageResponse;
 
 public interface PostService {
 
+
     PageResponse<PostDto.Response> getPosts(PostDto.Filter filter,
-                                            CommonDto.Pagination pagination);
+                                            PaginationDto.Pagination pagination);
     PostDto.Response getPostById(Long id);
 
     PostDto.Response createPost(PostDto.CreateRequest request);

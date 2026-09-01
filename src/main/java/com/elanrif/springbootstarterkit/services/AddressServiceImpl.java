@@ -1,7 +1,7 @@
 package com.elanrif.springbootstarterkit.services;
 
 import com.elanrif.springbootstarterkit.dto.AddressDto;
-import com.elanrif.springbootstarterkit.dto.CommonDto;
+import com.elanrif.springbootstarterkit.dto.PaginationDto;
 import com.elanrif.springbootstarterkit.entity.Address;
 import com.elanrif.springbootstarterkit.entity.User;
 import com.elanrif.springbootstarterkit.mapper.AddressMapper;
@@ -32,7 +32,7 @@ public class AddressServiceImpl implements AddressService {
     @Transactional(readOnly = true)
     public PageResponse<AddressDto.Response> getAddresses(
             AddressDto.Filter filter,
-            CommonDto.Pagination pagination
+            PaginationDto.Pagination pagination
     ) {
 
         log.debug(
