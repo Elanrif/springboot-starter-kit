@@ -109,7 +109,7 @@ public class UserServiceImpl implements UserService {
         if (user.getDeletedAt() != null
                 || user.getStatus() == UserStatus.DELETED) {
             throw new ResponseStatusException(HttpStatus.GONE,
-                    "User " + id + " has been deleted and can no longer be modified");
+                    "User " + id + " not found.");
         }
 
         userMapper.updateEntity(request, user);
@@ -140,7 +140,7 @@ public class UserServiceImpl implements UserService {
             log.warn("Delete failed - user already deleted with id: {}", id);
             throw new ResponseStatusException(
                     HttpStatus.GONE,
-                    "User " + user.getId() + " has already been deleted"
+                    "User " + user.getId() + " not found."
             );
         }
 

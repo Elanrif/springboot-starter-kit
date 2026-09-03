@@ -10,14 +10,6 @@ public record PageResponse<T>(
         long totalElements,
         int totalPages
 ) {
-
-    public record Meta(  // ← ceci définit ce TYPE
-            int page,
-            int size,
-            long totalElements,
-            int totalPages
-    ) {}
-
     // Function to transform payload from Page<T> to PageResponse<T>
     public static <T> PageResponse<T> from(Page<T> page) {
         // create a new PageResponse object

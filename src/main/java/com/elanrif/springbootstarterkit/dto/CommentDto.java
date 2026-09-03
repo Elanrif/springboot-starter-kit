@@ -1,6 +1,7 @@
 package com.elanrif.springbootstarterkit.dto;
 
 import com.elanrif.springbootstarterkit.dto.validation.OnCreate;
+import com.elanrif.springbootstarterkit.dto.validation.OnUpdate;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,7 +16,7 @@ public final class CommentDto {
     // === REQUESTS ===
     public interface CommentFields {
         @NotBlank(groups = OnCreate.class)
-        @Pattern(groups = OnCreate.class, regexp = ".*\\S.*", message = "must not be blank")
+        @Pattern(groups = OnUpdate.class, regexp = ".*\\S.*", message = "must not be blank")
         @Size(max = 2000) String content();
     }
 
