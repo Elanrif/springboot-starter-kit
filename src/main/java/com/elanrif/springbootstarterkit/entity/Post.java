@@ -37,30 +37,26 @@ public class Post extends AuditableEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Builder.Default
     @NotNull
     @PositiveOrZero
-    @Column(nullable = true)
+    @Column(nullable = false)
     private Long likes = 0L;
 
-    /*
-     * @ManyToOne is EAGER by default; we use LAZY to avoid unnecessary loading.
-     * LAZY controls database fetching only, not JSON recursion.
-     * @JsonIgnore prevents recursive serialization with Jackson.
-     */
-    @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
-    /*
-     * `mappedBy` marks this side as the inverse side of the relationship.
-     * The owning side (the one with the foreign key) is defined in the other entity.
-     * We keep this association LAZY and expose DTOs from the service layer
-     * to avoid LazyInitializationException and recursive JSON issues.
-     */
     @Builder.Default
-    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
     @JsonIgnore
+    // 🔔 CASE 1: Default relationship
+    @OneToMany(mappedBy = "post")
     private List<Comment> comments = new ArrayList<>();
 
+//    @Builder.Default
+//    @JsonIgnore
+//    // 🔔 CASE 2: CascadeType.ALL and orphanRemoval
+//    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<Comment> comments = new ArrayList<>();
 }

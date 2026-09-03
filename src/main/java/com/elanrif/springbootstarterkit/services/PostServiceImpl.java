@@ -10,7 +10,7 @@ import com.elanrif.springbootstarterkit.repository.CommentRepository;
 import com.elanrif.springbootstarterkit.repository.PostRepository;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
 import com.elanrif.springbootstarterkit.specification.PostSpecification;
-import com.elanrif.springbootstarterkit.util.PageResponse;
+import com.elanrif.springbootstarterkit.dto.shared.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -40,8 +40,8 @@ public class PostServiceImpl implements PostService {
                 "Fetching posts - page: {}, size: {}, search: {}, authorId: {}",
                 pagination.page(),
                 pagination.size(),
-                filter != null ? filter.search() : null,
-                filter != null ? filter.authorId() : null
+                filter.search(),
+                filter.authorId()
         );
 
         Page<PostDto.Response> posts = postRepository
@@ -49,7 +49,7 @@ public class PostServiceImpl implements PostService {
                         PostSpecification.from(filter),
                         pagination.toPageable()
                 )
-                .map(postMapper::toResponse);
+                .map(postMapper::toDto);
 
         log.debug(
                 "Found {} posts (total: {})",
@@ -64,7 +64,7 @@ public class PostServiceImpl implements PostService {
     @Transactional(readOnly = true)
     public PostDto.Response getPostById(Long id) {
         log.debug("Fetching post detail with id: {}", id);
-        Post post = postRepository.findByIdWithDetails(id)
+        Post post = postRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("Post not found with id: {}", id);
                     return new ResponseStatusException(
@@ -72,7 +72,7 @@ public class PostServiceImpl implements PostService {
                             "Post not found: " + id
                     );
                 });
-        return postMapper.toResponse(post);
+        return postMapper.toDto(post);
     }
 
     @Override
@@ -97,7 +97,7 @@ public class PostServiceImpl implements PostService {
                 });
         post.setAuthor(author);
 
-        PostDto.Response response = postMapper.toResponse(postRepository.save(post));
+        PostDto.Response response = postMapper.toDto(postRepository.save(post));
         log.info("Post created successfully with id: {}", response.id());
         return response;
     }
@@ -114,22 +114,9 @@ public class PostServiceImpl implements PostService {
                             "Post not found: " + id
                     );
                 });
+        postMapper.updateEntity(request, post);
 
-        postMapper.updateFromRequest(request, post);
-
-        if (request.authorId() != null) {
-            User author = userRepository.findById(request.authorId())
-                    .orElseThrow(() -> {
-                        log.warn("Author not found with id: {}", request.authorId());
-                        return new ResponseStatusException(
-                                HttpStatus.NOT_FOUND,
-                                "Author not found: " + request.authorId()
-                        );
-                    });
-            post.setAuthor(author);
-        }
-
-        PostDto.Response response = postMapper.toResponse(postRepository.save(post));
+        PostDto.Response response = postMapper.toDto(postRepository.save(post));
         log.info("Post updated successfully with id: {}", id);
         return response;
     }

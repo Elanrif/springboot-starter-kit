@@ -31,6 +31,8 @@ public class AuthServiceImpl implements AuthService {
     private final ResetTokenValidator resetTokenValidator;
 
     @Override
+    // @Transactional keeps the Hibernate session open during the method execution,
+    // allowing the LAZY addresses collection to be initialized when accessed.
     public AuthDto.Response login(AuthDto.LoginRequest request) {
         log.debug("Login attempt for email: {}", request.email());
 
@@ -54,7 +56,7 @@ public class AuthServiceImpl implements AuthService {
 
         log.info("User logged in successfully: {}", request.email());
 
-        return authMapper.toResponse(user);
+        return authMapper.toDto(user);
     }
 
     @Override
@@ -92,7 +94,7 @@ public class AuthServiceImpl implements AuthService {
                 request.email()
         );
 
-        return authMapper.toResponse(savedUser);
+        return authMapper.toDto(savedUser);
     }
 
     @Override
@@ -131,7 +133,7 @@ public class AuthServiceImpl implements AuthService {
                 request.email()
         );
 
-        return userMapper.toResponse(updatedUser);
+        return userMapper.toDto(updatedUser);
     }
 
     @Override

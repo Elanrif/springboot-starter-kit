@@ -6,31 +6,36 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.hibernate.validator.constraints.URL;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public final class AuthDto {
     private AuthDto() {}
 
     // === REQUESTS ===
 
-    @Schema(name = "UserCreateRequest")
+    @Schema(name = "LoginRequest")
     public record LoginRequest(
             @NotBlank @Email String email,
             @NotBlank String password
     ) {}
 
-    @Schema(name = "UserCreateRequest")
+    @Schema(name = "RegisterRequest")
     public record RegisterRequest(
             @NotBlank @Size(max = 200) String firstName,
             @NotBlank @Size(max = 200) String lastName,
             @NotBlank @Email @Size(max = 255) String email,
             @NotBlank @Size(min = 8, max = 255) String password,
-            @Size(max = 50) String phoneNumber,
-            @URL @Size(max = 255) String avatarUrl
+            @URL @Size(max = 255) String avatarUrl,
+            @Pattern(
+                    regexp = "^(?:(?:\\+212|00212)\\s?[5-7]\\d{2}\\s?\\d{3}\\s?" +
+                            "\\d{3}|0[5-7]\\d{2}\\s?\\d{3}\\s?\\d{3})$",
+                    message = "must be a valid Moroccan phone number"
+            )
+            String phoneNumber
     ) {}
 
     @Schema(name = "RefreshTokenRequest")
@@ -44,8 +49,13 @@ public final class AuthDto {
             @NotBlank @Size(max = 200) String firstName,
             @NotBlank @Size(max = 200) String lastName,
             @NotBlank @Email @Size(max = 255) String email,
-            @Size(max = 50) String phoneNumber,
-            @URL @Size(max = 255) String avatarUrl
+            @URL @Size(max = 255) String avatarUrl,
+            @Pattern(
+                    regexp = "^(?:(?:\\+212|00212)\\s?[5-7]\\d{2}\\s?\\d{3}\\s?" +
+                            "\\d{3}|0[5-7]\\d{2}\\s?\\d{3}\\s?\\d{3})$",
+                    message = "must be a valid Moroccan phone number"
+            )
+            String phoneNumber
     ) {}
 
     @Schema(name = "ChangePasswordRequest")
@@ -70,6 +80,7 @@ public final class AuthDto {
     ) {}
 
     // === RESPONSES ===
+
     @Schema(name = "UserResponse")
     public record Response(
             Long id,
@@ -80,7 +91,7 @@ public final class AuthDto {
             String avatarUrl,
             UserRole role,
             UserStatus status,
-            List<AddressDto.Response> addresses,
+            int numberOfAddresses,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {}

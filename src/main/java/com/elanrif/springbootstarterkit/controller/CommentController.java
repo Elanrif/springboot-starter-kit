@@ -2,13 +2,16 @@ package com.elanrif.springbootstarterkit.controller;
 
 import com.elanrif.springbootstarterkit.dto.CommentDto;
 import com.elanrif.springbootstarterkit.dto.PaginationDto;
+import com.elanrif.springbootstarterkit.dto.validation.OnCreate;
+import com.elanrif.springbootstarterkit.dto.validation.OnUpdate;
 import com.elanrif.springbootstarterkit.services.CommentService;
-import com.elanrif.springbootstarterkit.util.PageResponse;
+import com.elanrif.springbootstarterkit.dto.shared.PageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -30,8 +33,8 @@ public class CommentController {
 
         log.info(
                 "Returned {} comments (total: {})",
-                response.data().size(),
-                response.meta().totalElements()
+                response.content().size(),
+                response.totalElements()
         );
 
         return ResponseEntity.ok(response);
@@ -46,15 +49,19 @@ public class CommentController {
     }
 
     @PostMapping
-    public ResponseEntity<CommentDto.Response> create(@Valid @RequestBody CommentDto.CreateRequest request) {
-        log.info("POST /api/v1/comments - Creating comment for postId: {}, authorId: {}", request.postId(), request.authorId());
+    public ResponseEntity<CommentDto.Response> create(@Validated(OnCreate.class)
+                                                          @RequestBody CommentDto.CreateRequest request) {
+        log.info("POST /api/v1/comments - Creating comment for postId: {}, authorId: {}",
+                request.postId(), request.authorId());
         CommentDto.Response response = commentService.createComment(request);
         log.info("Comment created with id: {}", response.id());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<CommentDto.Response> update(@PathVariable Long id, @Valid @RequestBody CommentDto.UpdateRequest request) {
+    public ResponseEntity<CommentDto.Response> update(@PathVariable Long id,
+                                                      @Validated(OnUpdate.class)
+                                                      @RequestBody CommentDto.UpdateRequest request) {
         log.info("PATCH /api/v1/comments/{} - Updating comment", id);
         CommentDto.Response response = commentService.updateComment(id, request);
         log.info("Comment updated with id: {}", id);

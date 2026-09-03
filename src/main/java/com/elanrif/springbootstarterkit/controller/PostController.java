@@ -3,7 +3,7 @@ package com.elanrif.springbootstarterkit.controller;
 import com.elanrif.springbootstarterkit.dto.PaginationDto;
 import com.elanrif.springbootstarterkit.dto.PostDto;
 import com.elanrif.springbootstarterkit.services.PostService;
-import com.elanrif.springbootstarterkit.util.PageResponse;
+import com.elanrif.springbootstarterkit.dto.shared.PageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,7 @@ public class PostController {
         log.info("GET /api/v1/posts - Fetching posts");
         PageResponse<PostDto.Response> response =
                 postService.getPosts(filter, pagination);
-        log.info("Returned {} posts (total: {})", response.data().size(), response.meta().totalElements());
+        log.info("Returned {} posts (total: {})", response.content().size(), response.totalElements());
         return ResponseEntity.ok(response);
     }
 

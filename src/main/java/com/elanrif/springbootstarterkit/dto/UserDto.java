@@ -1,50 +1,74 @@
 package com.elanrif.springbootstarterkit.dto;
 
+import com.elanrif.springbootstarterkit.dto.validation.OnCreate;
+import com.elanrif.springbootstarterkit.dto.validation.OnUpdate;
 import com.elanrif.springbootstarterkit.entity.UserRole;
 import com.elanrif.springbootstarterkit.entity.UserStatus;
-import com.elanrif.springbootstarterkit.util.PageResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.hibernate.validator.constraints.URL;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public final class UserDto {
     private UserDto() {}
 
-    // === REQUESTS ===
-    @Schema(name = "UserCreateRequest")
-    public record CreateRequest(
-            @Size(max = 100) String firstName,
-            @Size(max = 100) String lastName,
-            @NotBlank @Email @Size(max = 255) String email,
-            @NotBlank @Size(min = 8, max = 255) String password,
-            @Size(max = 50) String phoneNumber,
+    // =========================================================
+    // REQUESTS
+    // =========================================================
+    // @Notblank means the value must not be blank
+    // ❌ exp --> [ null, "", "   " ], are all considered blank
+    // @Pattern means the value must match the given regular expression
+    // =========================================================
+
+    @Schema(name = "UserRequest")
+    public record Request(
+
+            @NotBlank(groups = OnCreate.class)
+            @Pattern(groups = OnUpdate.class, regexp = ".*\\S.*", message = "must not be blank")
+            @Size(max = 100)
+            String firstName,
+
+            @NotBlank(groups = OnCreate.class)
+            @Pattern(groups = OnUpdate.class, regexp = ".*\\S.*", message = "must not be blank")
+            @Size(max = 100)
+            String lastName,
+
+            @NotBlank(groups = OnCreate.class)
+            @Pattern(groups = OnUpdate.class, regexp = ".*\\S.*", message = "must not be blank")
+            @Email
+            @Size(max = 255)
+            String email,
+
+            @NotBlank(groups = OnCreate.class)
+            @Pattern(groups = OnUpdate.class, regexp = ".*\\S.*", message = "must not be blank")
+            @Size(min = 8, max = 255)
+            String password,
+
+            @URL
+            @Pattern(groups = OnUpdate.class, regexp = ".*\\S.*", message = "must not be blank")
+            @Size(max = 255)
+            String avatarUrl,
+
+            @Size(max = 50)
+            @Pattern(
+                    regexp = "^(?:(?:\\+212|00212)\\s?[5-7]\\d{2}\\s?\\d{3}\\s?" +
+                            "\\d{3}|0[5-7]\\d{2}\\s?\\d{3}\\s?\\d{3})$",
+                    message = "must be a valid Moroccan phone number"
+            )
+            String phoneNumber,
+
+            // ❌ Pattern can be used to validate the format of a string.
             UserRole role,
-            @URL @Size(max = 255) String avatarUrl,
             UserStatus status
     ) {}
 
-    @Schema(name = "UserUpdateRequest")
-    public record UpdateRequest(
-            @Size(max = 100) String firstName,
-            @Size(max = 100) String lastName,
-            @Email @Size(max = 255) String email,
-            @Size(min = 8, max = 255) String password,
-            @Size(max = 50) String phoneNumber,
-            UserRole role,
-            UserStatus status,
-            @URL @Size(max = 255) String avatarUrl
-    ) {}
 
     // === RESPONSES ===
 
-    /**
-     * Summary léger pour embedded dans d'autres DTOs (ex: author d'un Post/Comment)
-     */
     @Schema(name = "UserSummary")
     public record Summary(
             Long id,
@@ -54,9 +78,6 @@ public final class UserDto {
             String email
     ) {}
 
-    /**
-     * Response complète pour GET /users/{id}
-     */
     @Schema(name = "UserResponse")
     public record Response(
             Long id,
@@ -67,29 +88,23 @@ public final class UserDto {
             String avatarUrl,
             UserRole role,
             UserStatus status,
-            int addrSize,
+            int numberOfAddresses,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {}
 
-    @Schema(name = "UserAddressesResponse")
-    public record AddressesResponse(
-            Long id,
-            String email,
-            String firstName,
-            String lastName,
-            String phoneNumber,
-            String avatarUrl,
-            UserRole role,
-            UserStatus status,
-            PageResponse<AddressDto.Response> addresses,
-            LocalDateTime createdAt,
-            LocalDateTime updatedAt
-    ) {}
+    // === FILTERS ===
+
+    public enum Ghosts {
+        EXCLUDE, // comportement par défaut : cache les comptes supprimés
+        ONLY,    // uniquement les comptes supprimés
+        INCLUDE  // actifs + supprimés, pas de filtre
+    }
 
     @Schema(name = "UserFilter")
     public record Filter(
             UserRole role,
-            UserStatus status
+            UserStatus status,
+            Ghosts ghosts
     ) {}
 }

@@ -3,10 +3,11 @@ package com.elanrif.springbootstarterkit.services;
 import com.elanrif.springbootstarterkit.dto.PaginationDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.entity.User;
+import com.elanrif.springbootstarterkit.entity.UserStatus;
 import com.elanrif.springbootstarterkit.mapper.UserMapper;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
 import com.elanrif.springbootstarterkit.specification.UserSpecification;
-import com.elanrif.springbootstarterkit.util.PageResponse;
+import com.elanrif.springbootstarterkit.dto.shared.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -35,8 +36,8 @@ public class UserServiceImpl implements UserService {
                 "Fetching users - page: {}, size: {}, role: {}, status: {}",
                 pagination.page(),
                 pagination.size(),
-                filter != null ? filter.role() : null,
-                filter != null ? filter.status() : null
+                filter.role(),
+                filter.status()
         );
 
         Page<UserDto.Response> users = userRepository
@@ -44,7 +45,7 @@ public class UserServiceImpl implements UserService {
                         UserSpecification.from(filter),
                         pagination.toPageable()
                 )
-                .map(userMapper::toResponse);
+                .map(userMapper::toDto);
 
         log.debug(
                 "Found {} users (total: {})",
@@ -69,13 +70,13 @@ public class UserServiceImpl implements UserService {
                     );
                 });
 
-        return userMapper.toResponse(user);
+        return userMapper.toDto(user);
     }
 
 
     @Override
     @Transactional
-    public UserDto.Response createUser(UserDto.CreateRequest request) {
+    public UserDto.Response createUser(UserDto.Request request) {
         log.debug("Creating user with email: {}", request.email());
 
         User user = userMapper.toEntity(request);
@@ -85,14 +86,14 @@ public class UserServiceImpl implements UserService {
 
         log.info("User created successfully with id: {}", savedUser.getId());
 
-        return userMapper.toResponse(savedUser);
+        return userMapper.toDto(savedUser);
     }
 
     @Override
     @Transactional
     public UserDto.Response updateUser(
             Long id,
-            UserDto.UpdateRequest request
+            UserDto.Request request
     ) {
         log.debug("Updating user with id: {}", id);
 
@@ -105,30 +106,45 @@ public class UserServiceImpl implements UserService {
                     );
                 });
 
-        userMapper.updateFromRequest(request, user);
+        if (user.getDeletedAt() != null
+                || user.getStatus() == UserStatus.DELETED) {
+            throw new ResponseStatusException(HttpStatus.GONE,
+                    "User " + id + " has been deleted and can no longer be modified");
+        }
+
+        userMapper.updateEntity(request, user);
 
         User updatedUser = userRepository.save(user);
 
         log.info("User updated successfully with id: {}", id);
 
-        return userMapper.toResponse(updatedUser);
+        return userMapper.toDto(updatedUser);
     }
 
-    // Admin only
     @Override
     @Transactional
     public void deleteUser(Long id) {
         log.debug("Deleting user with id: {}", id);
 
-        if (!userRepository.existsById(id)) {
-            log.warn("Delete failed - user not found with id: {}", id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("Delete failed - user not found with id: {}", id);
+                    return new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "User not found: " + id
+                    );
+                });
+
+        if (user.getDeletedAt() != null
+                || user.getStatus() == UserStatus.DELETED) {
+            log.warn("Delete failed - user already deleted with id: {}", id);
             throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "User not found: " + id
+                    HttpStatus.GONE,
+                    "User " + user.getId() + " has already been deleted"
             );
         }
 
-        userRepository.deleteById(id);
+        userRepository.delete(user);
 
         log.info("User deleted successfully with id: {}", id);
     }

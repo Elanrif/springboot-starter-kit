@@ -8,7 +8,7 @@ import com.elanrif.springbootstarterkit.mapper.AddressMapper;
 import com.elanrif.springbootstarterkit.repository.AddressRepository;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
 import com.elanrif.springbootstarterkit.specification.AddressSpecification;
-import com.elanrif.springbootstarterkit.util.PageResponse;
+import com.elanrif.springbootstarterkit.dto.shared.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -49,7 +49,7 @@ public class AddressServiceImpl implements AddressService {
                         AddressSpecification.from(filter),
                         pagination.toPageable()
                 )
-                .map(addressMapper::toResponse);
+                .map(addressMapper::toDto);
 
         log.debug(
                 "Found {} addresses (total: {})",
@@ -74,7 +74,7 @@ public class AddressServiceImpl implements AddressService {
                     );
                 });
 
-        return addressMapper.toResponse(address);
+        return addressMapper.toDto(address);
     }
 
     @Override
@@ -116,7 +116,7 @@ public class AddressServiceImpl implements AddressService {
                 userId
         );
 
-        return addressMapper.toResponse(savedAddress);
+        return addressMapper.toDto(savedAddress);
     }
 
     @Override
@@ -136,7 +136,7 @@ public class AddressServiceImpl implements AddressService {
                     );
                 });
 
-        addressMapper.updateFromRequest(
+        addressMapper.updateEntity(
                 request,
                 existingAddress
         );
@@ -160,7 +160,7 @@ public class AddressServiceImpl implements AddressService {
                 id
         );
 
-        return addressMapper.toResponse(updatedAddress);
+        return addressMapper.toDto(updatedAddress);
     }
 
     @Override

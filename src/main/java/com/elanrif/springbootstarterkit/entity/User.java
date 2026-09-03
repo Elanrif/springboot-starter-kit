@@ -8,7 +8,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,8 +20,11 @@ import java.util.List;
 @Entity
 @Builder
 @Table(name = "users")
-@SQLDelete(sql = "UPDATE users SET deleted_at = NOW(), status = 'DELETED', email = CONCAT('deleted_', phone_number, '_', email) WHERE id = ?")
-@SQLRestriction("deleted_at IS NULL")
+//@SQLRestriction("deleted_at IS NULL")
+@SQLDelete(sql = "UPDATE users SET deleted_at = NOW(), status = 'DELETED', " +
+        "email = CONCAT('deleted_', id, '_', email), " +
+        "phone_number = CONCAT('deleted_', id, '_', phone_number) " +
+        "WHERE id = ?")
 public class User extends AuditableEntity {
 
     @Id
@@ -60,27 +62,22 @@ public class User extends AuditableEntity {
     @Column(nullable = false)
     private UserStatus status = UserStatus.ACTIVE;
 
-    /*
-     * `mappedBy` marks this side as the inverse side of the relationship.
-     * The owning side (the one with the foreign key) is defined in the other entity.
-     * We keep this association LAZY and expose DTOs from the service layer
-     * to avoid LazyInitializationException and recursive JSON issues.
-     */
+    // Soft delete timestamp
+    @Column(nullable = true)
+    private LocalDateTime deletedAt;
+
     @Builder.Default
-    @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     @JsonIgnore
+    @OneToMany(mappedBy = "author")
     private List<Comment> comments = new ArrayList<>();
 
-    @JsonIgnore
     @Builder.Default
-      @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
-    private List<Post> posts = new ArrayList<>();
-
-    @Builder.Default
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user")
     @JsonIgnore
     private List<Address> addresses = new ArrayList<>();
 
-    @Column(nullable = true)
-    private LocalDateTime deletedAt;
+    @Builder.Default
+    @JsonIgnore
+    @OneToMany(mappedBy = "author")
+    private List<Post> posts = new ArrayList<>();
 }

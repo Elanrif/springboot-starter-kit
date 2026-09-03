@@ -2,14 +2,17 @@ package com.elanrif.springbootstarterkit.controller;
 
 import com.elanrif.springbootstarterkit.dto.PaginationDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
+import com.elanrif.springbootstarterkit.dto.validation.OnCreate;
+import com.elanrif.springbootstarterkit.dto.validation.OnUpdate;
 import com.elanrif.springbootstarterkit.services.AddressService;
 import com.elanrif.springbootstarterkit.services.UserService;
-import com.elanrif.springbootstarterkit.util.PageResponse;
-import jakarta.validation.Valid;
+import com.elanrif.springbootstarterkit.dto.shared.PageResponse;
+import com.elanrif.springbootstarterkit.services.purge.UserPurgeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -17,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
-
+    private final UserPurgeService userPurgeService;
     private final UserService userService;
     private final AddressService addressService;
 
@@ -56,7 +59,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserDto.Response> createUser(
-            @Valid @RequestBody UserDto.CreateRequest request
+            @Validated(OnCreate.class) @RequestBody UserDto.Request request
     ) {
         log.info(
                 "POST /api/v1/users - Creating user with email: {}",
@@ -74,7 +77,7 @@ public class UserController {
     @PatchMapping("/{id}")
     public ResponseEntity<UserDto.Response> updateUser(
             @PathVariable Long id,
-            @Valid @RequestBody UserDto.UpdateRequest request
+            @Validated(OnUpdate.class) @RequestBody UserDto.Request request
     ) {
         log.info("PATCH /api/v1/users/{} - Updating user", id);
 
@@ -92,6 +95,12 @@ public class UserController {
 
         userService.deleteUser(id);
 
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}/purge")
+    public ResponseEntity<Void> purgeUser(@PathVariable Long id) {
+        userPurgeService.purgeUser(id);
         return ResponseEntity.noContent().build();
     }
 }
