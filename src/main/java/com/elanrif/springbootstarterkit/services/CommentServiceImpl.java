@@ -10,7 +10,7 @@ import com.elanrif.springbootstarterkit.repository.CommentRepository;
 import com.elanrif.springbootstarterkit.repository.PostRepository;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
 import com.elanrif.springbootstarterkit.specification.CommentSpecification;
-import com.elanrif.springbootstarterkit.util.PageResponse;
+import com.elanrif.springbootstarterkit.dto.shared.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -48,7 +48,7 @@ public class CommentServiceImpl implements CommentService {
                         CommentSpecification.from(filter),
                         pagination.toPageable()
                 )
-                .map(commentMapper::toResponse);
+                .map(commentMapper::toDto);
 
         log.debug(
                 "Found {} comments (total: {})",
@@ -63,7 +63,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional(readOnly = true)
     public CommentDto.Response getCommentById(Long id) {
         log.debug("Fetching comment with id: {}", id);
-        Comment comment = commentRepository.findByIdWithAuthorAndPost(id)
+        Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("Comment not found with id: {}", id);
                     return new ResponseStatusException(
@@ -71,7 +71,7 @@ public class CommentServiceImpl implements CommentService {
                             "Comment not found: " + id
                     );
                 });
-        return commentMapper.toResponse(comment);
+        return commentMapper.toDto(comment);
     }
 
     @Override
@@ -80,7 +80,6 @@ public class CommentServiceImpl implements CommentService {
         log.debug("Creating comment for post id: {}", request.postId());
         Comment comment = commentMapper.toEntity(request);
 
-        // Update relationships
         Post getPost = postRepository.findById(request.postId())
                 .orElseThrow(() -> {
                     log.warn("Post not found with id: {}", request.postId());
@@ -102,7 +101,7 @@ public class CommentServiceImpl implements CommentService {
         comment.setAuthor(getUser);
 
 
-        CommentDto.Response response = commentMapper.toResponse(commentRepository.save(comment));
+        CommentDto.Response response = commentMapper.toDto(commentRepository.save(comment));
         log.info("Comment created successfully with id: {}", response.id());
         return response;
     }
@@ -124,32 +123,10 @@ public class CommentServiceImpl implements CommentService {
                     );
                 });
 
-        // Update simple fields
-        commentMapper.updateFromRequest(request, comment);
-
-        // Update relationships
-        Post getPost = postRepository.findById(request.postId())
-                .orElseThrow(() -> {
-                    log.warn("Post not found with id: {}", request.postId());
-                    return new ResponseStatusException(
-                            HttpStatus.NOT_FOUND,
-                            "Post not found: " + request.postId()
-                    );
-                });
-        User getUser = userRepository.findById(request.authorId())
-                .orElseThrow(() -> {
-                    log.warn("Author not found with id: {}", request.authorId());
-                    return new ResponseStatusException(
-                            HttpStatus.NOT_FOUND,
-                            "Author not found: " + request.authorId()
-                    );
-                });
-
-        comment.setPost(getPost);
-        comment.setAuthor(getUser);
+        commentMapper.updateEntity(request, comment);
 
         CommentDto.Response response =
-                commentMapper.toResponse(commentRepository.save(comment));
+                commentMapper.toDto(commentRepository.save(comment));
 
         log.info("Comment updated successfully with id: {}", id);
 

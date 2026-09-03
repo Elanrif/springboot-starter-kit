@@ -1,14 +1,13 @@
 package com.elanrif.springbootstarterkit.dto;
 
-import com.elanrif.springbootstarterkit.util.PageResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import org.hibernate.validator.constraints.URL;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public final class PostDto {
 
@@ -17,62 +16,52 @@ public final class PostDto {
     // =========================================================
     // REQUESTS
     // =========================================================
+    // @Notblank means the value must not be blank
+    // ❌ exp --> [ null, "", "   " ], are all considered blank
+    // @Pattern means the value must match the given regular expression
+    // =========================================================
+
+    public interface PostFields {
+        @Size(max = 200) String title();
+        @Size(max = 2000) String description();
+        @Pattern(regexp = ".*\\S.*", message = "must not be blank")
+        @URL @Size(max = 200) String imageUrl();
+    }
 
     @Schema(name = "PostCreateRequest")
     public record CreateRequest(
-            @NotBlank
-            @Size(max = 200)
-            String title,
-            @Size(max = 200)
+            @NotBlank String title,
+            @NotBlank String description,
             String imageUrl,
-            @Size(max = 2000)
-            String description,
-            @PositiveOrZero
-            Long likes,
-            @NotNull
-            Long authorId
-
-    ) {}
+            @NotNull Long authorId
+    ) implements PostFields {}
 
     @Schema(name = "PostUpdateRequest")
     public record UpdateRequest(
-            @Size(max = 200)
+            @Pattern(regexp = ".*\\S.*", message = "must not be blank")
             String title,
-            @Size(max = 200)
-            String imageUrl,
-            @Size(max = 2000)
+            @Pattern(regexp = ".*\\S.*", message = "must not be blank")
             String description,
-            @PositiveOrZero
-            Long likes,
-            @NotNull
-            Long authorId
-
-    ) {}
+            String imageUrl
+    ) implements PostFields {}
 
     // =========================================================
     // RESPONSES
     // =========================================================
 
-    /**
-     * Lightweight representation of a post.
-     * Used when only a summary is required.
-     */
     @Schema(name = "PostSummary")
     public record Summary(
+
             Long id,
             String title,
             String imageUrl,
             Long likes,
             UserDto.Summary author,
-            int commentCount,
+            int numberOfComments,
             LocalDateTime createdAt
 
     ) {}
 
-    /**
-     * Standard post response.
-     * Used for GET /posts.
-     */
     @Schema(name = "PostResponse")
     public record Response(
 
@@ -82,21 +71,7 @@ public final class PostDto {
             String description,
             Long likes,
             UserDto.Summary author,
-            int commentSize,
-            LocalDateTime createdAt,
-            LocalDateTime updatedAt
-
-    ) {}
-
-    @Schema(name = "PostCommentsResponse")
-    public record CommentsResponse(
-            Long id,
-            String title,
-            String imageUrl,
-            String description,
-            Long likes,
-            UserDto.Summary author,
-            PageResponse<CommentDto.Response> comments,
+            int numberOfComments,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
 

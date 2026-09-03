@@ -2,7 +2,7 @@ package com.elanrif.springbootstarterkit.services;
 
 import com.elanrif.springbootstarterkit.dto.PaginationDto;
 import com.elanrif.springbootstarterkit.dto.PostDto;
-import com.elanrif.springbootstarterkit.util.PageResponse;
+import com.elanrif.springbootstarterkit.dto.shared.PageResponse;
 
 public interface PostService {
 

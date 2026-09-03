@@ -28,10 +28,10 @@ public class FilterController {
     // ============================================================================
     @GetMapping
     public ResponseEntity<Page<Post>> getPosts(
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page -1, size);
         log.info("pageble :-----> {}", pageable);
         Page<Post> posts = postRepository.findAll(pageable);
 

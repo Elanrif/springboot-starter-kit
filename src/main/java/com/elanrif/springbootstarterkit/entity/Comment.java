@@ -23,23 +23,22 @@ public class Comment extends AuditableEntity {
     @Column(nullable = false)
     private String content;
 
-    /*
-     * @ManyToOne is EAGER by default; we use LAZY to avoid unnecessary loading.
-     * LAZY controls database fetching only, not JSON recursion.
-     * @JsonIgnore prevents recursive serialization with Jackson.
-     */
-    @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
-    /*
-     * @ManyToOne is EAGER by default; we use LAZY to avoid unnecessary loading.
-     * LAZY controls database fetching only, not JSON recursion.
-     * @JsonIgnore prevents recursive serialization with Jackson.
-     */
-    @ManyToOne(fetch = FetchType.LAZY)
+//    @JsonIgnore
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    // 🔔 CASE 1: DEFAULT relationShip
+//    @JoinColumn(name = "post_id", nullable = false)
+//    private Post post;
+
     @JsonIgnore
-    @JoinColumn(name = "post_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    // 🔔 CASE 2: SET NULL on delete to avoid foreign key constraint violation when a post is deleted
+    @JoinColumn(name = "post_id", nullable = true, foreignKey = @ForeignKey(
+            foreignKeyDefinition = "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE SET NULL"
+    ))
     private Post post;
 }

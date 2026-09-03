@@ -3,7 +3,7 @@ package com.elanrif.springbootstarterkit.controller;
 import com.elanrif.springbootstarterkit.dto.AddressDto;
 import com.elanrif.springbootstarterkit.dto.PaginationDto;
 import com.elanrif.springbootstarterkit.services.AddressService;
-import com.elanrif.springbootstarterkit.util.PageResponse;
+import com.elanrif.springbootstarterkit.dto.shared.PageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

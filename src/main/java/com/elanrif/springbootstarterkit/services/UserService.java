@@ -2,7 +2,7 @@ package com.elanrif.springbootstarterkit.services;
 
 import com.elanrif.springbootstarterkit.dto.PaginationDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
-import com.elanrif.springbootstarterkit.util.PageResponse;
+import com.elanrif.springbootstarterkit.dto.shared.PageResponse;
 
 public interface UserService {
     PageResponse<UserDto.Response> getUsers(
@@ -11,11 +11,11 @@ public interface UserService {
     );
     UserDto.Response getById(Long id);
 
-    UserDto.Response createUser(UserDto.CreateRequest request);
+    UserDto.Response createUser(UserDto.Request request);
 
     UserDto.Response updateUser(
             Long id,
-            UserDto.UpdateRequest request
+            UserDto.Request request
     );
     void deleteUser(Long id);
 }

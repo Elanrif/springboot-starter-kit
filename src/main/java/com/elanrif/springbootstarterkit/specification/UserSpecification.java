@@ -18,7 +18,8 @@ public final class UserSpecification {
 
         return Specification.allOf(
                 hasRole(filter.role()),
-                hasStatus(filter.status())
+                hasStatus(filter.status()),
+                hasGhosts(filter.ghosts())
         );
     }
 
@@ -42,5 +43,24 @@ public final class UserSpecification {
 
         return (root, query, cb) ->
                 cb.equal(root.get("status"), status);
+    }
+
+    // SOFT DELETION
+    public static Specification<User> active() {
+        return (root, query, cb) -> cb.isNull(root.get("deletedAt"));
+    }
+
+    public static Specification<User> ghosts() {
+        return (root, query, cb) -> cb.isNotNull(root.get("deletedAt"));
+    }
+
+    private static Specification<User> hasGhosts(UserDto.Ghosts ghosts) {
+        if (ghosts == null || ghosts == UserDto.Ghosts.EXCLUDE) {
+            return active();
+        }
+        if (ghosts == UserDto.Ghosts.ONLY) {
+            return ghosts();
+        }
+        return Specification.unrestricted(); // INCLUDE
     }
 }
