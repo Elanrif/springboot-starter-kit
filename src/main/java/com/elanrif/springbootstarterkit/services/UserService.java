@@ -18,4 +18,6 @@ public interface UserService {
             UserDto.Request request
     );
     void deleteUser(Long id);
+
+    void purgeUser(Long id);
 }

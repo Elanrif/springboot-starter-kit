@@ -55,67 +55,67 @@ public class DataLoader implements ApplicationRunner {
 
         var usersToSave = List.of(
                 User.builder().avatarUrl(avatar).email("admin@gmail.com").firstName("Admin").lastName("admin")
-                        .password(passwordEncoder.encode("admin123")).phoneNumber("+212600000001")
+                        .password(passwordEncoder.encode("admin")).phoneNumber("+212600000001")
                         .role(UserRole.ADMIN).status(UserStatus.ACTIVE).build(),
 
                 User.builder().avatarUrl(avatar).email("visitor@gmail.com").firstName("Visitor").lastName("visit")
-                        .password(passwordEncoder.encode("visitor123")).phoneNumber("+212600000002")
-                        .role(UserRole.ADMIN).status(UserStatus.ACTIVE).build(),
+                        .password(passwordEncoder.encode("visitor")).phoneNumber("+212600000002")
+                        .role(UserRole.USER).status(UserStatus.ACTIVE).build(),
 
                 User.builder().email("john.doe@gmail.com").firstName("John").lastName("Doe")
-                        .password(passwordEncoder.encode("Johndoe")).phoneNumber("+212600000033")
+                        .password(passwordEncoder.encode("visitor")).phoneNumber("+212600000033")
                         .role(UserRole.USER).status(UserStatus.INACTIVE).build(),
 
                 User.builder().email("jane.smith@gmail.com").firstName("Jane").lastName("Smith")
-                        .password(passwordEncoder.encode("Simple123")).phoneNumber("+212600000003")
+                        .password(passwordEncoder.encode("visitor")).phoneNumber("+212600000003")
                         .role(UserRole.USER).status(UserStatus.INACTIVE).build(),
 
                 User.builder().email("eric.dupont@gmail.com").firstName("Eric").lastName("Dupont")
-                        .password(passwordEncoder.encode("Simple123")).phoneNumber("+212600000004")
+                        .password(passwordEncoder.encode("visitor")).phoneNumber("+212600000004")
                         .role(UserRole.USER).status(UserStatus.ACTIVE).build(),
 
                 User.builder().email("alice.johnson@gmail.com").firstName("Alice").lastName("Johnson")
-                        .password(passwordEncoder.encode("Simple123")).phoneNumber("+212600000005")
+                        .password(passwordEncoder.encode("visitor")).phoneNumber("+212600000005")
                         .role(UserRole.USER).status(UserStatus.INACTIVE).build(),
 
                 User.builder().email("michael.brown@gmail.com").firstName("Michael").lastName("Brown")
-                        .password(passwordEncoder.encode("Simple123")).phoneNumber("+212600000006")
+                        .password(passwordEncoder.encode("visitor")).phoneNumber("+212600000006")
                         .role(UserRole.USER).status(UserStatus.INACTIVE).build(),
 
                 User.builder().email("emma.wilson@gmail.com").firstName("Emma").lastName("Wilson")
-                        .password(passwordEncoder.encode("Simple123")).phoneNumber("+212600000007")
+                        .password(passwordEncoder.encode("visitor")).phoneNumber("+212600000007")
                         .role(UserRole.USER).status(UserStatus.ACTIVE).build(),
 
                 User.builder().email("david.miller@gmail.com").firstName("David").lastName("Miller")
-                        .password(passwordEncoder.encode("Simple123")).phoneNumber("+212600000008")
+                        .password(passwordEncoder.encode("visitor")).phoneNumber("+212600000008")
                         .role(UserRole.USER).status(UserStatus.ACTIVE).build(),
 
                 User.builder().email("olivia.moore@gmail.com").firstName("Olivia").lastName("Moore")
-                        .password(passwordEncoder.encode("Simple123")).phoneNumber("+212600000009")
+                        .password(passwordEncoder.encode("visitor")).phoneNumber("+212600000009")
                         .role(UserRole.USER).status(UserStatus.INACTIVE).build(),
 
                 User.builder().email("daniel.taylor@gmail.com").firstName("Daniel").lastName("Taylor")
-                        .password(passwordEncoder.encode("Simple123")).phoneNumber("+212600000010")
+                        .password(passwordEncoder.encode("visitor")).phoneNumber("+212600000010")
                         .role(UserRole.USER).status(UserStatus.ACTIVE).build(),
 
                 User.builder().email("sophia.anderson@gmail.com").firstName("Sophia").lastName("Anderson")
-                        .password(passwordEncoder.encode("Simple123")).phoneNumber("+212600000011")
+                        .password(passwordEncoder.encode("visitor")).phoneNumber("+212600000011")
                         .role(UserRole.USER).status(UserStatus.INACTIVE).build(),
 
                 User.builder().email("james.thomas@gmail.com").firstName("James").lastName("Thomas")
-                        .password(passwordEncoder.encode("Simple123")).phoneNumber("+212600000012")
+                        .password(passwordEncoder.encode("visitor")).phoneNumber("+212600000012")
                         .role(UserRole.USER).status(UserStatus.ACTIVE).build(),
 
                 User.builder().email("charlotte.jackson@gmail.com").firstName("Charlotte").lastName("Jackson")
-                        .password(passwordEncoder.encode("Simple123")).phoneNumber("+212600000013")
+                        .password(passwordEncoder.encode("visitor")).phoneNumber("+212600000013")
                         .role(UserRole.USER).status(UserStatus.INACTIVE).build(),
 
                 User.builder().email("lucas.white@gmail.com").firstName("Lucas").lastName("White")
-                        .password(passwordEncoder.encode("Simple123")).phoneNumber("+212600000014")
+                        .password(passwordEncoder.encode("visitor")).phoneNumber("+212600000014")
                         .role(UserRole.USER).status(UserStatus.INACTIVE).build(),
 
                 User.builder().email("amelia.harris@gmail.com").firstName("Amelia").lastName("Harris")
-                        .password(passwordEncoder.encode("Simple123")).phoneNumber("+212600000015")
+                        .password(passwordEncoder.encode("visitor")).phoneNumber("+212600000015")
                         .role(UserRole.USER).status(UserStatus.INACTIVE).build()
         );
 

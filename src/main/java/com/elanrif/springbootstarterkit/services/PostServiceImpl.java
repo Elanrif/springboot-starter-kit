@@ -79,21 +79,17 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public PostDto.Response createPost(PostDto.CreateRequest request) {
         log.debug("Creating post with title: {}", request.title());
+
         if (request.authorId() == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "authorId is required"
-            );
+            log.warn("Post creation failed - authorId is missing"); // <-- ajouté
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "authorId is required");
         }
 
         Post post = postMapper.toEntity(request);
         User author = userRepository.findById(request.authorId())
                 .orElseThrow(() -> {
                     log.warn("Author not found with id: {}", request.authorId());
-                    return new ResponseStatusException(
-                            HttpStatus.NOT_FOUND,
-                            "Author not found: " + request.authorId()
-                    );
+                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "Author not found: " + request.authorId());
                 });
         post.setAuthor(author);
 

@@ -45,7 +45,7 @@ public final class UserDto {
 
             @NotBlank(groups = OnCreate.class)
             @Pattern(groups = OnUpdate.class, regexp = ".*\\S.*", message = "must not be blank")
-            @Size(min = 8, max = 255)
+            @Size(min = 5, max = 255) // TODO: min = 8
             String password,
 
             @URL

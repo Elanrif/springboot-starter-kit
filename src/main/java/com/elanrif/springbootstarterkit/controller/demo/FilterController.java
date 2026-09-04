@@ -2,6 +2,9 @@ package com.elanrif.springbootstarterkit.controller.demo;
 
 import com.elanrif.springbootstarterkit.entity.Post;
 import com.elanrif.springbootstarterkit.repository.PostRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -18,6 +21,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/posts-demo")
 @RequiredArgsConstructor
+@Tag(
+        name = "Posts Demo",
+        description = "Educational endpoints demonstrating Spring Data pagination, sorting, " +
+                "and Specification-based filtering. Not part of the real API surface."
+)
 public class FilterController {
     private final PostRepository postRepository;
 
@@ -27,44 +35,53 @@ public class FilterController {
     // work with Spring Data using Pageable, PageRequest, and Sort.
     // ============================================================================
     @GetMapping
+    @Operation(
+            summary = "List posts (basic pagination)",
+            description = "Demonstrates plain pagination using PageRequest, with a 1-based page parameter."
+    )
     public ResponseEntity<Page<Post>> getPosts(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size
+            @Parameter(description = "Page number, starting at 1") @RequestParam(defaultValue = "1") int page,
+            @Parameter(description = "Number of results per page") @RequestParam(defaultValue = "10") int size
     ) {
-        Pageable pageable = PageRequest.of(page -1, size);
-        log.info("pageble :-----> {}", pageable);
+        Pageable pageable = PageRequest.of(page - 1, size);
+        log.debug("GET /api/v1/posts-demo - pageable: {}", pageable);
+
         Page<Post> posts = postRepository.findAll(pageable);
 
         return ResponseEntity.ok(posts);
     }
 
     @GetMapping("/sort")
+    @Operation(
+            summary = "List posts with sorting",
+            description = "Demonstrates pagination combined with dynamic sorting, " +
+                    "e.g. sort=createdAt,desc or sort=title,asc."
+    )
     public ResponseEntity<Page<Post>> getPosts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Page number, starting at 0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Number of results per page") @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Property and direction, e.g. 'createdAt,desc'")
             @RequestParam(defaultValue = "createdAt,desc") String sort
     ) {
         // Split the sort parameter into the property and the direction.
         // Example: "createdAt,desc" → ["createdAt", "desc"]
         String[] parts = sort.split(",");
-        log.info("parts : {}", parts);
 
         // The first part is the entity property used for sorting.
         // Example: "createdAt"
         String property = parts[0];
-        log.info("property : {}", property);
 
         // The second part defines the sorting direction (ASC or DESC).
         // If no direction is provided, ASC is used by default.
         Sort.Direction direction = parts.length > 1
                 ? Sort.Direction.fromString(parts[1])
                 : Sort.Direction.ASC;
-        log.info("direction : {}", direction);
 
         // Build the Spring Data Sort object from the property and direction.
         // Example: Sort.by(DESC, "createdAt")
         Sort sorting = Sort.by(direction, property);
-        log.info("sorting : {}", sorting);
+
+        log.debug("GET /api/v1/posts-demo/sort - property: {}, direction: {}", property, direction);
 
         /* The same as above, but using PageRequest.of() */
         Pageable pageable = PageRequest.of(page, size, sorting);
@@ -80,9 +97,16 @@ public class FilterController {
     // ============================================================================
 
     @GetMapping("/spec")
+    @Operation(
+            summary = "Filter posts by title (Specification)",
+            description = "Demonstrates dynamic filtering with Spring Data Specification. " +
+                    "Returns all posts if no search value is given."
+    )
     public ResponseEntity<List<Post>> getPosts(
+            @Parameter(description = "Case-insensitive substring to match against the post title")
             @RequestParam(required = false) String search
     ) {
+        log.debug("GET /api/v1/posts-demo/spec - search: {}", search);
 
         // ------------------------------------------------------------------------
         // Build a Specification to filter posts by title.
@@ -108,7 +132,7 @@ public class FilterController {
             //                    - equal(...)       → =
             //                    - like(...)        → LIKE
             //                    - greaterThan(...) → >
-            //                    - lessThan(...)    → <
+            //                    - lessThan(...)    →
             // ------------------------------------------------------------------------
 
             //    PostRepository equivalent : List<Post> findByTitleContainingIgnoreCase(String search);
@@ -133,12 +157,21 @@ public class FilterController {
     // ============================================================================
 
     @GetMapping("/spec-page")
+    @Operation(
+            summary = "Filter, sort and paginate posts (Specification + Pageable)",
+            description = "Combines dynamic filtering (Specification), sorting, and pagination " +
+                    "in a single query. The most complete example of the three above."
+    )
     public ResponseEntity<Page<Post>> getPostsWithFilterAndPagination(
+            @Parameter(description = "Case-insensitive substring to match against the post title")
             @RequestParam(required = false) String search,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Page number, starting at 0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Number of results per page") @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Property and direction, e.g. 'createdAt,desc'")
             @RequestParam(defaultValue = "createdAt,desc") String sort
     ) {
+        log.debug("GET /api/v1/posts-demo/spec-page - search: {}, page: {}, size: {}, sort: {}",
+                search, page, size, sort);
 
         // ------------------------------------------------------------------------
         // Build a Specification to dynamically filter posts by title.
@@ -211,5 +244,4 @@ public class FilterController {
 
         return ResponseEntity.ok(posts);
     }
-
 }

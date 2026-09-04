@@ -5,6 +5,9 @@ import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.entity.User;
 import com.elanrif.springbootstarterkit.entity.UserStatus;
 import com.elanrif.springbootstarterkit.mapper.UserMapper;
+import com.elanrif.springbootstarterkit.repository.AddressRepository;
+import com.elanrif.springbootstarterkit.repository.CommentRepository;
+import com.elanrif.springbootstarterkit.repository.PostRepository;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
 import com.elanrif.springbootstarterkit.specification.UserSpecification;
 import com.elanrif.springbootstarterkit.dto.shared.PageResponse;
@@ -23,6 +26,9 @@ import org.springframework.web.server.ResponseStatusException;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final PostRepository postRepository;
+    private final AddressRepository addressRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
@@ -91,31 +97,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDto.Response updateUser(
-            Long id,
-            UserDto.Request request
-    ) {
+    public UserDto.Response updateUser(Long id, UserDto.Request request) {
         log.debug("Updating user with id: {}", id);
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("Update failed - user not found with id: {}", id);
-                    return new ResponseStatusException(
-                            HttpStatus.NOT_FOUND,
-                            "User not found: " + id
-                    );
+                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + id);
                 });
 
-        if (user.getDeletedAt() != null
-                || user.getStatus() == UserStatus.DELETED) {
-            throw new ResponseStatusException(HttpStatus.GONE,
-                    "User " + id + " not found.");
+        if (user.getDeletedAt() != null || user.getStatus() == UserStatus.DELETED) {
+            log.warn("Update failed - user already deleted with id: {}", id); // <-- ajouté
+            throw new ResponseStatusException(HttpStatus.GONE, "User " + id + " not found.");
         }
 
         userMapper.updateEntity(request, user);
-
         User updatedUser = userRepository.save(user);
-
         log.info("User updated successfully with id: {}", id);
 
         return userMapper.toDto(updatedUser);
@@ -147,5 +144,22 @@ public class UserServiceImpl implements UserService {
         userRepository.delete(user);
 
         log.info("User deleted successfully with id: {}", id);
+    }
+
+    @Override
+    @Transactional
+    public void purgeUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + id));
+
+        if (user.getDeletedAt() == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "User " + id + " must be soft-deleted before it can be purged");
+        }
+
+        commentRepository.deleteByAuthorId(id);
+        postRepository.deleteByAuthorId(id);
+        addressRepository.deleteByUserId(id);
+        userRepository.hardDelete(id);
     }
 }
