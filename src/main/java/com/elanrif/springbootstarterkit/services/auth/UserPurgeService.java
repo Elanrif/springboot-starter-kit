@@ -1,4 +1,4 @@
-package com.elanrif.springbootstarterkit.services.purge;
+package com.elanrif.springbootstarterkit.services.auth;
 
 import com.elanrif.springbootstarterkit.entity.User;
 import com.elanrif.springbootstarterkit.repository.AddressRepository;

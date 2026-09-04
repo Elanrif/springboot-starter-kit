@@ -204,7 +204,7 @@ public class AddressServiceImpl implements AddressService {
     private void resetDefaultAddresses(Long userId) {
         List<Address> addresses =
                 addressRepository.findByUserId(userId);
-
+        log.debug("Resetting default flag on {} address(es) for user {}", addresses.size(), userId);
         addresses.forEach(address ->
                 address.setDefaultAddress(false)
         );
