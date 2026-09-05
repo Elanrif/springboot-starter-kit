@@ -1,6 +1,6 @@
 package com.elanrif.springbootstarterkit.services.auth;
 
-import com.elanrif.springbootstarterkit.dto.AuthDto;
+import com.elanrif.springbootstarterkit.dto.auth.AuthDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

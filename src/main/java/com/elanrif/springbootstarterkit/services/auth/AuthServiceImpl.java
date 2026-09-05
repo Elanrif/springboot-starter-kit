@@ -1,6 +1,6 @@
 package com.elanrif.springbootstarterkit.services.auth;
 
-import com.elanrif.springbootstarterkit.dto.AuthDto;
+import com.elanrif.springbootstarterkit.dto.auth.AuthDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.entity.User;
 import com.elanrif.springbootstarterkit.entity.UserRole;
@@ -83,20 +83,34 @@ public class AuthServiceImpl implements AuthService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid email or password");
         }
 
+        // Build the "authentication badge" Spring Security understands.
+        // - principal: the user's identity (email)
+        // - credentials: null, because the password was already verified above — no need to keep it around
+        // - authorities: the user's role(s), wrapped as GrantedAuthority objects
+        //   ".name()" is used (not toString()) because it's guaranteed by the JVM to always return
+        //   the exact enum constant name (e.g. "ADMIN"), immune to any custom toString() override later.
+        //   The "ROLE_" prefix is a Spring Security convention required for hasRole("ADMIN") to match.
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                user.getEmail(), null,
+                user.getEmail(),
+                null,
                 List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
         );
 
+        // Wrap the auth badge in a SecurityContext, and register it as the "current" context
+        // for this request's thread. At this point, it only exists in memory for this one request.
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(auth);
         SecurityContextHolder.setContext(context);
 
-        // Persiste explicitement le contexte (crée la session + Set-Cookie JSESSIONID)
+        // Persist the context: creates (or reuses) the HTTP session on the server,
+        // stores the SecurityContext inside it, and writes Set-Cookie: JSESSIONID=... on httpResponse.
+        // Without this line, the authentication above would be lost as soon as the request ends.
         securityContextRepository.saveContext(context, httpRequest, httpResponse);
 
         log.info("User logged in successfully: {}", request.email());
 
+        // Never return the raw entity (it may carry the hashed password, internal fields, etc.) —
+        // map it to a safe DTO instead.
         return userMapper.toDto(user);
     }
 
