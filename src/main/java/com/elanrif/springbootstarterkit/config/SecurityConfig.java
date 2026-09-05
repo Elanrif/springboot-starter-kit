@@ -2,6 +2,7 @@ package com.elanrif.springbootstarterkit.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -20,9 +21,11 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             CorsConfigurationSource corsConfigurationSource) throws Exception {
+
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
+
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/swagger-ui/**",
@@ -34,10 +37,15 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/account/**").authenticated()
                         .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
-                        //.anyRequest().permitAll()
                 )
+
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+                        session.sessionCreationPolicy(
+                                // TODO: change STATELESS to IF_REQUIRED
+                                SessionCreationPolicy.STATELESS))
+                // TODO: remove basic auth for testing purposes, can be removed later
+                .httpBasic(Customizer.withDefaults());
+
         return http.build();
     }
 
