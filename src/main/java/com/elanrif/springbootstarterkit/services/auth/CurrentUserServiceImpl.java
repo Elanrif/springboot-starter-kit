@@ -26,19 +26,10 @@ public class CurrentUserServiceImpl implements CurrentUserService {
     private final PasswordEncoder passwordEncoder;
     private final SecurityUtils securityUtils;
 
-    private User getCurrentUser() {
-        Long currentUserId = securityUtils.getCurrentUserId();
-        return userRepository.findById(currentUserId)
-                .orElseThrow(() -> {
-                    log.warn("Current user not found with id: {}", currentUserId);
-                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
-                });
-    }
-
     @Override
     @Transactional
     public UserDto.Response updateMyProfile(CurrentUserDto.UpdateProfileRequest request) {
-        User user = getCurrentUser();
+        User user = securityUtils.getCurrentUser();
         log.debug("Updating profile for user id: {}", user.getId());
 
         user.setFirstName(request.firstName());
@@ -56,7 +47,7 @@ public class CurrentUserServiceImpl implements CurrentUserService {
     @Override
     @Transactional
     public void changeMyPassword(CurrentUserDto.ChangePasswordRequest request) {
-        User user = getCurrentUser();
+        User user = securityUtils.getCurrentUser();
         log.debug("Password change attempt for user id: {}", user.getId());
 
         if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
@@ -73,7 +64,7 @@ public class CurrentUserServiceImpl implements CurrentUserService {
     @Override
     @Transactional
     public void deleteMyAccount(CurrentUserDto.DeleteAccountRequest request) {
-        User user = getCurrentUser();
+        User user = securityUtils.getCurrentUser();
         log.debug("Account deletion attempt for user id: {}", user.getId());
 
         if (request.message() == null || !request.message().trim().equalsIgnoreCase(MESSAGE_DELETE_ACCOUNT)) {

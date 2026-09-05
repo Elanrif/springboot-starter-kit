@@ -2,7 +2,6 @@ package com.elanrif.springbootstarterkit.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -41,17 +40,13 @@ public class SecurityConfig {
 
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
-                                // TODO: change STATELESS to IF_REQUIRED
-                                SessionCreationPolicy.STATELESS))
-                // TODO: remove basic auth for testing purposes, can be removed later
-                .httpBasic(Customizer.withDefaults());
+                                // TODO: without BasicAuth, change STATELESS to IF_REQUIRED
+                                SessionCreationPolicy.IF_REQUIRED));
+                // TODO: for BasicAuth, remove basic auth for testing purposes, can be removed later
+//                .httpBasic(Customizer.withDefaults());
 
         return http.build();
     }
 
-    @Bean
-    public SecurityContextRepository securityContextRepository() {
-        return new HttpSessionSecurityContextRepository();
-    }
 }
 
