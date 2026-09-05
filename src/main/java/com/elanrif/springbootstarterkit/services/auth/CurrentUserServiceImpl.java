@@ -1,7 +1,7 @@
 package com.elanrif.springbootstarterkit.services.auth;
 
 import com.elanrif.springbootstarterkit.config.SecurityUtils;
-import com.elanrif.springbootstarterkit.dto.CurrentUserDto;
+import com.elanrif.springbootstarterkit.dto.auth.CurrentUserDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.entity.User;
 import com.elanrif.springbootstarterkit.mapper.UserMapper;

@@ -1,6 +1,6 @@
 package com.elanrif.springbootstarterkit.services.auth;
 
-import com.elanrif.springbootstarterkit.dto.CurrentUserDto;
+import com.elanrif.springbootstarterkit.dto.auth.CurrentUserDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
 
 public interface CurrentUserService {

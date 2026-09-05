@@ -1,6 +1,6 @@
 package com.elanrif.springbootstarterkit.controller.auth;
 
-import com.elanrif.springbootstarterkit.dto.CurrentUserDto;
+import com.elanrif.springbootstarterkit.dto.auth.CurrentUserDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.services.auth.CurrentUserService;
 import io.swagger.v3.oas.annotations.Operation;

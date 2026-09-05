@@ -1,6 +1,6 @@
 package com.elanrif.springbootstarterkit.controller.auth;
 
-import com.elanrif.springbootstarterkit.dto.AuthDto;
+import com.elanrif.springbootstarterkit.dto.auth.AuthDto;
 import com.elanrif.springbootstarterkit.dto.UserDto;
 import com.elanrif.springbootstarterkit.services.auth.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -47,7 +49,9 @@ public class AuthController {
     )
     public ResponseEntity<UserDto.Response> login(
             @Valid @RequestBody AuthDto.LoginRequest request,
+            // ⚠️ gives access to the incoming request — needed to create/find the HTTP session
             HttpServletRequest httpRequest,
+            // ⚠️ gives access to the outgoing response — needed to write the Set-Cookie header
             HttpServletResponse httpResponse
     ) {
         UserDto.Response response = authService.login(request, httpRequest, httpResponse);
@@ -61,21 +65,15 @@ public class AuthController {
             description = "Invalidates the current session and clears the session cookie."
     )
     public ResponseEntity<Void> logout(
+            // ⚠️ gives access to the incoming request — needed to invalidate the HTTP session
             HttpServletRequest httpRequest,
+            // ⚠️ gives access to the outgoing response — needed to clear the Set-Cookie header
             HttpServletResponse httpResponse
     ) {
         authService.logout(httpRequest, httpResponse);
         log.info("POST /api/v1/auth/logout - Logout requested");
         return ResponseEntity.noContent().build();
     }
-
-    // =========================================================
-    // Forgot / reset password
-    // Both endpoints live here (not in CurrentUserController) because
-    // the user is NOT authenticated at this point — they lost their
-    // password and are proving identity via an emailed token, not a
-    // session/JWT.
-    // =========================================================
 
     @PostMapping("/forgot-password")
     @Operation(
@@ -84,6 +82,7 @@ public class AuthController {
                     "Does not confirm whether the email is registered, for security reasons."
     )
     public ResponseEntity<Void> forgotPassword(
+            // ⚠️ gives access to the incoming request — needed to process the forgot password request
             @Valid @RequestBody AuthDto.ForgotPasswordRequest request
     ) {
         authService.forgotPassword(request);
