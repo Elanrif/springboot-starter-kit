@@ -1,5 +1,6 @@
 package com.elanrif.springbootstarterkit.config;
 
+import com.elanrif.springbootstarterkit.entity.User;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,13 +14,12 @@ import org.springframework.web.server.ResponseStatusException;
 public class SecurityUtils {
     private final UserRepository userRepository;
 
-    public Long getCurrentUserId() {
+    public User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not authenticated");
         }
         return userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"))
-                .getId();
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
     }
 }
