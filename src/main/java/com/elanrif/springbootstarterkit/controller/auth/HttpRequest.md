@@ -1,226 +1,593 @@
-# Why Authentication Uses Headers (Cookies / Bearer Tokens) Instead of Body or URL Params<br/>
+# Why Authentication Uses Headers (Basic Auth, Cookies, and Bearer Tokens) Instead of Body or URL Params
 
-## 1. Background — What `HttpServletRequest` and `HttpServletResponse` Actually Are<br/>
+## 1. Background — What `HttpServletRequest` and `HttpServletResponse` Actually Are
 
-In Spring Boot, every incoming HTTP call is handled by an embedded server (Tomcat by default).<br/>
-For each request that arrives, Tomcat creates two objects and hands them to Spring: an `HttpServletRequest`<br/>
-and an `HttpServletResponse`. These two objects together represent the **entire HTTP exchange** —<br/>
-nothing about the request or the response exists outside of them.<br/>
+In Spring Boot, every incoming HTTP request is handled by an embedded server (Tomcat by default).
+
+For each request, the server provides Spring with two objects:
+
+* `HttpServletRequest` — represents everything coming **into** the server.
+* `HttpServletResponse` — represents everything going **out** of the server.
+
+Together, they represent the complete HTTP request/response exchange.
 
 ```mermaid
 flowchart LR
-  A[Client] -- "HttpServletRequest\n(method, headers, cookies, body)" --> B[Tomcat + Spring Boot]
-  B -- "HttpServletResponse\n(status, headers, Set-Cookie, body)" --> A
+  A[Client] -->|"HttpServletRequest\nmethod, URL, headers, cookies, body"| B[Tomcat + Spring Boot]
+  B -->|"HttpServletResponse\nstatus, headers, Set-Cookie, body"| A
 ```
 
-<br/>
+`HttpServletRequest` contains:
 
-`HttpServletRequest` represents everything that came **in** from the client: the HTTP method (GET, POST...),<br/>
-the URL and its query params, all the request headers (including the `Cookie` header), and the request body<br/>
-(the raw JSON, form data, etc.). It is mostly used for **reading** — you pull information out of it.<br/>
+* HTTP method (`GET`, `POST`, etc.)
+* URL and query parameters
+* request headers
+* cookies
+* request body
 
-`HttpServletResponse` represents everything that will go **out** back to the client: the status code (200, 404...),<br/>
-the response headers (including `Set-Cookie`), and the response body. It is mostly used for **writing** —<br/>
-you push information into it before it's sent.<br/>
+It is mainly used for **reading** information from the incoming request.
 
-In practice, Spring gives you higher-level tools that read/write these objects for you, so you rarely touch<br/>
-them directly: `@RequestBody` reads the body out of `HttpServletRequest`, `@RequestParam`/`@PathVariable` read<br/>
-query/path values out of it, and `ResponseEntity` writes the status/body into `HttpServletResponse`. You only<br/>
-reach for the raw objects yourself when you need something these shortcuts don't cover — like manually creating<br/>
-a session or setting a cookie, as seen in the `login` method earlier.<br/>
+`HttpServletResponse` contains:
 
-## 2. HTTP Is "Stateless" by Nature — You Need a Mechanism to Link Requests Together<br/>
+* HTTP status code (`200`, `404`, etc.)
+* response headers
+* `Set-Cookie`
+* response body
 
-Every HTTP request is independent. The server has no natural way of knowing that two separate requests came from the same person.<br/>
-This is what "stateless" means: no built-in memory between calls.<br/>
+It is mainly used for **writing** information into the outgoing response.
+
+Spring provides higher-level tools that read and write these objects for you:
+
+```java
+@RequestBody
+@RequestParam
+@PathVariable
+ResponseEntity
+```
+
+For example, `@RequestBody` reads data from the request body, while `ResponseEntity` helps build the response.
+
+---
+
+# 2. HTTP Basic Authentication — The Simplest Example
+
+Before understanding sessions and Bearer tokens, it is useful to start with **HTTP Basic Authentication**.
+
+With Basic Auth, the client sends the username and password in the `Authorization` header **on every request**.
+
+For example:
+
+```http
+GET /api/v1/users HTTP/1.1
+Host: localhost:8080
+Authorization: Basic <Base64(email:password)>
+```
+
+Conceptually:
+
+```text
+email    = admin@example.com
+password = password123
+```
+
+The credentials are encoded as:
+
+```text
+Base64("admin@example.com:password123")
+```
+
+Base64 is **not encryption**. Therefore, Basic Auth should always be used over **HTTPS**.
+
+---
+
+## 2.1 How Spring Security Enables Basic Auth
+
+In Spring Boot, Basic Authentication can be enabled in the `SecurityFilterChain`:
+
+```java
+@Bean
+public SecurityFilterChain securityFilterChain(
+        HttpSecurity http) throws Exception {
+
+  http
+          .authorizeHttpRequests(auth -> auth
+                  .requestMatchers("/api/v1/users/**")
+                  .hasRole("ADMIN")
+                  .anyRequest()
+                  .authenticated()
+          )
+          .httpBasic(Customizer.withDefaults());
+
+  return http.build();
+}
+```
+
+# ⛔ Basic Auth + Session: Why Wrong Passwords Were Accepted
+
+## Bug
+With `IF_REQUIRED` session policy, after one successful Basic Auth login, Spring stores the `SecurityContext` in <br/>
+the session. On later requests, `BasicAuthenticationFilter` skips re-checking the <br/>
+password **if the username matches** the one already authenticated in session <br/>
+— so a wrong password with the same (correct) email got through.<br/>
+
+## Fix
+```java
+session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+```
+No session stored/read → every request re-verified from scratch.<br/>
+
+## Where the password check happens
+`CustomUserDetailsService` only fetches the user — it doesn't compare passwords.<br/> 
+Spring auto-builds a `DaoAuthenticationProvider` from your `UserDetailsService` + `PasswordEncoder` beans, <br/>
+and it's this provider that internally calls `passwordEncoder.matches(rawPassword, storedHash)`.<br/>
+
+## Why the `PasswordEncoder` bean is needed<br/>
+Without it, Spring defaults to `DelegatingPasswordEncoder`, which expects a `{bcrypt}` prefix on stored hashes. <br/>
+A plain `BCryptPasswordEncoder` hash has no prefix → throws `No PasswordEncoder mapped for id "null"`. <br/>
+Declaring `BCryptPasswordEncoder` explicitly avoids this.<br/>
+
+## STATELESS vs IF_REQUIRED<br/>
+
+| | IF_REQUIRED | STATELESS |
+|---|---|---|
+| Session | Created & reused | Never created/read |
+| Use case | Web login w/ cookies | REST APIs (Basic/JWT) |
+| Credentials | Checked once | Checked every request |
+
+**Mismatch risk:** session-based auth + `STATELESS` → forces re-login every request. <br/>
+Stateless auth (Basic/JWT) + `IF_REQUIRED` → password can be silently skipped on later requests (this bug).<br/>
+
+
+The important line is:
+
+```java
+.httpBasic(Customizer.withDefaults());
+```
+
+This tells Spring Security to configure the **HTTP Basic Authentication mechanism**.
+
+Spring Security then adds the necessary filters to the security filter chain, including `BasicAuthenticationFilter`.
+
+```mermaid
+flowchart TD
+  A[SecurityFilterChain] --> B[".httpBasic(Customizer.withDefaults())"]
+  B --> C[BasicAuthenticationFilter]
+  C --> D[AuthenticationManager]
+  D --> E[AuthenticationProvider]
+  E --> F[UserDetailsService]
+  F --> G[CustomUserDetailsService]
+  G --> H[UserRepository]
+  H --> I[Database]
+```
+
+---
+
+## 2.2 `UserDetailsService`
+
+Spring Security provides the `UserDetailsService` interface as a contract for loading users.
+
+We can provide our own implementation:
+
+```java
+@Service
+@RequiredArgsConstructor
+public class CustomUserDetailsService implements UserDetailsService {
+
+  private final UserRepository userRepository;
+
+  @Override
+  public UserDetails loadUserByUsername(String email) {
+
+    return userRepository.findByEmail(email)
+            .map(user -> User.withUsername(user.getEmail())
+                    .password(user.getPassword())
+                    .roles(user.getRole().name())
+                    .build()
+            )
+            .orElseThrow(() ->
+                    new UsernameNotFoundException("User not found")
+            );
+  }
+}
+```
+
+Two things are important here.
+
+### `implements UserDetailsService`
+
+This tells Spring Security that the class follows the `UserDetailsService` contract.
+
+Spring Security can therefore use it when it needs to load a user.
+
+### `@Service`
+
+This registers the class as a Spring bean.
+
+The class name `CustomUserDetailsService` is not special. What matters is that the class:
+
+```java
+implements UserDetailsService
+```
+
+and is registered as a Spring bean.
+
+---
+
+## 2.3 Complete Basic Auth Flow
+
+When the client sends:
+
+```http
+GET /api/v1/users
+Authorization: Basic <Base64(email:password)>
+```
+
+the controller does **not** manually read the `Authorization` header.
+
+Spring Security processes authentication first.
+
+```mermaid
+sequenceDiagram
+  participant C as Client
+  participant F as BasicAuthenticationFilter
+  participant A as AuthenticationManager
+  participant U as CustomUserDetailsService
+  participant DB as Database
+  participant Ctrl as UserController
+
+  C->>F: GET /api/v1/users + Basic Auth
+  F->>A: Authenticate credentials
+  A->>U: loadUserByUsername(email)
+  U->>DB: findByEmail(email)
+  DB-->>U: User
+  U-->>A: UserDetails
+  A->>A: Verify password
+  A-->>F: Authentication successful
+  F->>Ctrl: Continue request
+  Ctrl-->>C: Response
+```
+
+The controller can therefore remain simple:
+
+```java
+@GetMapping
+public ResponseEntity<?> getUsers() {
+  return ResponseEntity.ok(userService.getAllUsers());
+}
+```
+
+---
+
+## 2.4 Authentication vs Authorization
+
+Authentication answers:
+
+> **Who are you?**
+
+Authorization answers:
+
+> **Are you allowed to access this resource?**
+
+For example:
+
+```java
+.requestMatchers("/api/v1/users/**")
+.hasRole("ADMIN")
+```
+
+The complete flow is:
+
+```mermaid
+flowchart TD
+  A[GET /api/v1/users] --> B[BasicAuthenticationFilter]
+  B --> C[Authenticate User]
+  C --> D[CustomUserDetailsService]
+  D --> E[UserRepository]
+  E --> F[UserDetails]
+  F --> G[Verify Password]
+  G --> H{ROLE_ADMIN?}
+
+  H -->|Yes| I[UserController]
+  H -->|No| J[403 Forbidden]
+
+  C -->|Authentication failed| K[401 Unauthorized]
+```
+
+Therefore:
+
+* **401 Unauthorized** → authentication failed or credentials are missing/invalid.
+* **403 Forbidden** → authentication succeeded, but the user does not have the required role.
+
+---
+
+# 3. The Problem With Basic Authentication
+
+Basic Auth works, but it has an important weakness:
+
+**the password is sent with every request.**
+
+For example:
+
+```text
+Request 1 → email + password
+Request 2 → email + password
+Request 3 → email + password
+Request 4 → email + password
+```
+
+This means the server has to repeatedly verify the credentials.
+
+Password hashing algorithms such as BCrypt or Argon2 are intentionally expensive to compute.
+
+The client also has to keep the user's password available so it can continue sending it.
+
+This is why applications commonly authenticate the user **once**, then use a temporary authentication mechanism for subsequent requests.
+
+---
+
+# 4. Sessions and Cookies — Authenticate Once, Then Use a Session ID
+
+Instead of sending the password on every request, the client can authenticate once.
+
+The server then creates a session and gives the client a session identifier.
 
 ```mermaid
 sequenceDiagram
   participant C as Client
   participant S as Server
+  participant DB as Database
 
-  C->>S: Request 1
-  Note over S: No memory of anything before this
-  S-->>C: Response 1
+  C->>S: Login + email/password
+  S->>DB: Verify credentials
+  DB-->>S: User found
+  S-->>C: Set-Cookie: JSESSIONID=ABC123
 
-  C->>S: Request 2
-  Note over S: Treated as a brand new, unrelated request
-  S-->>C: Response 2
+  C->>S: GET /api/v1/users\nCookie: JSESSIONID=ABC123
+  S->>S: Find session ABC123
+  S-->>C: Response
+
+  C->>S: GET /api/v1/posts\nCookie: JSESSIONID=ABC123
+  S->>S: Find session ABC123
+  S-->>C: Response
 ```
 
-<br/>
+The important difference is:
 
-To solve this, you need an identifier that travels **automatically** from one request to the next.<br/>
-This is exactly the role of **headers** (whether it's the `Cookie` header or the `Authorization` header) — they were designed<br/>
-in the HTTP spec specifically for this purpose: carrying metadata *about* the request.<br/>
+```text
+Basic Auth:
 
-The **body**, by contrast, is designed to carry the actual **business data**<br/>
-of the request (email, password, form fields, JSON payloads, etc.) — not session metadata.<br/>
-Mixing the two would blur the responsibility of each part of the request.<br/>
+Request → email + password
+Request → email + password
+Request → email + password
 
-## 3. Cookies — Automatic Handling by the Browser<br/>
 
-The browser manages sending the cookie **by itself**, on every request to the matching domain,<br/>
-without your JavaScript code needing to do anything.<br/>
+Session:
 
-With a token in the body or URL params instead, **you (the frontend developer)** would have to:<br/>
+Login → email + password
+Request → session ID
+Request → session ID
+Request → session ID
+```
 
-* Manually retrieve the token from the login response,
-* Store it somewhere (localStorage/sessionStorage),
-* Manually attach it to every single request.
+---
 
-More code to write, and more room for mistakes (forgetting to attach it on one endpoint, for example).<br/>
+## 4.1 Why Cookies Are Convenient
 
-### `HttpOnly` — Protection Against XSS<br/>
+Browsers automatically manage cookies.
 
-A cookie marked `HttpOnly` is **completely invisible to JavaScript** — even if malicious JS runs<br/>
-on your page (an XSS vulnerability), that script cannot read the cookie to steal it.<br/>
+If the server sends:
 
-A token stored in the body and then kept in `localStorage`, on the other hand, **is** accessible via JavaScript —<br/>
-meaning any XSS vulnerability on your site would let an attacker steal the token directly.<br/>
+```http
+Set-Cookie: JSESSIONID=ABC123
+```
+
+the browser stores it and automatically sends it on subsequent matching requests:
+
+```http
+Cookie: JSESSIONID=ABC123
+```
+
+The frontend does not need to manually add the cookie to every request.
 
 ```mermaid
 flowchart TD
-  subgraph Cookie["Cookie"]
-    C1[Browser sends it automatically]
-    C2[HttpOnly blocks JS access]
-    C3[Tied to one domain]
-  end
+  A[Server] -->|"Set-Cookie: JSESSIONID=ABC123"| B[Browser]
+  B --> C[Stores Cookie]
+  C --> D[Future Request]
+  D -->|"Cookie: JSESSIONID=ABC123"| A
 ```
 
-## 4. So Why Does `Authorization: Bearer` Exist at All?<br/>
+---
 
-Because cookies also have a real limitation: they are **automatically scoped to a domain** by the browser.<br/>
-This is convenient for a classic web app, but becomes a problem for:<br/>
+## 4.2 `HttpOnly`
 
-* **Non-browser clients that don't behave like a browser** — most mobile apps and server-to-server calls don't have<br/>
-  an automatic cookie jar the way a browser (or a tool like Postman, which *does* emulate one) does.<br/>
-  Bearer tokens don't rely on any of that — the client just attaches the header itself, explicitly, every time.<br/>
-* **Architectures where multiple domains/services** need to verify the same token independently (e.g. microservices) —<br/>
-  the `Authorization` header is more universal and explicit, and doesn't depend on the browser's cookie/domain mechanism at all.<br/>
+A cookie can be marked as:
+
+```http
+HttpOnly
+```
+
+An `HttpOnly` cookie cannot be read by JavaScript through APIs such as `document.cookie`.
+
+This helps reduce the ability of injected JavaScript to directly steal the session cookie during an XSS attack.
+
+Other cookie attributes can provide additional protections, such as:
+
+```text
+HttpOnly
+Secure
+SameSite
+```
+
+---
+
+# 5. Why `Authorization: Bearer` Exists
+
+Sessions and cookies work especially well with browser-based applications.
+
+But not every client is a browser.
+
+Applications can also communicate through:
+
+* mobile applications
+* desktop applications
+* server-to-server APIs
+* microservices
+* command-line clients
+
+In these cases, explicitly sending an authentication token can be more convenient.
+
+This is where the `Authorization` header with the `Bearer` scheme is commonly used:
+
+```http
+GET /api/v1/users
+Authorization: Bearer eyJhbGciOi...
+```
+
+The client explicitly attaches the token to requests.
 
 ```mermaid
 flowchart TD
-  subgraph Cookie["Cookie"]
-    C1[Browser sends it automatically]
-    C2[HttpOnly blocks JS access]
-    C3[Tied to one domain]
-  end
-
-  subgraph Bearer["Authorization: Bearer"]
-    B1[Client must attach it manually]
-    B2[Readable by client code]
-    B3[Works for any client, any domain]
-  end
+  A[Client] -->|"Authorization: Bearer token"| B[Server]
+  B --> C[Validate Token]
+  C --> D[Authenticated Request]
 ```
 
-## 5. Why Can't Email + Password Alone Identify the Client on Every Request?<br/>
+Unlike cookies, the client is generally responsible for deciding when and how the token is attached.
 
-Email and password **do** identify the person — but only at the exact moment they're checked, during `login`.<br/>
-Once that HTTP request ends, the server forgets everything, since HTTP is stateless (see section 2).<br/>
+---
 
-In theory you could resend email + password on every single request (this exists, it's called HTTP Basic Auth),<br/>
-but it's a bad idea in practice, for three reasons:<br/>
+# 6. Basic Auth vs Session vs Bearer Token
 
-* The password would travel over the network on **every** request, not just once, multiplying the risk of interception.
-* Password hashing (bcrypt/argon2) is **intentionally slow** for security — recomputing it on every `GET` request<br/>
-  would be a serious performance problem.
-* The client would have to keep the raw password in memory at all times to keep resending it — a bad security practice.
+The three mechanisms solve the same general problem — **authenticating requests** — but they work differently.
 
-The fix: verify identity **once**, then hand out a lightweight, disposable "ticket" (the session cookie, or a JWT)<br/>
-that's cheap to check and easy to revoke, instead of repeating a costly, sensitive check on every request.<br/>
+|                                | Basic Auth                    | Session / Cookie | Bearer Token                      |
+| ------------------------------ | ----------------------------- | ---------------- | --------------------------------- |
+| Sent on every request          | Email + password              | Session ID       | Token                             |
+| Password sent repeatedly       | Yes                           | No               | No                                |
+| Browser automatically sends it | No                            | Yes, for cookies | No                                |
+| Client manually attaches it    | Usually                       | Usually not      | Yes                               |
+| Server-side session required   | No                            | Usually yes      | No, depending on token design     |
+| Common use                     | Simple/internal APIs, testing | Web applications | APIs, mobile, distributed systems |
 
-Think of it like badging into a company office, say Google: at reception, you show your ID card **once**,<br/>
-and they hand you a visitor/employee badge. For the rest of the day, security only scans your badge at each door —<br/>
-they don't ask for your ID card again every time you walk through a gate. The badge is weaker proof than the ID card,<br/>
-but far cheaper to check, and it can be deactivated instantly at the end of the day without touching your actual ID.<br/>
+---
 
-```mermaid
-sequenceDiagram
-  participant You as You
-  participant R as Reception
-  participant D as Door sensor
+# 7. What If Two Clients Use the Same Credentials?
 
-  You->>R: Show ID card (once)
-  R-->>You: Hand you a badge
-
-  You->>D: Scan badge
-  D-->>You: Access granted
-
-  You->>D: Scan badge (later, another door)
-  D-->>You: Access granted (no ID re-check)
-```
-
-<br/>
-
-## 6. Important Nuance — Basic Auth *Does* Identify the Client, at a Cost<br/>
-
-A common misunderstanding: Basic Auth doesn't fail to identify who's making the request — it actually resends<br/>
-`email:password` (Base64-encoded) in the `Authorization` header on **every single request**, so the server<br/>
-re-decodes and re-verifies the account each time. The client **is** identified, every time.<br/>
-
-The real problem isn't identification — it's the **cost and risk** of how it's done: the password travels on the wire<br/>
-constantly, and the expensive hash check runs on every call instead of once.<br/>
-
-## 7. But What If Two Different Browsers Use the Exact Same Credentials?<br/>
-
-Here's the important nuance: **this limitation applies equally to Basic Auth and to session cookies** — neither one<br/>
-can tell two browsers apart *based on the account alone*, because it's the same account.<br/>
-
-With Basic Auth, Client A and Client B would send the **exact same** `Authorization: Basic ...` value on every<br/>
-request, since it's derived directly from the same email + password. The server has no way to know it's two<br/>
-different browsers — it just sees "someone who knows this password," repeatedly.<br/>
+Basic Auth cannot distinguish two clients using the exact same username and password.
 
 ```mermaid
 flowchart TD
-  A[Client A - same email/password] -->|Authorization: Basic xxxxx| S[Server]
-  B[Client B - same email/password] -->|Authorization: Basic xxxxx| S
-  S --> R[Server sees the identical header twice - cannot tell them apart]
+  A[Client A] -->|"Basic email + password"| S[Server]
+  B[Client B] -->|"Basic email + password"| S
+  S --> R[Same account credentials]
 ```
 
-<br/>
+The server knows:
 
-With sessions, the difference appears **after login**: even though both clients typed the same email/password,<br/>
-each `login` call creates a brand-new, independently generated session ID. From that point on, the server is no<br/>
-longer comparing "the account" — it's comparing "this exact session," which is unique per login.<br/>
+> Someone possessing these credentials is making the request.
+
+It does not automatically know which browser or device is using them.
+
+With sessions, each successful login can create a different session:
 
 ```mermaid
 flowchart TD
-  A[Client A logs in] -->|Set-Cookie: JSESSIONID=AAA111| SA[Session AAA111]
-  B[Client B logs in - same email/password] -->|Set-Cookie: JSESSIONID=BBB222| SB[Session BBB222]
-  SA --> S[Session store]
+  A[Client A logs in] -->|"JSESSIONID=AAA111"| SA[Session AAA111]
+  B[Client B logs in] -->|"JSESSIONID=BBB222"| SB[Session BBB222]
+
+  SA --> S[Session Store]
   SB --> S
-  S --> R[Server can now tell them apart - two distinct sessions]
+
+  S --> R[Two independent sessions]
 ```
 
-<br/>
+Both sessions can belong to the same user account while still being separate sessions.
 
-|                                | Basic Auth                                     | Session / Cookie                             |
-| ------------------------------ | ---------------------------------------------- | -------------------------------------------- |
-| What's sent on every request   | The **account** (email + password)             | A **ticket for this one login** (session ID) |
-| Two logins, same account       | Identical value both times — indistinguishable | Two different IDs — distinguishable          |
-| What the server actually knows | "Someone who knows this password"              | "Precisely this browser's open session"      |
+---
 
-<br/>
+# 8. Why Not Put Authentication in the URL or Body?
 
-So the takeaway: identifying "the account" and identifying "this specific connected device" are two different<br/>
-problems. Basic Auth only ever solves the first one. Sessions solve the second one too, simply because a new,<br/>
-random ticket is minted at every login, regardless of whether the credentials behind it are shared.<br/>
+Authentication information can technically appear in different parts of an HTTP request, but there are important reasons to prefer headers for authentication credentials or tokens.
 
-## Summary<br/>
+For example, putting a token in a URL:
 
-* `HttpServletRequest`/`HttpServletResponse` are the raw, complete objects behind every request/response cycle —<br/>
-  headers, body, cookies, status, all of it. Spring's shortcuts (`@RequestBody`, `ResponseEntity`) just wrap them.
-* The **body** is meant to carry the **data of the request itself**, not credentials that need to automatically persist<br/>
-  across many different requests.
-* **Headers** (`Cookie` or `Authorization`) provide a standard place to carry authentication-related metadata with requests.
-* **Cookies** add two extra benefits on top of that: automatic browser handling,<br/>
-  and `HttpOnly` protection against XSS.
-* **Bearer tokens** trade away those two browser-specific conveniences in exchange for being<br/>
-  usable by any kind of client, browser or not.
-* Email/password only prove identity **once**, at login — sessions/tokens are what let that identity<br/>
-  persist cheaply and safely across many separate, stateless requests.
-* Basic Auth **does** identify the client on every request, just expensively and riskily — its real<br/>
-  weakness is cost and exposure, not lack of identification.
-* Neither Basic Auth nor sessions can distinguish two clients sharing the *same* credentials by account<br/>
-  alone — sessions solve this only because each login mints its own independent, random ticket.
+```http
+GET /api/v1/users?token=abc123
+```
+
+can expose the token through places such as:
+
+* browser history
+* logs
+* analytics systems
+* proxies
+* monitoring tools
+* copied URLs
+
+The request body is appropriate for data belonging to the operation itself:
+
+```json
+{
+  "firstName": "Sandra",
+  "lastName": "Emanuelle"
+}
+```
+
+Authentication metadata is generally better represented separately using standardized HTTP authentication mechanisms such as:
+
+```http
+Authorization: Basic ...
+```
+
+or:
+
+```http
+Authorization: Bearer ...
+```
+
+Cookies are another standardized mechanism for carrying session identifiers in browser-based applications.
+
+---
+
+# 9. Summary
+
+The main authentication mechanisms can be understood progressively:
+
+```text
+Basic Auth
+    ↓
+Send credentials with every request
+
+Session / Cookie
+    ↓
+Authenticate once
+    ↓
+Receive a session ID
+    ↓
+Browser automatically sends the cookie
+
+Bearer Token
+    ↓
+Authenticate once
+    ↓
+Receive a token
+    ↓
+Client explicitly sends the token
+```
+
+The important concepts are:
+
+* `HttpServletRequest` represents the incoming HTTP request.
+* `HttpServletResponse` represents the outgoing HTTP response.
+* **Basic Auth** sends credentials through the `Authorization` header on every request.
+* `.httpBasic(Customizer.withDefaults())` enables HTTP Basic Authentication in Spring Security.
+* `UserDetailsService` provides Spring Security with a way to load the user.
+* **Sessions** allow the server to authenticate once and associate subsequent requests with a session ID.
+* **Cookies** allow browsers to automatically send session identifiers.
+* `HttpOnly` prevents JavaScript from directly reading a cookie.
+* **Bearer tokens** allow clients to explicitly send an authentication token through the `Authorization` header.
+* `401` means authentication failed.
+* `403` means authentication succeeded, but access was denied.
+* Authentication answers **"Who are you?"**
+* Authorization answers **"Are you allowed to do this?"**
