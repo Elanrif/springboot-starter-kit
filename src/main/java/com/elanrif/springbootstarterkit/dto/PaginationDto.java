@@ -47,6 +47,8 @@ public final class PaginationDto {
 
         public Pageable toPageable() {
             return PageRequest.of(
+                    // page number starts from 0,but we want it to start from 1,
+                    // so we add 1 to make it more user-friendly
                     page - 1,
                     size,
                     toSort()

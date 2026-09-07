@@ -15,7 +15,8 @@ public record PageResponse<T>(
         // create a new PageResponse object
         return new PageResponse<>( // { content: [], page: ....,totalPages:... }
                 page.getContent(),
-                page.getNumber(),
+                // page number starts from 0, so we add 1 to make it more user-friendly
+                page.getNumber() + 1,
                 page.getSize(),
                 page.getTotalElements(),
                 page.getTotalPages()
