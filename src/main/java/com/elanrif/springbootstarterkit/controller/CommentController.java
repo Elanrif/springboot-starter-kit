@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -69,6 +70,7 @@ public class CommentController {
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("@ownerOrAdmin.isOwnerOrAdmin(#id, 'comment')")
     @Operation(
             summary = "Update a comment",
             description = "Partially updates an existing comment's content."
@@ -83,6 +85,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("@ownerOrAdmin.isOwnerOrAdmin(#id, 'comment')")
     @Operation(
             summary = "Delete a comment",
             description = "Deletes a comment by id."
