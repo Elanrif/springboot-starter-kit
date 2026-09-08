@@ -26,16 +26,16 @@ public class ProdDataInitializer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         log.info("Initializing production data...");
-        if (userRepository.existsByEmail(System.getenv("admin@gmail.com"))) {
+        if (userRepository.existsByEmail("admin@gmail.com")) {
             log.info("Admin account already exists, skipping.");
             return;
         }
 
         var admin = User.builder()
-                .email(System.getenv("admin@gmail.com"))
+                .email("admin@gmail.com")
                 .firstName("Admin")
                 .lastName("Admin")
-                .password(passwordEncoder.encode(System.getenv("admin")))
+                .password(passwordEncoder.encode("admin"))
                 .role(UserRole.ADMIN)
                 .status(UserStatus.ACTIVE)
                 .build();
