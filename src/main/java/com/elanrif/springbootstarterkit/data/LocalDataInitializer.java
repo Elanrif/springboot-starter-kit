@@ -10,17 +10,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Profile("local")
 @Component
 @RequiredArgsConstructor
-public class DataLoader implements ApplicationRunner {
+public class LocalDataInitializer implements ApplicationRunner {
 
-    private static final Logger log = LoggerFactory.getLogger(DataLoader.class);
+    private static final Logger log = LoggerFactory.getLogger(LocalDataInitializer.class);
 
     private final AddressRepository addressRepository;
     private final UserRepository userRepository;
@@ -50,7 +52,6 @@ public class DataLoader implements ApplicationRunner {
             log.info("Users already exist, skipping...");
             return userRepository.findAll();
         }
-
         var avatar = "https://res.cloudinary.com/dvjg8gm48/image/upload/v1777478590/nextjs-starter/f5476capb63o0jzeqshf.png";
 
         var usersToSave = List.of(
@@ -58,7 +59,7 @@ public class DataLoader implements ApplicationRunner {
                         .password(passwordEncoder.encode("admin")).phoneNumber("+212600000001")
                         .role(UserRole.ADMIN).status(UserStatus.ACTIVE).build(),
 
-                User.builder().avatarUrl(avatar).email("visitor@gmail.com").firstName("Visitor").lastName("visit")
+                User.builder().email("visitor@gmail.com").firstName("Visitor").lastName("visit")
                         .password(passwordEncoder.encode("visitor")).phoneNumber("+212600000002")
                         .role(UserRole.USER).status(UserStatus.ACTIVE).build(),
 

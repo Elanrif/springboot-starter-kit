@@ -1,0 +1,9 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+logging:
+  level:
+    com.elanrif.springbootstarterkit: INFO
+    org.hibernate.SQL: WARN

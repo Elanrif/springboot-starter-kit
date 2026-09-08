@@ -3,19 +3,20 @@ server:
   port: ${SERVER_PORT:8081} # Default to 8081 to avoid conflict with Keycloak on 8080
 spring:
   application:
-    name: springboot-starter-kit
+    name: ${SERVER_NAME:kickstart-springboot} # Default to kickstart-springboot if SERVER_NAME is not set
+  profiles:
+    active:
+      - ${ENV:local} # Default to dev profile if ENV is not set
   datasource:
     url: ${POSTGRES_URL}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
-    hibernate:
-      ddl-auto: create
+    open-in-view: false
     properties:
       hibernate:
         format_sql: false
-    open-in-view: false
 
 # Reset Token
 nodemailer:
@@ -29,12 +30,3 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
-
-logging:
-  level:
-    # Application logs (controllers & services)
-    # TRACE > DEBUG > INFO > WARN > ERROR ( If you put DEBUG, you'll see : DEBUG + INFO + WARN + ERROR
-    com.elanrif.springbootstarterkit: DEBUG
-    # Hibernate SQL logs
-    org.hibernate.SQL: DEBUG
-    org.hibernate.orm.jdbc.bind: TRACE

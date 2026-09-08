@@ -18,5 +18,7 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     @Modifying
     @Query(value = "DELETE FROM users WHERE id = :id", nativeQuery = true)
     void hardDelete(@Param("id") Long id);
+
+    boolean existsByEmail(String email);
 }
 
