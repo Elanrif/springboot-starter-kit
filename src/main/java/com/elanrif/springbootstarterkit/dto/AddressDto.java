@@ -23,7 +23,7 @@ public class AddressDto {
             @NotBlank String postalCode,
             @NotBlank String city,
             @NotBlank String country,
-            @NotBlank Boolean defaultAddress,
+            @NotNull Boolean defaultAddress,
             @NotNull Long userId
     ) implements AddressFields {}
 
@@ -37,7 +37,6 @@ public class AddressDto {
             String city,
             @Pattern(regexp = ".*\\S.*", message = "must not be blank")
             String country,
-            @Pattern(regexp = ".*\\S.*", message = "must not be blank")
             Boolean defaultAddress
     ) implements AddressFields {}
 
