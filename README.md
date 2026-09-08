@@ -1,5 +1,9 @@
 # Spring Boot Starter Kit
 
+### Clean package and skip tests
+```bash
+ mvn clean package -DskipTests
+```
 A starter kit for building Spring Boot applications with essential dependencies pre-configured.
 
 ## Requirements
