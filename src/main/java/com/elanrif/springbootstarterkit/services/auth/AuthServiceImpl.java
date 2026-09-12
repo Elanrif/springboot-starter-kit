@@ -75,12 +75,12 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> {
                     log.warn("Login failed - user not found: {}", request.email());
-                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "Invalid email or password");
+                    return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
                 });
 
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             log.warn("Login failed - incorrect password for: {}", request.email());
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid email or password");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
         }
 
         // Build the "authentication badge" Spring Security understands.

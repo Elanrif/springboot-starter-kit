@@ -1,6 +1,6 @@
 
 server:
-  port: ${SERVER_PORT:8081} # Default to 8081 to avoid conflict with Keycloak on 8080
+  port: ${SERVER_PORT:8081}
 spring:
   application:
     name: ${SERVER_NAME:kickstart-springboot} # Default to kickstart-springboot if SERVER_NAME is not set
@@ -21,6 +21,9 @@ spring:
     jdbc:
       initialize-schema: always
     timeout: 30m   # optionnel, durée de vie d'une session inactive
+  web:
+    error:
+      include-message: always
 
 # Reset Token
 nodemailer:
