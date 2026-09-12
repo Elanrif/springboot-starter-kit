@@ -3,7 +3,7 @@ server:
   port: ${SERVER_PORT:8081}
 spring:
   application:
-    name: ${SERVER_NAME:kickstart-springboot} # Default to kickstart-springboot if SERVER_NAME is not set
+    name: ${SERVER_NAME:kickstart-springboot}
   datasource:
     url: ${POSTGRES_URL}
     username: ${POSTGRES_USER}
@@ -16,11 +16,11 @@ spring:
         format_sql: false
   profiles:
     active:
-      - ${ENV:local} # Default to dev profile if ENV is not set
+      - ${ENV:local}
   session:
     jdbc:
       initialize-schema: always
-    timeout: 30m   # optionnel, durée de vie d'une session inactive
+    timeout: 30m
   web:
     error:
       include-message: always
