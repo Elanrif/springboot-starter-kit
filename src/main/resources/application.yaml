@@ -21,9 +21,9 @@ spring:
     jdbc:
       initialize-schema: always
     timeout: 30m   # optionnel, durée de vie d'une session inactive
-#  web:
-#    error:
-#      include-message: always
+  web:
+    error:
+      include-message: always
 
 # Reset Token
 nodemailer:
