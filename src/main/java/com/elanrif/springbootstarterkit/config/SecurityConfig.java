@@ -3,11 +3,13 @@ package com.elanrif.springbootstarterkit.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -20,11 +22,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
-            CorsConfigurationSource corsConfigurationSource) throws Exception {
+            CorsConfigurationSource corsConfigurationSource,
+            SecurityContextRepository securityContextRepository
+    ) throws Exception {
 
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
+                .securityContext(securityContext -> securityContext
+                        .securityContextRepository(securityContextRepository)
+                )
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
@@ -41,14 +48,16 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
-
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(
+                                new HttpStatusEntryPoint(
+                                        HttpStatus.UNAUTHORIZED
+                                )
+                        )
+                )
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
-                                // TODO: without BasicAuth, change STATELESS to IF_REQUIRED
                                 SessionCreationPolicy.IF_REQUIRED));
-                // TODO: for BasicAuth, remove basic auth for testing purposes, can be removed later
-//                .httpBasic(Customizer.withDefaults());
-
         return http.build();
     }
 
