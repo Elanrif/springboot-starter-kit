@@ -28,17 +28,17 @@ public class Comment extends AuditableEntity {
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
-//    @JsonIgnore
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    // 🔔 CASE 1: DEFAULT relationShip
-//    @JoinColumn(name = "post_id", nullable = false)
-//    private Post post;
-
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    // 🔔 CASE 2: SET NULL on delete to avoid foreign key constraint violation when a post is deleted
-    @JoinColumn(name = "post_id", nullable = true, foreignKey = @ForeignKey(
-            foreignKeyDefinition = "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE SET NULL"
-    ))
+    // 🔔 CASE 1: DEFAULT relationShip
+    @JoinColumn(name = "post_id", nullable = false)
     private Post post;
+
+//    @JsonIgnore
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    // 🔔 CASE 2: SET NULL on delete to avoid foreign key constraint violation when a post is deleted
+//    @JoinColumn(name = "post_id", nullable = true, foreignKey = @ForeignKey(
+//            foreignKeyDefinition = "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE SET NULL"
+//    ))
+//    private Post post;
 }

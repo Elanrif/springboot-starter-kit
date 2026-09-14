@@ -47,15 +47,15 @@ public class Post extends AuditableEntity {
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
-    @Builder.Default
-    @JsonIgnore
-    // 🔔 CASE 1: Default relationship
-    @OneToMany(mappedBy = "post")
-    private List<Comment> comments = new ArrayList<>();
-
 //    @Builder.Default
 //    @JsonIgnore
-//    // 🔔 CASE 2: CascadeType.ALL and orphanRemoval
-//    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+//    // 🔔 CASE 1: Default relationship
+//    @OneToMany(mappedBy = "post")
 //    private List<Comment> comments = new ArrayList<>();
+
+    @Builder.Default
+    @JsonIgnore
+    // 🔔 CASE 2: CascadeType.ALL and orphanRemoval
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 }
