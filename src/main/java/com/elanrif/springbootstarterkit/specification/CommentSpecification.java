@@ -12,21 +12,35 @@ public final class CommentSpecification {
 
     public static Specification<Comment> from(CommentDto.Filter filter) {
         if (filter == null) {
-            return excludeSoftDeleteUser();
+            return excludeSoftDeleted();
         }
 
         return Specification.allOf(
-                excludeSoftDeleteUser(),
+                excludeSoftDeleted(),
                 hasAuthor(filter.authorId()),
                 hasPost(filter.postId()),
                 search(filter.search())
         );
     }
 
-    private static Specification<Comment> excludeSoftDeleteUser() {
+    private static Specification<Comment> excludeSoftDeleted() {
+        return Specification.allOf(
+                excludeSoftDeleteAuthor(),
+                excludeSoftDeletePostAuthor()
+        );
+    }
+
+    private static Specification<Comment> excludeSoftDeleteAuthor() {
         return (root, query, cb) -> cb.and(
                 cb.isNull(root.get("author").get("deletedAt")),
                 cb.notEqual(root.get("author").get("status"), UserStatus.DELETED)
+        );
+    }
+
+    private static Specification<Comment> excludeSoftDeletePostAuthor() {
+        return (root, query, cb) -> cb.and(
+                cb.isNull(root.get("post").get("author").get("deletedAt")),
+                cb.notEqual(root.get("post").get("author").get("status"), UserStatus.DELETED)
         );
     }
 

@@ -12,17 +12,17 @@ public final class PostSpecification {
 
     public static Specification<Post> from(PostDto.Filter filter) {
         if (filter == null) {
-            return excludeDeletedAuthor();
+            return excludeSoftDeleteUser();
         }
 
         return Specification.allOf(
-                excludeDeletedAuthor(),
+                excludeSoftDeleteUser(),
                 hasAuthor(filter.authorId()),
                 search(filter.search())
         );
     }
 
-    private static Specification<Post> excludeDeletedAuthor() {
+    private static Specification<Post> excludeSoftDeleteUser() {
         return (root, query, cb) -> cb.and(
                 cb.isNull(root.get("author").get("deletedAt")),
                 cb.notEqual(root.get("author").get("status"), UserStatus.DELETED)
