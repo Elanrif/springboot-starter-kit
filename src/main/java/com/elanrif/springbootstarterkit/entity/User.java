@@ -8,6 +8,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,7 +27,7 @@ import java.util.List;
         "email = CONCAT('deleted_', id, '_', email), " +
         "phone_number = CONCAT('deleted_', id, '_', phone_number) " +
         "WHERE id = ?")
-public class User extends AuditableEntity {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -67,11 +69,6 @@ public class User extends AuditableEntity {
     private LocalDateTime deletedAt;
 
     @Builder.Default
-    @JsonIgnore
-    @OneToMany(mappedBy = "author")
-    private List<Comment> comments = new ArrayList<>();
-
-    @Builder.Default
     @OneToMany(mappedBy = "user")
     @JsonIgnore
     private List<Address> addresses = new ArrayList<>();
@@ -80,4 +77,17 @@ public class User extends AuditableEntity {
     @JsonIgnore
     @OneToMany(mappedBy = "author")
     private List<Post> posts = new ArrayList<>();
+
+    @Builder.Default
+    @JsonIgnore
+    @OneToMany(mappedBy = "author")
+    private List<Comment> comments = new ArrayList<>();
+
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 }

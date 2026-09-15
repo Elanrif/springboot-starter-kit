@@ -28,8 +28,8 @@ public final class AddressSpecification {
 
     private static Specification<Address> excludeSoftDeleteUser() {
         return (root, query, cb) -> cb.and(
-                cb.isNull(root.get("author").get("deletedAt")),
-                cb.notEqual(root.get("author").get("status"), UserStatus.DELETED)
+                cb.isNull(root.get("user").get("deletedAt")),
+                cb.notEqual(root.get("user").get("status"), UserStatus.DELETED)
         );
     }
 
