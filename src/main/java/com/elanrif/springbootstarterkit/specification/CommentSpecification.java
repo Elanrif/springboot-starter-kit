@@ -2,6 +2,7 @@ package com.elanrif.springbootstarterkit.specification;
 
 import com.elanrif.springbootstarterkit.dto.CommentDto;
 import com.elanrif.springbootstarterkit.entity.Comment;
+import com.elanrif.springbootstarterkit.entity.UserStatus;
 import org.springframework.data.jpa.domain.Specification;
 
 public final class CommentSpecification {
@@ -9,17 +10,27 @@ public final class CommentSpecification {
     private CommentSpecification() {
     }
 
-    public static Specification<Comment> from(
-            CommentDto.Filter filter
-    ) {
+    public static Specification<Comment> from(CommentDto.Filter filter) {
+        if (filter == null) {
+            return excludeSoftDeleteUser();
+        }
+
         return Specification.allOf(
-                author(filter != null ? filter.authorId() : null),
-                post(filter != null ? filter.postId() : null),
-                search(filter != null ? filter.search() : null)
+                excludeSoftDeleteUser(),
+                hasAuthor(filter.authorId()),
+                hasPost(filter.postId()),
+                search(filter.search())
         );
     }
 
-    private static Specification<Comment> author(Long authorId) {
+    private static Specification<Comment> excludeSoftDeleteUser() {
+        return (root, query, cb) -> cb.and(
+                cb.isNull(root.get("author").get("deletedAt")),
+                cb.notEqual(root.get("author").get("status"), UserStatus.DELETED)
+        );
+    }
+
+    private static Specification<Comment> hasAuthor(Long authorId) {
         if (authorId == null) {
             return Specification.unrestricted();
         }
@@ -31,7 +42,7 @@ public final class CommentSpecification {
                 );
     }
 
-    private static Specification<Comment> post(Long postId) {
+    private static Specification<Comment> hasPost(Long postId) {
         if (postId == null) {
             return Specification.unrestricted();
         }
@@ -56,4 +67,5 @@ public final class CommentSpecification {
                         like
                 );
     }
+
 }

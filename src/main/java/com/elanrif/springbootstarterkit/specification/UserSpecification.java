@@ -47,11 +47,17 @@ public final class UserSpecification {
 
     // SOFT DELETION
     public static Specification<User> active() {
-        return (root, query, cb) -> cb.isNull(root.get("deletedAt"));
+        return (root, query, cb) -> cb.and(
+                cb.isNull(root.get("deletedAt")),
+                cb.notEqual(root.get("status"), UserStatus.DELETED)
+        );
     }
 
     public static Specification<User> ghosts() {
-        return (root, query, cb) -> cb.isNotNull(root.get("deletedAt"));
+        return (root, query, cb) -> cb.or(
+                cb.isNotNull(root.get("deletedAt")),
+                cb.equal(root.get("status"), UserStatus.DELETED)
+        );
     }
 
     private static Specification<User> hasGhosts(UserDto.Ghosts ghosts) {

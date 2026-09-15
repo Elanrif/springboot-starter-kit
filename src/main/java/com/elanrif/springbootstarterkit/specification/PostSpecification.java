@@ -2,6 +2,7 @@ package com.elanrif.springbootstarterkit.specification;
 
 import com.elanrif.springbootstarterkit.dto.PostDto;
 import com.elanrif.springbootstarterkit.entity.Post;
+import com.elanrif.springbootstarterkit.entity.UserStatus;
 import org.springframework.data.jpa.domain.Specification;
 
 public final class PostSpecification {
@@ -11,16 +12,24 @@ public final class PostSpecification {
 
     public static Specification<Post> from(PostDto.Filter filter) {
         if (filter == null) {
-            return Specification.unrestricted();
+            return excludeDeletedAuthor();
         }
 
         return Specification.allOf(
-                author(filter.authorId()),
+                excludeDeletedAuthor(),
+                hasAuthor(filter.authorId()),
                 search(filter.search())
         );
     }
 
-    private static Specification<Post> author(Long authorId) {
+    private static Specification<Post> excludeDeletedAuthor() {
+        return (root, query, cb) -> cb.and(
+                cb.isNull(root.get("author").get("deletedAt")),
+                cb.notEqual(root.get("author").get("status"), UserStatus.DELETED)
+        );
+    }
+
+    private static Specification<Post> hasAuthor(Long authorId) {
         if (authorId == null) {
             return Specification.unrestricted();
         }

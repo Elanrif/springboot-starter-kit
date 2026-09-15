@@ -2,6 +2,7 @@ package com.elanrif.springbootstarterkit.specification;
 
 import com.elanrif.springbootstarterkit.dto.AddressDto;
 import com.elanrif.springbootstarterkit.entity.Address;
+import com.elanrif.springbootstarterkit.entity.UserStatus;
 import org.springframework.data.jpa.domain.Specification;
 
 public final class AddressSpecification {
@@ -12,11 +13,23 @@ public final class AddressSpecification {
     public static Specification<Address> from(
             AddressDto.Filter filter
     ) {
+        if (filter == null) {
+            return Specification.unrestricted();
+        }
+
         return Specification.allOf(
+                excludeSoftDeleteUser(),
                 hasUserId(filter.userId()),
                 hasCountry(filter.country()),
                 hasCity(filter.city()),
                 hasDefaultAddress(filter.isDefault())
+        );
+    }
+
+    private static Specification<Address> excludeSoftDeleteUser() {
+        return (root, query, cb) -> cb.and(
+                cb.isNull(root.get("author").get("deletedAt")),
+                cb.notEqual(root.get("author").get("status"), UserStatus.DELETED)
         );
     }
 
