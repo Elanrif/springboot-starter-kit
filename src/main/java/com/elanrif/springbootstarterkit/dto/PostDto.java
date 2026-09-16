@@ -51,7 +51,6 @@ public final class PostDto {
 
     @Schema(name = "PostSummary")
     public record Summary(
-
             Long id,
             String title,
             String imageUrl,
@@ -64,7 +63,6 @@ public final class PostDto {
 
     @Schema(name = "PostResponse")
     public record Response(
-
             Long id,
             String title,
             String imageUrl,

@@ -3,8 +3,6 @@ package com.elanrif.springbootstarterkit.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -40,12 +38,6 @@ public class Post {
     @Size(max = 2000)
     @Column(columnDefinition = "TEXT")
     private String description;
-
-    @Builder.Default
-    @NotNull
-    @PositiveOrZero
-    @Column(nullable = false)
-    private Long likes = 0L;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)

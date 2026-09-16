@@ -1,10 +1,7 @@
 package com.elanrif.springbootstarterkit.data;
 
 import com.elanrif.springbootstarterkit.entity.*;
-import com.elanrif.springbootstarterkit.repository.AddressRepository;
-import com.elanrif.springbootstarterkit.repository.CommentRepository;
-import com.elanrif.springbootstarterkit.repository.PostRepository;
-import com.elanrif.springbootstarterkit.repository.UserRepository;
+import com.elanrif.springbootstarterkit.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +24,7 @@ public class LocalDataInitializer implements ApplicationRunner {
     private final AddressRepository addressRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final PostLikeRepository postLikeRepository;
     private final CommentRepository commentRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -38,6 +36,7 @@ public class LocalDataInitializer implements ApplicationRunner {
         if (users.isEmpty()) return;
 
         var posts = populatePosts(users);
+        populateLikes(users, posts);
         populateAddresses(users);
 
         populateComments(users, posts);
@@ -201,14 +200,57 @@ public class LocalDataInitializer implements ApplicationRunner {
         var a2 = users.size() > 1 ? users.get(1) : a1;
 
         var posts = List.of(
-                Post.builder().title("Spring Boot Guide").description("Learn Spring Boot basics").likes(15L).author(a1).build(),
-                Post.builder().title("Docker Intro").description("Containerize apps").likes(21L).author(a2).build(),
-                Post.builder().title("React Basics").description("UI development").likes(42L).author(a1).build(),
-                Post.builder().title("Microservices").description("Architecture overview").likes(31L).author(a2).build(),
-                Post.builder().title("Clean Code").description("Best practices").likes(50L).author(a1).build()
+                Post.builder().title("Spring Boot Guide").description("Learn Spring Boot basics").author(a1).build(),
+                Post.builder().title("Docker Intro").description("Containerize apps").author(a2).build(),
+                Post.builder().title("React Basics").description("UI development").author(a1).build(),
+                Post.builder().title("Microservices").description("Architecture overview").author(a2).build(),
+                Post.builder().title("Clean Code").description("Best practices").author(a1).build()
         );
 
         return postRepository.saveAll(posts);
+    }
+
+    // ---------------- LIKES ----------------
+    private void populateLikes(List<User> users, List<Post> posts) {
+
+        if (postLikeRepository.count() > 0) return;
+
+        var likes = List.of(
+                // POST 1 — 5 likes
+                PostLike.builder().post(posts.get(0)).user(users.get(1)).build(),
+                PostLike.builder().post(posts.get(0)).user(users.get(2)).build(),
+                PostLike.builder().post(posts.get(0)).user(users.get(3)).build(),
+                PostLike.builder().post(posts.get(0)).user(users.get(4)).build(),
+                PostLike.builder().post(posts.get(0)).user(users.get(5)).build(),
+
+                // POST 2 — 3 likes
+                PostLike.builder().post(posts.get(1)).user(users.get(1)).build(),
+                PostLike.builder().post(posts.get(1)).user(users.get(2)).build(),
+                PostLike.builder().post(posts.get(1)).user(users.get(4)).build(),
+
+                // POST 3 — 7 likes
+                PostLike.builder().post(posts.get(2)).user(users.get(1)).build(),
+                PostLike.builder().post(posts.get(2)).user(users.get(2)).build(),
+                PostLike.builder().post(posts.get(2)).user(users.get(3)).build(),
+                PostLike.builder().post(posts.get(2)).user(users.get(4)).build(),
+                PostLike.builder().post(posts.get(2)).user(users.get(5)).build(),
+                PostLike.builder().post(posts.get(2)).user(users.get(6)).build(),
+                PostLike.builder().post(posts.get(2)).user(users.get(7)).build(),
+
+                // POST 4 — 2 likes
+                PostLike.builder().post(posts.get(3)).user(users.get(1)).build(),
+                PostLike.builder().post(posts.get(3)).user(users.get(3)).build(),
+
+                // POST 5 — 4 likes
+                PostLike.builder().post(posts.get(4)).user(users.get(2)).build(),
+                PostLike.builder().post(posts.get(4)).user(users.get(4)).build(),
+                PostLike.builder().post(posts.get(4)).user(users.get(6)).build(),
+                PostLike.builder().post(posts.get(4)).user(users.get(8)).build()
+        );
+
+        postLikeRepository.saveAll(likes);
+
+        log.info("Likes created: {}", likes.size());
     }
 
     // ---------------- COMMENTS ----------------
