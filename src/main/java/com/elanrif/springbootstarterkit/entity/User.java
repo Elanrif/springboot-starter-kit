@@ -85,6 +85,11 @@ public class User {
     @OneToMany(mappedBy = "author")
     private List<Comment> comments = new ArrayList<>();
 
+    @Builder.Default
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PostLike> postLikes = new ArrayList<>();
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

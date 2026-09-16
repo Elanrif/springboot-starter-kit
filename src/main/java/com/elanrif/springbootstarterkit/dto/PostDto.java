@@ -77,6 +77,12 @@ public final class PostDto {
 
     ) {}
 
+    @Schema(name = "PostLikeResponse")
+    public record LikeResponse(
+            Long likes,
+            boolean liked
+    ) {}
+
     // =========================================================
     // FILTER
     // =========================================================

@@ -4,17 +4,21 @@ import com.elanrif.springbootstarterkit.dto.PaginationDto;
 import com.elanrif.springbootstarterkit.dto.PostDto;
 import com.elanrif.springbootstarterkit.services.PostService;
 import com.elanrif.springbootstarterkit.dto.shared.PageResponse;
+import com.elanrif.springbootstarterkit.services.PostLikeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
@@ -24,7 +28,8 @@ import org.springframework.web.bind.annotation.*;
 )
 public class PostController {
 
-    private final PostService postService;
+   private final PostService postService;
+   private final PostLikeService postLikeService;
 
     @GetMapping
     @Operation(
@@ -75,6 +80,17 @@ public class PostController {
         PostDto.Response response = postService.updatePost(id, request);
         log.info("PATCH /api/v1/posts/{} - Post updated", id);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{postId}/like")
+    @Operation(
+           summary = "Toggle like on a post",
+           description = "Adds or removes the current user's like for the given post."
+    )
+    public ResponseEntity<PostDto.LikeResponse> toggleLike(@PathVariable @Positive Long postId) {
+       log.debug("POST /api/v1/posts/{}/like - toggling like", postId);
+       PostDto.LikeResponse response = postLikeService.toggleLike(postId);
+       return ResponseEntity.ok(response);
     }
 
     @PreAuthorize("@ownerOrAdmin.isOwnerOrAdmin(#id, 'post')")
