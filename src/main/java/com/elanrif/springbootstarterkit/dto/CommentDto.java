@@ -16,7 +16,7 @@ public final class CommentDto {
     // === REQUESTS ===
     public interface CommentFields {
         @NotBlank(groups = OnCreate.class)
-        @Pattern(groups = OnUpdate.class, regexp = ".*\\S.*", message = "must not be blank")
+        @Pattern(groups = OnUpdate.class, regexp = "(?s).*\\S.*", message = "must not be blank")
         @Size(max = 2000) String content();
     }
 

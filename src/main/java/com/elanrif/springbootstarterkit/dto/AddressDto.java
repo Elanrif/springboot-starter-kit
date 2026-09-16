@@ -1,6 +1,5 @@
 package com.elanrif.springbootstarterkit.dto;
 
-import com.elanrif.springbootstarterkit.dto.validation.OnCreate;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -29,13 +28,13 @@ public class AddressDto {
 
     @Schema(name = "AddressUpdateRequest")
     public record UpdateRequest(
-            @Pattern(regexp = ".*\\S.*", message = "must not be blank")
+            @Pattern(regexp = "(?s).*\\S.*", message = "must not be blank")
             String street,
-            @Pattern(regexp = ".*\\S.*", message = "must not be blank")
+            @Pattern(regexp = "(?s).*\\S.*", message = "must not be blank")
             String postalCode,
-            @Pattern(regexp = ".*\\S.*", message = "must not be blank")
+            @Pattern(regexp = "(?s).*\\S.*", message = "must not be blank")
             String city,
-            @Pattern(regexp = ".*\\S.*", message = "must not be blank")
+            @Pattern(regexp = "(?s).*\\S.*", message = "must not be blank")
             String country,
             Boolean defaultAddress
     ) implements AddressFields {}

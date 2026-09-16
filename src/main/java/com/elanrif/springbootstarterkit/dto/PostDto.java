@@ -24,7 +24,7 @@ public final class PostDto {
     public interface PostFields {
         @Size(max = 200) String title();
         @Size(max = 2000) String description();
-        @Pattern(regexp = ".*\\S.*", message = "must not be blank")
+        @Pattern(regexp = "(?s).*\\S.*", message = "must not be blank")
         @URL @Size(max = 200) String imageUrl();
     }
 
@@ -38,9 +38,9 @@ public final class PostDto {
 
     @Schema(name = "PostUpdateRequest")
     public record UpdateRequest(
-            @Pattern(regexp = ".*\\S.*", message = "must not be blank")
+            @Pattern(regexp = "(?s).*\\S.*", message = "must not be blank")
             String title,
-            @Pattern(regexp = ".*\\S.*", message = "must not be blank")
+            @Pattern(regexp = "(?s).*\\S.*", message = "must not be blank")
             String description,
             String imageUrl
     ) implements PostFields {}

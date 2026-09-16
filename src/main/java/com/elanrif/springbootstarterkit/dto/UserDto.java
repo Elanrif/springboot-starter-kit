@@ -28,28 +28,28 @@ public final class UserDto {
     public record Request(
 
             @NotBlank(groups = OnCreate.class)
-            @Pattern(groups = OnUpdate.class, regexp = ".*\\S.*", message = "must not be blank")
+            @Pattern(groups = OnUpdate.class, regexp = "(?s).*\\S.*", message = "must not be blank")
             @Size(max = 100)
             String firstName,
 
             @NotBlank(groups = OnCreate.class)
-            @Pattern(groups = OnUpdate.class, regexp = ".*\\S.*", message = "must not be blank")
+            @Pattern(groups = OnUpdate.class, regexp = "(?s).*\\S.*", message = "must not be blank")
             @Size(max = 100)
             String lastName,
 
             @NotBlank(groups = OnCreate.class)
-            @Pattern(groups = OnUpdate.class, regexp = ".*\\S.*", message = "must not be blank")
+            @Pattern(groups = OnUpdate.class, regexp = "(?s).*\\S.*", message = "must not be blank")
             @Email
             @Size(max = 255)
             String email,
 
             @NotBlank(groups = OnCreate.class)
-            @Pattern(groups = OnUpdate.class, regexp = ".*\\S.*", message = "must not be blank")
+            @Pattern(groups = OnUpdate.class, regexp = "(?s).*\\S.*", message = "must not be blank")
             @Size(min = 5, max = 255) // TODO: min = 8
             String password,
 
             @URL
-            @Pattern(groups = OnUpdate.class, regexp = ".*\\S.*", message = "must not be blank")
+            @Pattern(groups = OnUpdate.class, regexp = "(?s).*\\S.*", message = "must not be blank")
             @Size(max = 255)
             String avatarUrl,
 
