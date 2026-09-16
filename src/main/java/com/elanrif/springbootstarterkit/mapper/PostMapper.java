@@ -27,10 +27,8 @@ public interface PostMapper {
             target = "numberOfComments",
             expression = "java(post.getComments() != null ? post.getComments().size() : 0)"
     )
-    @Mapping(
-            target = "likes",
-            expression = "java(post.getLikesRelations() != null ? (long) post.getLikesRelations().size() : 0L)"
-    )
+    @Mapping(target = "likes", ignore = true)
+    @Mapping(target = "liked", ignore = true)
     PostDto.Response toDto(Post post);
 
     // source (PostDto.CreateRequest) = the object MapStruct reads data from

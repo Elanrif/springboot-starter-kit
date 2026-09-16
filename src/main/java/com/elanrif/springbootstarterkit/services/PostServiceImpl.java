@@ -1,16 +1,18 @@
 package com.elanrif.springbootstarterkit.services;
 
+import com.elanrif.springbootstarterkit.config.SecurityUtils;
 import com.elanrif.springbootstarterkit.dto.PaginationDto;
 import com.elanrif.springbootstarterkit.dto.PostDto;
+import com.elanrif.springbootstarterkit.dto.shared.PageResponse;
 import com.elanrif.springbootstarterkit.entity.Post;
 import com.elanrif.springbootstarterkit.entity.User;
 import com.elanrif.springbootstarterkit.mapper.CommentMapper;
 import com.elanrif.springbootstarterkit.mapper.PostMapper;
 import com.elanrif.springbootstarterkit.repository.CommentRepository;
+import com.elanrif.springbootstarterkit.repository.PostLikeRepository;
 import com.elanrif.springbootstarterkit.repository.PostRepository;
 import com.elanrif.springbootstarterkit.repository.UserRepository;
 import com.elanrif.springbootstarterkit.specification.PostSpecification;
-import com.elanrif.springbootstarterkit.dto.shared.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -27,8 +29,10 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
+    private final PostLikeRepository postLikeRepository;
     private final PostMapper postMapper;
     private final CommentMapper commentMapper;
+    private final SecurityUtils securityUtils;
 
     @Override
     @Transactional(readOnly = true)
@@ -49,7 +53,7 @@ public class PostServiceImpl implements PostService {
                         PostSpecification.from(filter),
                         pagination.toPageable()
                 )
-                .map(postMapper::toDto);
+                .map(post -> enrichWithLikeState(post, postMapper.toDto(post)));
 
         log.debug(
                 "Found {} posts (total: {})",
@@ -72,7 +76,7 @@ public class PostServiceImpl implements PostService {
                             "Post not found: " + id
                     );
                 });
-        return postMapper.toDto(post);
+        return enrichWithLikeState(post, postMapper.toDto(post));
     }
 
     @Override
@@ -81,7 +85,7 @@ public class PostServiceImpl implements PostService {
         log.debug("Creating post with title: {}", request.title());
 
         if (request.authorId() == null) {
-            log.warn("Post creation failed - authorId is missing"); // <-- ajouté
+            log.warn("Post creation failed - authorId is missing");
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "authorId is required");
         }
 
@@ -93,7 +97,8 @@ public class PostServiceImpl implements PostService {
                 });
         post.setAuthor(author);
 
-        PostDto.Response response = postMapper.toDto(postRepository.save(post));
+        Post savedPost = postRepository.save(post);
+        PostDto.Response response = enrichWithLikeState(savedPost, postMapper.toDto(savedPost));
         log.info("Post created successfully with id: {}", response.id());
         return response;
     }
@@ -112,7 +117,8 @@ public class PostServiceImpl implements PostService {
                 });
         postMapper.updateEntity(request, post);
 
-        PostDto.Response response = postMapper.toDto(postRepository.save(post));
+        Post postSaved = postRepository.save(post);
+        PostDto.Response response = enrichWithLikeState(postSaved, postMapper.toDto(postSaved));
         log.info("Post updated successfully with id: {}", id);
         return response;
     }
@@ -130,5 +136,34 @@ public class PostServiceImpl implements PostService {
         }
         postRepository.deleteById(id);
         log.info("Post deleted successfully with id: {}", id);
+    }
+
+    private PostDto.Response enrichWithLikeState(Post post, PostDto.Response baseResponse) {
+        long totalLikes = postLikeRepository.countByPostId(post.getId());
+        boolean liked = false;
+
+        try {
+            Long currentUserId = securityUtils.getCurrentUserId();
+            liked = postLikeRepository.existsByUserIdAndPostId(currentUserId, post.getId());
+        } catch (ResponseStatusException ex) {
+            if (ex.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+                liked = false;
+            } else {
+                throw ex;
+            }
+        }
+
+        return new PostDto.Response(
+                baseResponse.id(),
+                baseResponse.title(),
+                baseResponse.imageUrl(),
+                baseResponse.description(),
+                totalLikes,
+                liked,
+                baseResponse.author(),
+                baseResponse.numberOfComments(),
+                baseResponse.createdAt(),
+                baseResponse.updatedAt()
+        );
     }
 }

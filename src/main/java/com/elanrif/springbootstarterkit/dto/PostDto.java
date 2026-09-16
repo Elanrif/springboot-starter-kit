@@ -68,11 +68,11 @@ public final class PostDto {
             String imageUrl,
             String description,
             Long likes,
+            boolean liked,
             UserDto.Summary author,
             int numberOfComments,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
-
     ) {}
 
     @Schema(name = "PostLikeResponse")
