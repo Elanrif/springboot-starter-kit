@@ -32,12 +32,7 @@ public class CurrentUserServiceImpl implements CurrentUserService {
         User user = securityUtils.getCurrentUser();
         log.debug("Updating profile for user id: {}", user.getId());
 
-        user.setFirstName(request.firstName());
-        user.setLastName(request.lastName());
-        user.setEmail(request.email());
-        user.setPhoneNumber(request.phoneNumber());
-        user.setAvatarUrl(request.avatarUrl());
-
+        userMapper.updateEntity(request, user);
         User updatedUser = userRepository.save(user);
         log.info("Profile updated successfully for user id: {}", updatedUser.getId());
 

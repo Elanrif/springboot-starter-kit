@@ -1,6 +1,7 @@
 package com.elanrif.springbootstarterkit.mapper;
 
 import com.elanrif.springbootstarterkit.dto.UserDto;
+import com.elanrif.springbootstarterkit.dto.auth.CurrentUserDto;
 import com.elanrif.springbootstarterkit.entity.User;
 import org.mapstruct.*;
 
@@ -40,5 +41,13 @@ public interface UserMapper {
     void updateEntity(
             UserDto.Request request, // The parameter without @MappingTarget is the source.
             @MappingTarget User user // @MappingTarget identifies the target to be modified.
+    );
+
+    @BeanMapping(
+            nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
+    )
+    void updateEntity(
+            CurrentUserDto.UpdateProfileRequest request,
+            @MappingTarget User user
     );
 }
