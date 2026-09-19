@@ -1,4 +1,4 @@
-package com.elanrif.springbootstarterkit.config;
+package com.elanrif.springbootstarterkit.config.keycloak;
 
 import com.elanrif.springbootstarterkit.entity.User;
 import com.elanrif.springbootstarterkit.entity.UserRole;
@@ -19,7 +19,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -28,16 +27,23 @@ public class JitProvisioningFilter extends OncePerRequestFilter {
     private final UserRepository userRepository;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
+    ) throws ServletException, IOException {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
 
         if (auth instanceof JwtAuthenticationToken jwtAuth) {
+
             Jwt jwt = jwtAuth.getToken();
+
             String email = jwt.getClaimAsString("email");
 
             if (email != null && !userRepository.existsByEmail(email)) {
+
                 User newUser = User.builder()
                         .email(email)
                         .password(null)
@@ -46,6 +52,7 @@ public class JitProvisioningFilter extends OncePerRequestFilter {
                         .role(extractRole(jwt))
                         .status(UserStatus.ACTIVE)
                         .build();
+
                 userRepository.save(newUser);
             }
         }
@@ -55,23 +62,36 @@ public class JitProvisioningFilter extends OncePerRequestFilter {
 
     @SuppressWarnings("unchecked")
     private UserRole extractRole(Jwt jwt) {
-        Map<String, Object> realmAccess = jwt.getClaim("realm_access");
-        if (realmAccess == null) return UserRole.USER;
 
-        Collection<String> roles = (Collection<String>) realmAccess.get("roles");
+        Map<String, Object> realmAccess =
+                jwt.getClaim("realm_access");
+
+        if (realmAccess == null) {
+            return UserRole.USER;
+        }
+
+        Object rolesObject = realmAccess.get("roles");
+
+        if (!(rolesObject instanceof Collection<?> roles)) {
+            return UserRole.USER;
+        }
+
         return roles.stream()
+                .filter(String.class::isInstance)
+                .map(String.class::cast)
                 .map(String::toUpperCase)
                 .map(this::tryParseRole)
-                .filter(Objects::nonNull)
-                .findFirst() // premier rôle Keycloak qui matche un UserRole connu
+                .filter(role -> role != null)
+                .findFirst()
                 .orElse(UserRole.USER);
     }
 
     private UserRole tryParseRole(String value) {
+
         try {
             return UserRole.valueOf(value);
         } catch (IllegalArgumentException e) {
-            return null; // rôle Keycloak qui n'a pas d'équivalent côté UserRole, on ignore
+            return null;
         }
     }
 }

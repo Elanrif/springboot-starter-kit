@@ -1,5 +1,7 @@
 package com.elanrif.springbootstarterkit.config;
 
+import com.elanrif.springbootstarterkit.config.keycloak.JitProvisioningFilter;
+import com.elanrif.springbootstarterkit.config.keycloak.KeycloakJwtAuthConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -11,6 +13,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
@@ -23,8 +27,14 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private static final Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry> COMMON_RULES = auth -> auth
-            .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+    private static final Customizer<
+            AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
+            > COMMON_RULES = auth -> auth
+            .requestMatchers(
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/swagger-ui.html"
+            ).permitAll()
             .requestMatchers("/error").permitAll()
             .requestMatchers("/actuator/health").permitAll()
             .requestMatchers("/api/v1/auth/**").permitAll()
@@ -34,6 +44,9 @@ public class SecurityConfig {
             .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
             .anyRequest().authenticated();
 
+    /**
+     * Session-based authentication.
+     */
     @Bean
     @Profile("!keycloak")
     public SecurityFilterChain sessionFilterChain(
@@ -41,15 +54,31 @@ public class SecurityConfig {
             CorsConfigurationSource corsConfigurationSource,
             SecurityContextRepository securityContextRepository
     ) throws Exception {
-        http.csrf(csrf -> csrf.disable())
+
+        http
+                .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
-                .securityContext(sc -> sc.securityContextRepository(securityContextRepository))
+                .securityContext(sc ->
+                        sc.securityContextRepository(securityContextRepository)
+                )
                 .authorizeHttpRequests(COMMON_RULES)
-                .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+                .exceptionHandling(exception ->
+                        exception.authenticationEntryPoint(
+                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)
+                        )
+                )
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.IF_REQUIRED
+                        )
+                );
+
         return http.build();
     }
 
+    /**
+     * Keycloak JWT-based authentication.
+     */
     @Bean
     @Profile("keycloak")
     public SecurityFilterChain keycloakFilterChain(
@@ -58,14 +87,45 @@ public class SecurityConfig {
             KeycloakJwtAuthConverter keycloakJwtAuthConverter,
             JitProvisioningFilter jitProvisioningFilter
     ) throws Exception {
-        http.csrf(csrf -> csrf.disable())
+
+        http
+                .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests(COMMON_RULES)
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt
-                        .jwtAuthenticationConverter(keycloakJwtAuthConverter)))
-                .addFilterAfter(jitProvisioningFilter, BearerTokenAuthenticationFilter.class)
-                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                .oauth2ResourceServer(oauth2 ->
+                        oauth2.jwt(jwt ->
+                                jwt.jwtAuthenticationConverter(
+                                        keycloakJwtAuthConverter
+                                )
+                        )
+                )
+                .addFilterAfter(
+                        jitProvisioningFilter,
+                        BearerTokenAuthenticationFilter.class
+                )
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
+                );
+
         return http.build();
     }
 
+    /**
+     * Password encoder used by the session-based authentication.
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    /**
+     * Security context repository used by session-based authentication.
+     */
+    @Bean
+    @Profile("!keycloak")
+    public SecurityContextRepository securityContextRepository() {
+        return new HttpSessionSecurityContextRepository();
+    }
 }

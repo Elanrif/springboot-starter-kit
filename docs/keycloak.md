@@ -20,13 +20,14 @@ Ce guide décrit l'intégration Keycloak réellement utilisée dans ce backend S
 ---
  Testé avec curl keycloak
 ```bash
- curl -X POST http://localhost:8080/realms/kickstart-realm/protocol/openid-connect/token   
-  -H "Content-Type: application/x-www-form-urlencoded"  
-  -d "grant_type=password"   
-  -d "client_id=kickstart-client"   
-  -d "client_secret=cFekoHWurrhvbFU4WGuC3MOeEqlgMVCG"   
-  -d "username=admin@gmail.com"   
+curl -X POST "http://localhost:8080/realms/kickstart-realm/protocol/openid-connect/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=password" \
+  -d "client_id=kickstart-client" \
+  -d "client_secret=cFekoHWurrhvbFU4WGuC3MOeEqlgMVCG" \
+  -d "username=admin@gmail.com" \
   -d "password=admin"
+
 ```
 
 ## 1. Démarrer Keycloak
