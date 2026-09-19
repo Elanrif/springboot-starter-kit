@@ -70,7 +70,7 @@ public class CommentController {
     }
 
     @PatchMapping("/{id}")
-    @PreAuthorize("@ownerOrAdmin.isOwnerOrAdmin(#id, 'comment')")
+    @PreAuthorize("hasRole('ADMIN') or @securityUtils.isCommentOwner(#id)")
     @Operation(
             summary = "Update a comment",
             description = "Partially updates an existing comment's content."
@@ -85,7 +85,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("@ownerOrAdmin.isOwnerOrAdmin(#id, 'comment')")
+    @PreAuthorize("hasRole('ADMIN') or @securityUtils.isCommentOwner(#id)")
     @Operation(
             summary = "Delete a comment",
             description = "Deletes a comment by id."

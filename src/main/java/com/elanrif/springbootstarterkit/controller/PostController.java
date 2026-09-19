@@ -68,7 +68,7 @@ public class PostController {
     }
 
     @PatchMapping("/{id}")
-    @PreAuthorize("@ownerOrAdmin.isOwnerOrAdmin(#id, 'post')")
+    @PreAuthorize("hasRole('ADMIN') or @securityUtils.isPostOwner(#id)")
     @Operation(
             summary = "Update a post",
             description = "Partially updates an existing post."
@@ -93,7 +93,7 @@ public class PostController {
        return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("@ownerOrAdmin.isOwnerOrAdmin(#id, 'post')")
+    @PreAuthorize("hasRole('ADMIN') or @securityUtils.isPostOwner(#id)")
     @DeleteMapping("/{id}")
     @Operation(
             summary = "Delete a post",
