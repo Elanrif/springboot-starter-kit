@@ -20,6 +20,19 @@ public class CurrentUserController {
 
     private final CurrentUserService currentUserService;
 
+    @GetMapping("/me")
+    @Operation(
+            summary = "Get my profile",
+            description = "Returns the locally stored account of the currently authenticated user. " +
+                    "This is the only way for a client to learn its own local database id: with Keycloak, " +
+                    "the token subject is an opaque UUID that has no relation to the local id."
+    )
+    public ResponseEntity<UserDto.Response> getMyProfile() {
+        UserDto.Response response = currentUserService.getMyProfile();
+        log.debug("GET /api/v1/account/me - Profile returned for user id: {}", response.id());
+        return ResponseEntity.ok(response);
+    }
+
     @PatchMapping
     @Operation(
             summary = "Update my profile",

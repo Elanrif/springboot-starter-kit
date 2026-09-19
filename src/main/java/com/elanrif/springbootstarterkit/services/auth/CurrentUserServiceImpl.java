@@ -27,6 +27,15 @@ public class CurrentUserServiceImpl implements CurrentUserService {
     private final SecurityUtils securityUtils;
 
     @Override
+    @Transactional(readOnly = true)
+    public UserDto.Response getMyProfile() {
+        User user = securityUtils.getCurrentUser();
+        log.debug("Fetching profile for user id: {}", user.getId());
+
+        return userMapper.toDto(user);
+    }
+
+    @Override
     @Transactional
     public UserDto.Response updateMyProfile(CurrentUserDto.UpdateProfileRequest request) {
         User user = securityUtils.getCurrentUser();

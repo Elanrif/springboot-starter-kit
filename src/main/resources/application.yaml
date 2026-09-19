@@ -1,39 +1,55 @@
-
 server:
   port: ${SERVER_PORT:8081}
+
 spring:
   application:
     name: ${SERVER_NAME:kickstart-springboot}
+
+  profiles:
+    active:
+      - ${ENV:local}
+      - ${AUTH_PROVIDER:}
+
   datasource:
     url: ${POSTGRES_URL}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
+
   jpa:
     open-in-view: false
     properties:
       hibernate:
         format_sql: false
-  profiles:
-    active:
-      - ${ENV:local}
+
   session:
     jdbc:
       initialize-schema: always
     timeout: 30m
+
   web:
     error:
       include-message: always
 
-# Reset Token
 nodemailer:
   reset-token:
     hmac: ${RESET_TOKEN_HMAC}
     secret: ${RESET_TOKEN_SECRET_KEY}
 
-# Swagger Configuration
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+---
+spring:
+  config:
+    activate:
+      on-profile: keycloak
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}

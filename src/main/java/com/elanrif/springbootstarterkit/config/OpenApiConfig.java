@@ -13,15 +13,28 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI openApi() {
-        SecurityScheme bearer = new SecurityScheme()
+
+        SecurityScheme bearerScheme = new SecurityScheme()
                 .type(SecurityScheme.Type.HTTP)
                 .scheme("bearer")
                 .bearerFormat("JWT");
 
         return new OpenAPI()
-                .info(new Info().title("Kickstart API").version("v1"))
-                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
-                .components(new Components().addSecuritySchemes("bearerAuth", bearer));
+                .info(
+                        new Info()
+                                .title("Kickstart API")
+                                .version("v1")
+                )
+                .addSecurityItem(
+                        new SecurityRequirement()
+                                .addList("bearerAuth")
+                )
+                .components(
+                        new Components()
+                                .addSecuritySchemes(
+                                        "bearerAuth",
+                                        bearerScheme
+                                )
+                );
     }
 }
-
